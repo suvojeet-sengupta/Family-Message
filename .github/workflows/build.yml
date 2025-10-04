@@ -73,7 +73,7 @@ jobs:
   create_release:
     needs: build_artifacts # This job depends on build_artifacts
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/stable' # Only run on push to stable branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Only run on push to main branch
     permissions:
       contents: write # This permission is required to create releases and upload assets
 
