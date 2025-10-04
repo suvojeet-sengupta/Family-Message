@@ -1,0 +1,67 @@
+# Name of this GitHub Action. This will be displayed in the Actions tab.
+name: Create Flutter Project
+
+# This workflow is triggered manually from the Actions tab using 'workflow_dispatch'.
+on:
+  workflow_dispatch:
+
+# Defines the jobs that will run in the workflow.
+jobs:
+  create_and_push:
+    # The type of runner that the job will run on. We'll use the latest version of Ubuntu.
+    runs-on: ubuntu-latest
+
+    # Grants permissions to the GITHUB_TOKEN for this job to push code back to the repository.
+    permissions:
+      contents: write
+
+    steps:
+      # Step 1: Checks out your repository under $GITHUB_WORKSPACE, so your job can access it.
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Sets up the Flutter SDK environment.
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # You can specify a Flutter version here. 'stable' uses the latest stable release.
+          channel: 'stable'
+
+      # Step 3: Checks if a 'lib' folder already exists to determine if a project is present.
+      - name: Check if project already exists
+        id: check_files
+        uses: andstor/file-existence-action@v2
+        with:
+          # If the 'lib' directory exists, it assumes the project has already been created.
+          files: "lib"
+
+      # Step 4: Creates a new Flutter project if one doesn't already exist.
+      - name: Create Flutter Project
+        # This step only runs if the 'check_files' step determined that the 'lib' folder does not exist.
+        run: |
+          PROJECT_NAME=$(echo "${{ github.event.repository.name }}" | tr '-' '_' | tr '[:upper:]' '[:lower:]')
+          flutter create . --project-name $PROJECT_NAME
+        # Note: 'flutter create .' creates the project in the current directory.
+        # We use the repository name as the project name for correct package naming.
+
+      # Step 5: Commits and pushes the newly created project files to the repository.
+      - name: Commit and Push new project
+        if: steps.check_files.outputs.files_exists == 'false'
+        run: |
+          # Configure Git to associate the commit with the GitHub Actions bot.
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions-bot@github.com'
+          
+          # Add all new files to the staging area.
+          git add .
+          
+          # Commit the changes with a descriptive message.
+          git commit -m "🎉 Initial Flutter Project created via GitHub Actions"
+          
+          # Push the changes to the repository's default branch.
+          git push
+      
+      # Step 6: If the project already exists, this step will run and print a message.
+      - name: Show message if project exists
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: echo "Flutter project already exists. Skipping creation."
