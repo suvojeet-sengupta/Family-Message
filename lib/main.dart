@@ -5,6 +5,7 @@ import 'widgets/CurrentWeather.dart';
 import 'widgets/WeatherInfo.dart';
 import 'widgets/HourlyForecast.dart';
 import 'widgets/DailyForecast.dart';
+import 'screens/search_screen.dart';
 
 void main() {
   runApp(const AuroraWeather());
@@ -46,9 +47,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
     _fetchWeather();
   }
 
-  Future<void> _fetchWeather() async {
+  Future<void> _fetchWeather({String? city}) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     try {
-      final weather = await _weatherService.fetchWeather();
+      final weather = await (city == null
+          ? _weatherService.fetchWeather()
+          : _weatherService.fetchWeatherByCity(city));
       setState(() {
         _weather = weather;
         _isLoading = false;
@@ -70,9 +77,27 @@ class _WeatherScreenState extends State<WeatherScreen> {
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: () {
+            // TODO: Implement profile screen
+          },
+        ),
       ),
       body: Center(
         child: _buildWeatherContent(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final selectedCity = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SearchScreen()),
+          );
+          if (selectedCity != null) {
+            _fetchWeather(city: selectedCity);
+          }
+        },
+        child: const Icon(Icons.search),
       ),
     );
   }
