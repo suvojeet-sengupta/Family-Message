@@ -74,6 +74,20 @@ class DatabaseHelper {
     return null;
   }
 
+  Future<Weather?> getLatestWeather() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'weather',
+      orderBy: 'timestamp DESC',
+      limit: 1,
+    );
+
+    if (maps.isNotEmpty) {
+      return Weather.fromDatabaseMap(maps.first);
+    }
+    return null;
+  }
+
   Future<void> deleteWeather(String locationName) async {
     final db = await database;
     await db.delete(

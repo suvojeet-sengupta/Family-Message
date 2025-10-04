@@ -6,6 +6,7 @@ import 'widgets/WeatherInfo.dart';
 import 'widgets/HourlyForecast.dart';
 import 'widgets/DailyForecast.dart';
 import 'screens/search_screen.dart';
+import 'services/database_helper.dart';
 
 void main() {
   runApp(const AuroraWeather());
@@ -37,6 +38,7 @@ class WeatherScreen extends StatefulWidget {
 
 class _WeatherScreenState extends State<WeatherScreen> {
   final WeatherService _weatherService = WeatherService();
+  final DatabaseHelper _dbHelper = DatabaseHelper();
   Weather? _weather;
   bool _isLoading = true;
   String? _errorMessage;
@@ -44,14 +46,40 @@ class _WeatherScreenState extends State<WeatherScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchWeather();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // First, try to load data from the cache to display something immediately
+      final cachedWeather = await _dbHelper.getLatestWeather();
+      if (cachedWeather != null) {
+        setState(() {
+          _weather = cachedWeather;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      // Ignore errors from cache loading, as fresh data will be fetched anyway
+    }
+
+    // Now, fetch fresh data from the API
+    await _fetchWeather();
   }
 
   Future<void> _fetchWeather({String? city}) async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    // Only show loading indicator if there's no data to display
+    if (_weather == null) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
     try {
       final weather = await (city == null
           ? _weatherService.fetchWeather()
@@ -59,12 +87,16 @@ class _WeatherScreenState extends State<WeatherScreen> {
       setState(() {
         _weather = weather;
         _isLoading = false;
+        _errorMessage = null; // Clear any previous error
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      // Only show error if there's no cached data to display
+      if (_weather == null) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
