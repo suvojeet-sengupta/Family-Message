@@ -1,0 +1,37 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import '../models/weather_model.dart';
+
+class WeatherService {
+  final String apiKey = const String.fromEnvironment('WEATHER_API_KEY'); // TODO: Replace with your API key from weatherapi.com
+  final String baseUrl = 'http://api.weatherapi.com/v1';
+
+  Future<Weather> fetchWeather() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    final response = await http.get(Uri.parse(
+        '$baseUrl/current.json?key=$apiKey&q=${position.latitude},${position.longitude}'));
+
+    if (response.statusCode == 200) {
+      return Weather.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load weather data');
+    }
+  }
+}
