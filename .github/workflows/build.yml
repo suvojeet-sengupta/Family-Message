@@ -63,7 +63,6 @@ jobs:
         run: |
           mkdir -p release_artifacts
           mv build/app/outputs/flutter-apk/app-release.apk release_artifacts/Family-Message-${{ env.RELEASE_TAG }}.apk
-          mv build/app/outputs/bundle/release/app-release.aab release_artifacts/Family-Message-${{ env.RELEASE_TAG }}.aab
 
       - name: ⬆️ Upload Release Artifacts
         uses: actions/upload-artifact@v4
@@ -113,7 +112,7 @@ jobs:
             ${{ steps.changelog.outputs.changelog }}
 
             ## 📥 Download
-            You can download the latest APK and AAB from the assets section below.
+            You can download the latest APK from the assets section below.
 
             ## 🤝 Support & Feedback
             If you encounter any issues or have suggestions, please open an issue on our [GitHub repository](${{ github.server_url }}/${{ github.repository }}).
