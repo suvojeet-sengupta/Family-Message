@@ -30,7 +30,7 @@ class WeatherService {
         desiredAccuracy: LocationAccuracy.high);
 
     final response = await http.get(Uri.parse(
-        '$baseUrl/current.json?key=$apiKey&q=${position.latitude},${position.longitude}'));
+        '$baseUrl/forecast.json?key=$apiKey&q=${position.latitude},${position.longitude}&days=10'));
 
     if (response.statusCode == 200) {
       return Weather.fromJson(jsonDecode(response.body));

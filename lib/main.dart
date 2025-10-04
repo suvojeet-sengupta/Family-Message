@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'services/weather_service.dart';
 import 'models/weather_model.dart';
+import 'widgets/CurrentWeather.dart';
+import 'widgets/WeatherInfo.dart';
+import 'widgets/HourlyForecast.dart';
+import 'widgets/DailyForecast.dart';
 
 void main() {
   runApp(const AuroraWeather());
@@ -60,6 +64,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF2C2F33),
       appBar: AppBar(
         title: const Text('AuroraWeather'),
         centerTitle: true,
@@ -78,10 +83,13 @@ class _WeatherScreenState extends State<WeatherScreen> {
     }
 
     if (_errorMessage != null) {
-      return Text(
-        _errorMessage!,
-        style: const TextStyle(color: Colors.red, fontSize: 18),
-        textAlign: TextAlign.center,
+      return Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Text(
+          _errorMessage!,
+          style: const TextStyle(color: Colors.red, fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
       );
     }
 
@@ -92,46 +100,20 @@ class _WeatherScreenState extends State<WeatherScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            _weather!.locationName,
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '${_weather!.temperature.round()}°C',
-            style: const TextStyle(fontSize: 80, fontWeight: FontWeight.w100),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.network(_weather!.iconUrl),
-              const SizedBox(width: 10),
-              Text(
-                _weather!.condition,
-                style: const TextStyle(fontSize: 24),
-              ),
-            ],
-          ),
-          const SizedBox(height: 40),
-          // Placeholder for hourly forecast
-          const Text(
-            'Hourly Forecast',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          // Placeholder for daily forecast
-          const Text(
-            '5-Day Forecast',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            CurrentWeather(weather: _weather!),
+            const SizedBox(height: 24),
+            WeatherInfo(weather: _weather!),
+            const SizedBox(height: 24),
+            HourlyForecastWidget(hourlyForecast: _weather!.hourlyForecast),
+            const SizedBox(height: 24),
+            DailyForecastWidget(dailyForecast: _weather!.dailyForecast),
+          ],
+        ),
       ),
     );
   }
