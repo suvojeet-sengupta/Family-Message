@@ -5,10 +5,14 @@ import 'package:geocoding/geocoding.dart';
 import '../models/weather_model.dart';
 
 class WeatherService {
-  final String apiKey = const String.fromEnvironment('WEATHER_API_KEY'); // TODO: Replace with your API key from weatherapi.com
+  final String apiKey = const String.fromEnvironment('WEATHER_API_KEY');
   final String baseUrl = 'http://api.weatherapi.com/v1';
 
   Future<Weather> fetchWeather() async {
+    if (apiKey.isEmpty) {
+      throw Exception('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
+    }
+
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
