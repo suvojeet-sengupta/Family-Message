@@ -27,9 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _savedCities = [];
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
-  bool _isInitialLoading = true;
-  String _loadingMessage = 'Initializing...';
   bool _isFahrenheit = false;
+  final Map<String, bool> _isRefreshing = {};
 
   @override
   void initState() {
@@ -44,89 +43,100 @@ class _HomeScreenState extends State<HomeScreen> {
         ).then((_) => _clearLastOpenedCity());
       });
     }
-    _loadData();
+    _loadInitialData();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadInitialData() async {
     _isFahrenheit = await _settingsService.isFahrenheit();
     await _loadCachedData();
-    await _fetchFreshData();
+    await _refreshStaleData();
   }
 
   Future<void> _loadCachedData() async {
-    setState(() {
-      _isInitialLoading = true;
-      _loadingMessage = 'Loading saved locations...';
-    });
-
     final prefs = await SharedPreferences.getInstance();
     _savedCities = prefs.getStringList('recentSearches') ?? [];
 
-    try {
-      final cachedCurrent = await _dbHelper.getLatestWeather();
-      if (cachedCurrent != null) {
-        setState(() {
-          _currentLocationWeather = cachedCurrent;
-        });
-      }
-    } catch (e) {
-      print('Error loading cached current weather: $e');
+    final cachedCurrent = await _dbHelper.getLatestWeather();
+    if (cachedCurrent != null) {
+      setState(() {
+        _currentLocationWeather = cachedCurrent;
+      });
     }
 
     for (var city in _savedCities) {
-      try {
-        final cachedWeather = await _dbHelper.getAnyWeather(city);
-        if (cachedWeather != null) {
-          setState(() {
-            _weatherData[city] = cachedWeather;
-          });
-        }
-      } catch (e) {
-        print('Error loading cached weather for $city: $e');
+      final cachedWeather = await _dbHelper.getAnyWeather(city);
+      if (cachedWeather != null) {
+        setState(() {
+          _weatherData[city] = cachedWeather;
+        });
       }
     }
-
-    setState(() {
-      _isInitialLoading = false;
-    });
   }
 
-  Future<void> _fetchFreshData() async {
-    // Fetch current location weather
-    try {
-      setState(() {
-        _loadingMessage = 'Requesting location permission...';
-      });
-      final position = await _weatherService.getCurrentPosition();
+  Future<void> _refreshStaleData({bool force = false}) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    const thirtyMinutesInMillis = 30 * 60 * 1000;
 
-      setState(() {
-        _loadingMessage = 'Fetching weather for your location...';
-      });
+    // Refresh current location
+    if (_currentLocationWeather != null) {
+      if (force || (now - _currentLocationWeather!.timestamp) > thirtyMinutesInMillis) {
+        _fetchWeatherForCurrentLocation();
+      }
+    } else {
+       _fetchWeatherForCurrentLocation();
+    }
+
+    // Refresh saved cities
+    for (var city in _savedCities) {
+      final weather = _weatherData[city];
+      if (weather != null) {
+        if (force || (now - weather.timestamp) > thirtyMinutesInMillis) {
+          _fetchWeatherForCity(city);
+        }
+      } else {
+        _fetchWeatherForCity(city);
+      }
+    }
+  }
+
+  Future<void> _fetchWeatherForCurrentLocation() async {
+    if (_isRefreshing['current'] == true) return;
+    setState(() {
+      _isRefreshing['current'] = true;
+    });
+
+    try {
+      final position = await _weatherService.getCurrentPosition();
       final freshCurrent = await _weatherService.fetchWeatherByPosition(position);
       setState(() {
         _currentLocationWeather = freshCurrent;
       });
     } catch (e) {
       print('Error fetching fresh current weather: $e');
-      if (mounted) {
-        setState(() {
-          _loadingMessage = 'Could not fetch current location.';
-        });
-      }
+    } finally {
+      setState(() {
+        _isRefreshing['current'] = false;
+      });
     }
+  }
 
-    // Fetch weather for saved cities
-    for (var city in _savedCities) {
-      try {
-        final freshWeather = await _weatherService.fetchWeatherByCity(city);
-        if(mounted) {
-          setState(() {
-            _weatherData[city] = freshWeather;
-          });
-        }
-      } catch (e) {
-        print('Error fetching fresh weather for $city: $e');
-      }
+  Future<void> _fetchWeatherForCity(String city) async {
+    if (_isRefreshing[city] == true) return;
+    setState(() {
+      _isRefreshing[city] = true;
+    });
+
+    try {
+      final freshWeather = await _weatherService.fetchWeatherByCity(city);
+      setState(() {
+        _weatherData[city] = freshWeather;
+      });
+    } catch (e) {
+      print('Error fetching fresh weather for $city: $e');
+    } finally {
+      setState(() {
+        _isRefreshing[city] = false;
+      });
     }
   }
 
@@ -154,18 +164,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
-              _loadData();
+              _loadInitialData();
             },
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _fetchFreshData,
+            onPressed: () => _refreshStaleData(force: true),
           ),
         ],
       ),
-      body: _isInitialLoading
-          ? const ShimmerLoading()
-          : _buildWeatherList(),
+      body: _buildWeatherList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final newCity = await Navigator.push(
@@ -173,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (context) => const SearchScreen()),
           );
           if (newCity != null && newCity.isNotEmpty) {
-            await _loadData();
+            _loadInitialData();
           }
         },
         child: const Icon(Icons.search),
@@ -183,16 +191,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildWeatherList() {
     if (_savedCities.isEmpty && _currentLocationWeather == null) {
-      return Center(
-        child: Text(
-          _loadingMessage.isNotEmpty ? _loadingMessage : 'Add a city to get started!',
-          style: const TextStyle(fontSize: 18),
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Fetching weather...', style: TextStyle(fontSize: 18)),
+          ],
         ),
       );
     }
 
     return RefreshIndicator(
-      onRefresh: _fetchFreshData,
+      onRefresh: () => _refreshStaleData(force: true),
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -205,18 +217,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           if (_currentLocationWeather != null)
-            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: _isFahrenheit),
+            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: _isFahrenheit, isRefreshing: _isRefreshing['current'] ?? false),
           if (_currentLocationWeather == null)
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[800],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Text('Update location permissions'),
-            ),
+            const ShimmerLoading(), // Show shimmer while initially fetching
           const SizedBox(height: 24),
           const Row(
             children: [
@@ -229,16 +232,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ..._savedCities.map((city) {
             final weather = _weatherData[city];
             if (weather == null) {
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                color: Colors.red.withOpacity(0.5),
-                child: ListTile(
-                  title: Text(city),
-                  subtitle: const Text('Could not load weather data.'),
-                ),
-              );
+              return const ShimmerLoading(); // Show shimmer for cities being fetched
             }
-            return WeatherCard(weather: weather, isFahrenheit: _isFahrenheit);
+            return WeatherCard(weather: weather, isFahrenheit: _isFahrenheit, isRefreshing: _isRefreshing[city] ?? false);
           }).toList(),
         ],
       ),

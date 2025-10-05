@@ -65,7 +65,7 @@ class DatabaseHelper {
       final weatherData = maps.first;
       final timestamp = weatherData['timestamp'] as int;
       final now = DateTime.now().millisecondsSinceEpoch;
-      final oneHourInMillis = 60 * 60 * 1000; // 1 hour
+      final oneHourInMillis = 30 * 60 * 1000; // 30 minutes
 
       if ((now - timestamp) < oneHourInMillis) {
         // Data is fresh, return it
