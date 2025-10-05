@@ -10,11 +10,7 @@ class WeatherService {
   final String baseUrl = 'http://api.weatherapi.com/v1';
   final DatabaseHelper _dbHelper = DatabaseHelper(); // Instantiate the database helper
 
-  Future<Weather> fetchWeather() async {
-    if (apiKey.isEmpty) {
-      throw Exception('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
-    }
-
+  Future<Position> getCurrentPosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -28,9 +24,19 @@ class WeatherService {
           'Location permissions are permanently denied, we cannot request permissions.');
     }
 
-    Position position = await Geolocator.getCurrentPosition(
+    return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
+  }
 
+  Future<Weather> fetchWeather() async {
+    if (apiKey.isEmpty) {
+      throw Exception('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
+    }
+    final position = await getCurrentPosition();
+    return await fetchWeatherByPosition(position);
+  }
+
+  Future<Weather> fetchWeatherByPosition(Position position) async {
     // Try to get cached data first
     final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
     final locationName = placemarks.first.locality ?? placemarks.first.name ?? 'Unknown';

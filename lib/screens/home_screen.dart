@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
   bool _isLoading = true;
+  String _loadingMessage = 'Initializing...';
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadAndRefreshData() async {
     setState(() {
       _isLoading = true;
+      _loadingMessage = 'Loading saved locations...';
     });
 
     // --- Step 1: Load all available data from cache ---
@@ -79,12 +81,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // --- Step 2: Fetch fresh data from network ---
     try {
-      final freshCurrent = await _weatherService.fetchWeather();
+      setState(() {
+        _loadingMessage = 'Requesting location permission...';
+      });
+      final position = await _weatherService.getCurrentPosition();
+
+      setState(() {
+        _loadingMessage = 'Fetching weather for your location...';
+      });
+      final freshCurrent = await _weatherService.fetchWeatherByPosition(position);
       setState(() {
         _currentLocationWeather = freshCurrent;
       });
     } catch (e) {
       print('Error fetching fresh current weather: $e');
+      setState(() {
+        _loadingMessage = 'Could not fetch current location.';
+      });
     }
 
     for (var city in _savedCities) {
@@ -116,7 +129,16 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Aurora Weather'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(_loadingMessage),
+                ],
+              ),
+            )
           : _buildWeatherList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -135,10 +157,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildWeatherList() {
     if (_savedCities.isEmpty && _currentLocationWeather == null) {
-      return const Center(
+      return Center(
         child: Text(
-          'Add a city to get started!',
-          style: TextStyle(fontSize: 18),
+          _loadingMessage.isNotEmpty ? _loadingMessage : 'Add a city to get started!',
+          style: const TextStyle(fontSize: 18),
         ),
       );
     }
