@@ -96,4 +96,18 @@ class DatabaseHelper {
       whereArgs: [locationName],
     );
   }
+
+  Future<Weather?> getAnyWeather(String locationName) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'weather',
+      where: 'locationName = ?',
+      whereArgs: [locationName],
+    );
+
+    if (maps.isNotEmpty) {
+      return Weather.fromDatabaseMap(maps.first);
+    }
+    return null;
+  }
 }

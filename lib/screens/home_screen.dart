@@ -5,9 +5,12 @@ import '../models/weather_model.dart';
 import 'search_screen.dart';
 import 'weather_detail_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../services/database_helper.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Weather? initialWeather;
+
+  const HomeScreen({super.key, this.initialWeather});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -15,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final WeatherService _weatherService = WeatherService();
+  final DatabaseHelper _dbHelper = DatabaseHelper();
   List<String> _savedCities = [];
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
@@ -23,42 +27,86 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchAllWeatherData();
+    if (widget.initialWeather != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WeatherDetailScreen(weather: widget.initialWeather!),
+          ),
+        ).then((_) => _clearLastOpenedCity());
+      });
+    }
+    _loadAndRefreshData();
   }
 
-  Future<void> _fetchAllWeatherData() async {
+  Future<void> _loadAndRefreshData() async {
     setState(() {
       _isLoading = true;
     });
 
-    // Fetch current location weather
-    try {
-      final weather = await _weatherService.fetchWeather();
-      setState(() {
-        _currentLocationWeather = weather;
-      });
-    } catch (e) {
-      print('Error fetching current location weather: $e');
-    }
-
-    // Fetch weather for saved cities
+    // --- Step 1: Load all available data from cache ---
     final prefs = await SharedPreferences.getInstance();
     _savedCities = prefs.getStringList('recentSearches') ?? [];
 
+    try {
+      final cachedCurrent = await _dbHelper.getLatestWeather();
+      if (cachedCurrent != null) {
+        setState(() {
+          _currentLocationWeather = cachedCurrent;
+        });
+      }
+    } catch (e) {
+      print('Error loading cached current weather: $e');
+    }
+
     for (var city in _savedCities) {
       try {
-        final weather = await _weatherService.fetchWeatherByCity(city);
-        setState(() {
-          _weatherData[city] = weather;
-        });
+        final cachedWeather = await _dbHelper.getAnyWeather(city);
+        if (cachedWeather != null) {
+          setState(() {
+            _weatherData[city] = cachedWeather;
+          });
+        }
       } catch (e) {
-        print('Error fetching weather for $city: $e');
+        print('Error loading cached weather for $city: $e');
       }
     }
 
     setState(() {
-      _isLoading = false;
+      _isLoading = false; // Show cached data
     });
+
+    // --- Step 2: Fetch fresh data from network ---
+    try {
+      final freshCurrent = await _weatherService.fetchWeather();
+      setState(() {
+        _currentLocationWeather = freshCurrent;
+      });
+    } catch (e) {
+      print('Error fetching fresh current weather: $e');
+    }
+
+    for (var city in _savedCities) {
+      try {
+        final freshWeather = await _weatherService.fetchWeatherByCity(city);
+        setState(() {
+          _weatherData[city] = freshWeather;
+        });
+      } catch (e) {
+        print('Error fetching fresh weather for $city: $e');
+      }
+    }
+  }
+
+  Future<void> _saveLastOpenedCity(String city) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastOpenedCity', city);
+  }
+
+  Future<void> _clearLastOpenedCity() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('lastOpenedCity');
   }
 
   @override
@@ -77,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (context) => const SearchScreen()),
           );
           if (newCity != null && newCity.isNotEmpty) {
-            await _fetchAllWeatherData();
+            await _loadAndRefreshData();
           }
         },
         child: const Icon(Icons.search),
@@ -125,13 +173,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       color: isCurrentLocation ? Colors.blue.withOpacity(0.3) : Colors.white.withOpacity(0.1),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          await _saveLastOpenedCity(weather.locationName);
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => WeatherDetailScreen(weather: weather),
             ),
           );
+          await _clearLastOpenedCity();
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
