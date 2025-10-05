@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/weather_service.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -49,6 +50,18 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  Future<void> _saveSearch(String city) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> recentSearches = prefs.getStringList('recentSearches') ?? [];
+    if (!recentSearches.contains(city)) {
+      recentSearches.insert(0, city);
+      if (recentSearches.length > 5) {
+        recentSearches.removeLast();
+      }
+      await prefs.setStringList('recentSearches', recentSearches);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,7 +100,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
                       title: Text(suggestion),
-                      onTap: () {
+                      onTap: () async {
+                        await _saveSearch(suggestion);
                         Navigator.pop(context, suggestion);
                       },
                     ),

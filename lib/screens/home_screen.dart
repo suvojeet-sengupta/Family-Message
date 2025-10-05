@@ -180,115 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView(
         children: [
           if (_currentLocationWeather != null)
-            _buildCurrentLocationWeather(_currentLocationWeather!),
-          if (_savedCities.isNotEmpty)
-            _buildSavedLocations(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCurrentLocationWeather(Weather weather) {
-    return GestureDetector(
-      onTap: () async {
-        await _saveLastOpenedCity(weather.locationName);
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WeatherDetailScreen(weather: weather),
-          ),
-        );
-        await _clearLastOpenedCity();
-      },
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade800, Colors.blue.shade500],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.5),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.location_on, size: 24, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(
-                  weather.locationName,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${weather.temperature.round()}°',
-                  style: const TextStyle(
-                    fontSize: 80,
-                    fontWeight: FontWeight.w200,
-                    color: Colors.white,
-                  ),
-                ),
-                Image.network(
-                  weather.iconUrl,
-                  height: 80,
-                  width: 80,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, color: Colors.white, size: 80),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              weather.condition,
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.white70,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ).animate().fade(duration: 500.ms).slideY();
-  }
-
-  Widget _buildSavedLocations() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text(
-            'Saved Locations',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _savedCities.length,
-          itemBuilder: (context, index) {
-            final city = _savedCities[index];
+            _buildWeatherCard(_currentLocationWeather!, isCurrentLocation: true),
+          ..._savedCities.map((city) {
             final weather = _weatherData[city];
             if (weather == null) {
               return Card(
@@ -301,19 +194,19 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
             return _buildWeatherCard(weather);
-          },
-        ),
-      ],
+          }).toList(),
+        ],
+      ),
     );
   }
 
-  Widget _buildWeatherCard(Weather weather) {
+  Widget _buildWeatherCard(Weather weather, {bool isCurrentLocation = false}) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      color: Colors.white.withOpacity(0.1),
+      color: isCurrentLocation ? Colors.blue.withOpacity(0.3) : Colors.white.withOpacity(0.1),
       child: InkWell(
         onTap: () async {
           await _saveLastOpenedCity(weather.locationName);
@@ -333,12 +226,20 @@ class _HomeScreenState extends State<HomeScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    weather.locationName,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      if (isCurrentLocation)
+                        const Icon(Icons.location_on, size: 20),
+                      if (isCurrentLocation)
+                        const SizedBox(width: 8),
+                      Text(
+                        weather.locationName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
