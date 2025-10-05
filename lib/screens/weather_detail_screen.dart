@@ -85,7 +85,9 @@ class WeatherDetailScreen extends StatelessWidget {
             ),
             WeatherDetailCard(
               title: 'Sunrise & Sunset',
-              value: '${weather.dailyForecast.first.sunrise.substring(11, 16)} am / ${weather.dailyForecast.first.sunset.substring(11, 16)} pm',
+              value: (weather.dailyForecast.first.sunrise.isNotEmpty && weather.dailyForecast.first.sunset.isNotEmpty)
+                  ? '${weather.dailyForecast.first.sunrise.substring(11, 16)} am / ${weather.dailyForecast.first.sunset.substring(11, 16)} pm'
+                  : 'N/A',
               subtitle: 'Sunrise and sunset',
               icon: Icons.brightness_6,
               color: Colors.amber,
