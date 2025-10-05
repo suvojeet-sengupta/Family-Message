@@ -32,12 +32,8 @@ class AuroraWeather extends StatelessWidget {
     return MaterialApp(
       title: 'AuroraWeather',
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: Colors.white,
-          secondary: Colors.blue,
-          brightness: Brightness.dark,
-        ),
+        primaryColor: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFF1A1A1A),
       ),
       home: HomeScreen(initialWeather: initialWeather),
       debugShowCheckedModeBanner: false,

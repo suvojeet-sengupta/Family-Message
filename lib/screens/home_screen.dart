@@ -145,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Weather'),
+        title: const Text('Aurora Weather'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -157,12 +157,9 @@ class _HomeScreenState extends State<HomeScreen> {
               _loadData();
             },
           ),
-          const Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundImage: NetworkImage('https://www.gravatar.com/avatar/'),
-            ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _fetchFreshData,
           ),
         ],
       ),
@@ -179,7 +176,6 @@ class _HomeScreenState extends State<HomeScreen> {
             await _loadData();
           }
         },
-        backgroundColor: Colors.grey[800],
         child: const Icon(Icons.search),
       ),
     );
