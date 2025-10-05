@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../screens/uv_index_detail_screen.dart';
+import '../screens/feels_like_detail_screen.dart';
+import '../screens/wind_detail_screen.dart';
+import '../screens/humidity_detail_screen.dart';
 
 class WeatherInfo extends StatelessWidget {
   final Weather weather;
@@ -21,16 +25,56 @@ class WeatherInfo extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildInfoItem(Icons.thermostat, 'Feels Like', '${weather.feelsLike.round()}°'),
-                _buildInfoItem(Icons.air, 'Wind', '${weather.wind.round()} km/h'),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FeelsLikeDetailScreen(feelsLike: weather.feelsLike),
+                      ),
+                    );
+                  },
+                  child: _buildInfoItem(Icons.thermostat, 'Feels Like', '${weather.feelsLike.round()}°'),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WindDetailScreen(windSpeedKph: weather.wind),
+                      ),
+                    );
+                  },
+                  child: _buildInfoItem(Icons.air, 'Wind', '${weather.wind.round()} km/h'),
+                ),
               ],
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildInfoItem(Icons.water_drop, 'Humidity', '${weather.humidity}%'),
-                _buildInfoItem(Icons.wb_sunny, 'UV Index', '${weather.uvIndex.round()}'),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HumidityDetailScreen(humidity: weather.humidity),
+                      ),
+                    );
+                  },
+                  child: _buildInfoItem(Icons.water_drop, 'Humidity', '${weather.humidity}%'),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UvIndexDetailScreen(uvIndex: weather.uvIndex),
+                      ),
+                    );
+                  },
+                  child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${weather.uvIndex.round()}'),
+                ),
               ],
             ),
           ],
