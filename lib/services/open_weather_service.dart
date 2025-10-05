@@ -65,6 +65,7 @@ class OpenWeatherService {
       wind: weatherData['wind']['speed'].toDouble() * 3.6, // Convert m/s to km/h
       humidity: weatherData['main']['humidity'],
       uvIndex: 0.0, // Not available in free tier
+      pressure: weatherData['main']['pressure']?.toDouble(),
       hourlyForecast: _mapToHourlyForecast(forecastData['list'], isFahrenheit),
       dailyForecast: _mapToDailyForecast(forecastData['list'], isFahrenheit),
       timestamp: DateTime.now().millisecondsSinceEpoch,

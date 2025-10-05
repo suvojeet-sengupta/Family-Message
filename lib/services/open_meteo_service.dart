@@ -14,7 +14,7 @@ class OpenMeteoService {
     final tempUnit = isFahrenheit ? 'fahrenheit' : 'celsius';
 
     final response = await http.get(Uri.parse(
-                    '$baseUrl/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum,visibility,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto'));
+                    '$baseUrl/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum,visibility,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return _mapToWeatherModel(data, 'Current Location', isFahrenheit);
@@ -37,7 +37,7 @@ class OpenMeteoService {
         final locationName = geocodingData['results'][0]['name'];
 
         final response = await http.get(Uri.parse(
-            '$baseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum,visibility,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto'));
+            '$baseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum,visibility,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto'));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -66,6 +66,7 @@ class OpenMeteoService {
       wind: data['current']['wind_speed_10m'].toDouble(),
       humidity: data['current']['relative_humidity_2m'],
       uvIndex: data['daily']['uv_index_max'][0].toDouble(),
+      pressure: data['current']['pressure_msl']?.toDouble(),
       hourlyForecast: _mapToHourlyForecast(data['hourly'], isFahrenheit),
       dailyForecast: _mapToDailyForecast(data['daily'], isFahrenheit),
       timestamp: DateTime.now().millisecondsSinceEpoch,
