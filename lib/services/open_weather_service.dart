@@ -84,43 +84,61 @@ class OpenWeatherService {
   }
 
   List<DailyForecast> _mapToDailyForecast(List<dynamic> forecastList, bool isFahrenheit, Map<String, dynamic>? sys) {
-    Map<String, DailyForecast> dailyForecasts = {};
-    final today = DateTime.now();
+    Map<String, Map<String, dynamic>> dailyData = {};
 
     for (var item in forecastList) {
       final date = DateTime.fromMillisecondsSinceEpoch(item['dt'] * 1000);
-      final dateString = '${date.year}-${date.month}-${date.day}';
+      final dateString = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
-      if (!dailyForecasts.containsKey(dateString)) {
-        final humidity = item['main']['humidity'].toDouble();
-        String sunrise = '';
-        String sunset = '';
-
-        if (sys != null && date.day == today.day && date.month == today.month && date.year == today.year) {
-          sunrise = DateTime.fromMillisecondsSinceEpoch(sys['sunrise'] * 1000).toIso8601String();
-          sunset = DateTime.fromMillisecondsSinceEpoch(sys['sunset'] * 1000).toIso8601String();
-        }
-
-        dailyForecasts[dateString] = DailyForecast(
-          date: date.toIso8601String(),
-          maxTemp: isFahrenheit ? (item['main']['temp_max'] - 32) * 5 / 9 : item['main']['temp_max'].toDouble(),
-          maxTempF: isFahrenheit ? item['main']['temp_max'].toDouble() : (item['main']['temp_max'] * 9 / 5) + 32,
-          minTemp: isFahrenheit ? (item['main']['temp_min'] - 32) * 5 / 9 : item['main']['temp_min'].toDouble(),
-          minTempF: isFahrenheit ? item['main']['temp_min'].toDouble() : (item['main']['temp_min'] * 9 / 5) + 32,
-          iconUrl: 'http://openweathermap.org/img/wn/${item['weather'][0]['icon']}@2x.png',
-          condition: item['weather'][0]['description'],
-          hourlyForecast: [], // Simplified for now
-          totalPrecipMm: 0.0,
-          avgVisibilityKm: 10.0,
-          avgHumidity: humidity,
-          maxWindKph: (item['wind']['speed'] as num).toDouble() * 3.6, // Convert m/s to km/h
-          sunrise: sunrise,
-          sunset: sunset,
-          moonPhase: '',
-        );
+      if (!dailyData.containsKey(dateString)) {
+        dailyData[dateString] = {
+          'maxTemp': item['main']['temp_max'],
+          'minTemp': item['main']['temp_min'],
+          'totalPrecipMm': item['rain']?['3h'] ?? 0.0,
+          'humidity': item['main']['humidity'],
+          'windSpeed': item['wind']['speed'],
+          'description': item['weather'][0]['description'],
+          'icon': item['weather'][0]['icon'],
+        };
+      } else {
+        dailyData[dateString]!['maxTemp'] = (item['main']['temp_max'] > dailyData[dateString]!['maxTemp']) ? item['main']['temp_max'] : dailyData[dateString]!['maxTemp'];
+        dailyData[dateString]!['minTemp'] = (item['main']['temp_min'] < dailyData[dateString]!['minTemp']) ? item['main']['temp_min'] : dailyData[dateString]!['minTemp'];
+        dailyData[dateString]!['totalPrecipMm'] += item['rain']?['3h'] ?? 0.0;
       }
     }
 
-    return dailyForecasts.values.toList();
+    final today = DateTime.now();
+    List<DailyForecast> dailyForecasts = [];
+
+    dailyData.forEach((dateString, data) {
+      String sunrise = '';
+      String sunset = '';
+      final date = DateTime.parse(dateString);
+
+      if (sys != null && date.day == today.day && date.month == today.month && date.year == today.year) {
+        sunrise = DateTime.fromMillisecondsSinceEpoch(sys['sunrise'] * 1000).toIso8601String();
+        sunset = DateTime.fromMillisecondsSinceEpoch(sys['sunset'] * 1000).toIso8601String();
+      }
+
+      dailyForecasts.add(DailyForecast(
+        date: date.toIso8601String(),
+        maxTemp: isFahrenheit ? (data['maxTemp'] - 32) * 5 / 9 : data['maxTemp'].toDouble(),
+        maxTempF: isFahrenheit ? data['maxTemp'].toDouble() : (data['maxTemp'] * 9 / 5) + 32,
+        minTemp: isFahrenheit ? (data['minTemp'] - 32) * 5 / 9 : data['minTemp'].toDouble(),
+        minTempF: isFahrenheit ? data['minTemp'].toDouble() : (data['minTemp'] * 9 / 5) + 32,
+        iconUrl: 'http://openweathermap.org/img/wn/${data['icon']}@2x.png',
+        condition: data['description'],
+        hourlyForecast: [], // Simplified for now
+        totalPrecipMm: data['totalPrecipMm'].toDouble(),
+        avgVisibilityKm: 10.0, // Not available in daily summary
+        avgHumidity: data['humidity'].toDouble(),
+        maxWindKph: (data['windSpeed'] as num).toDouble() * 3.6, // Convert m/s to km/h
+        sunrise: sunrise,
+        sunset: sunset,
+        moonPhase: '', // Not available
+      ));
+    });
+
+    return dailyForecasts;
   }
 }
