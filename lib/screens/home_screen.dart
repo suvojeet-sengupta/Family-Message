@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _savedCities = [];
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
-  bool _isLoading = true;
+  bool _isInitialLoading = true;
   String _loadingMessage = 'Initializing...';
 
   @override
@@ -38,16 +38,20 @@ class _HomeScreenState extends State<HomeScreen> {
         ).then((_) => _clearLastOpenedCity());
       });
     }
-    _loadAndRefreshData();
+    _loadData();
   }
 
-  Future<void> _loadAndRefreshData() async {
+  Future<void> _loadData() async {
+    await _loadCachedData();
+    await _fetchFreshData();
+  }
+
+  Future<void> _loadCachedData() async {
     setState(() {
-      _isLoading = true;
+      _isInitialLoading = true;
       _loadingMessage = 'Loading saved locations...';
     });
 
-    // --- Step 1: Load all available data from cache ---
     final prefs = await SharedPreferences.getInstance();
     _savedCities = prefs.getStringList('recentSearches') ?? [];
 
@@ -76,10 +80,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _isLoading = false; // Show cached data
+      _isInitialLoading = false;
     });
+  }
 
-    // --- Step 2: Fetch fresh data from network ---
+  Future<void> _fetchFreshData() async {
+    // Fetch current location weather
     try {
       setState(() {
         _loadingMessage = 'Requesting location permission...';
@@ -95,22 +101,28 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       print('Error fetching fresh current weather: $e');
-      setState(() {
-        _loadingMessage = 'Could not fetch current location.';
-      });
+      if (mounted) {
+        setState(() {
+          _loadingMessage = 'Could not fetch current location.';
+        });
+      }
     }
 
+    // Fetch weather for saved cities
     for (var city in _savedCities) {
       try {
         final freshWeather = await _weatherService.fetchWeatherByCity(city);
-        setState(() {
-          _weatherData[city] = freshWeather;
-        });
+        if(mounted) {
+          setState(() {
+            _weatherData[city] = freshWeather;
+          });
+        }
       } catch (e) {
         print('Error fetching fresh weather for $city: $e');
       }
     }
   }
+
 
   Future<void> _saveLastOpenedCity(String city) async {
     final prefs = await SharedPreferences.getInstance();
@@ -127,8 +139,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aurora Weather'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _fetchFreshData,
+          ),
+        ],
       ),
-      body: _isLoading
+      body: _isInitialLoading
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -147,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (context) => const SearchScreen()),
           );
           if (newCity != null && newCity.isNotEmpty) {
-            await _loadAndRefreshData();
+            await _loadData();
           }
         },
         child: const Icon(Icons.search),
@@ -165,25 +183,28 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return ListView(
-      children: [
-        if (_currentLocationWeather != null)
-          _buildWeatherCard(_currentLocationWeather!, isCurrentLocation: true),
-        ..._savedCities.map((city) {
-          final weather = _weatherData[city];
-          if (weather == null) {
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.red.withOpacity(0.5),
-              child: ListTile(
-                title: Text(city),
-                subtitle: const Text('Could not load weather data.'),
-              ),
-            );
-          }
-          return _buildWeatherCard(weather);
-        }).toList(),
-      ],
+    return RefreshIndicator(
+      onRefresh: _fetchFreshData,
+      child: ListView(
+        children: [
+          if (_currentLocationWeather != null)
+            _buildWeatherCard(_currentLocationWeather!, isCurrentLocation: true),
+          ..._savedCities.map((city) {
+            final weather = _weatherData[city];
+            if (weather == null) {
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.red.withOpacity(0.5),
+                child: ListTile(
+                  title: Text(city),
+                  subtitle: const Text('Could not load weather data.'),
+                ),
+              );
+            }
+            return _buildWeatherCard(weather);
+          }).toList(),
+        ],
+      ),
     );
   }
 
@@ -252,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     weather.iconUrl,
                     height: 40,
                     width: 40,
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
                   ),
                 ],
               ),
