@@ -6,6 +6,7 @@ import 'search_screen.dart';
 import 'weather_detail_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/database_helper.dart';
+import '../widgets/shimmer_loading.dart';
 
 class HomeScreen extends StatefulWidget {
   final Weather? initialWeather;
@@ -147,16 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: _isInitialLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(_loadingMessage).animate(key: ValueKey(_loadingMessage)).fadeIn(duration: 300.ms),
-                ],
-              ),
-            )
+          ? const ShimmerLoading()
           : _buildWeatherList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

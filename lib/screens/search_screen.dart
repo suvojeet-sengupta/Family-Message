@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../services/weather_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -11,31 +13,40 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _cityController = TextEditingController();
-  List<String> _recentSearches = [];
+  final WeatherService _weatherService = WeatherService();
+  List<String> _suggestions = [];
+  Timer? _debounce;
+  bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadRecentSearches();
+  void dispose() {
+    _debounce?.cancel();
+    _cityController.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadRecentSearches() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _recentSearches = prefs.getStringList('recentSearches') ?? [];
-    });
-  }
-
-  Future<void> _saveSearch(String city) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!_recentSearches.contains(city)) {
-      _recentSearches.insert(0, city);
-      if (_recentSearches.length > 5) {
-        _recentSearches.removeLast();
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      if (query.isNotEmpty) {
+        setState(() {
+          _isLoading = true;
+        });
+        try {
+          final suggestions = await _weatherService.searchCities(query);
+          setState(() {
+            _suggestions = suggestions;
+          });
+        } catch (e) {
+          // Handle error, maybe show a snackbar
+          print('Error searching cities: $e');
+        } finally {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
-      await prefs.setStringList('recentSearches', _recentSearches);
-      setState(() {});
-    }
+    });
   }
 
   @override
@@ -50,6 +61,7 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             TextField(
               controller: _cityController,
+              autofocus: true,
               decoration: InputDecoration(
                 labelText: 'Enter city name',
                 border: OutlineInputBorder(
@@ -57,64 +69,35 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.1),
+                suffixIcon: _isLoading ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ) : null,
               ),
-              onSubmitted: (value) {
-                _handleSearch();
-              },
+              onChanged: _onSearchChanged,
             ).animate().fade(duration: 300.ms).slideX(),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _handleSearch,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Search'),
-            ).animate().fade(duration: 300.ms).slideX(delay: 100.ms),
-            const SizedBox(height: 32),
-            if (_recentSearches.isNotEmpty)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Recent Searches',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _suggestions.length,
+                itemBuilder: (context, index) {
+                  final suggestion = _suggestions[index];
+                  return Card(
+                    color: Colors.white.withOpacity(0.1),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: ListTile(
+                      title: Text(suggestion),
+                      onTap: () {
+                        Navigator.pop(context, suggestion);
+                      },
                     ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: _recentSearches.length,
-                        itemBuilder: (context, index) {
-                          final city = _recentSearches[index];
-                          return Card(
-                            color: Colors.white.withOpacity(0.1),
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            child: ListTile(
-                              title: Text(city),
-                              onTap: () {
-                                Navigator.pop(context, city);
-                              },
-                            ),
-                          ).animate().fade(duration: 300.ms).slideY(delay: (100 * index).ms);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ).animate().fade(duration: 300.ms).slideY(delay: (100 * index).ms);
+                },
               ),
+            ),
           ],
         ),
       ),
     );
-  }
-
-  void _handleSearch() {
-    if (_cityController.text.isNotEmpty) {
-      _saveSearch(_cityController.text);
-      Navigator.pop(context, _cityController.text);
-    }
   }
 }

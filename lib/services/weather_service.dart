@@ -79,4 +79,24 @@ class WeatherService {
       throw Exception('Failed to load weather data for $city');
     }
   }
+
+  Future<List<String>> searchCities(String query) async {
+    if (apiKey.isEmpty) {
+      throw Exception('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
+    }
+
+    if (query.isEmpty) {
+      return [];
+    }
+
+    final response = await http.get(Uri.parse(
+        '$baseUrl/search.json?key=$apiKey&q=$query'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => e['name'] as String).toList();
+    } else {
+      throw Exception('Failed to search for cities');
+    }
+  }
 }
