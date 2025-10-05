@@ -87,10 +87,10 @@ class WeatherDetailScreen extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PressureDetailScreen(pressure: weather.dailyForecast.first.pressureIn))),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PressureDetailScreen(pressure: weather.pressure?.toDouble() ?? 0.0))),
               child: WeatherDetailCard(
                 title: 'Pressure',
-                value: '${weather.dailyForecast.first.pressureIn} hPa',
+                value: '${weather.pressure?.round() ?? 'N/A'} hPa',
                 subtitle: 'hPa',
                 icon: Icons.compress,
                 color: Colors.red,
@@ -111,7 +111,7 @@ class WeatherDetailScreen extends StatelessWidget {
               child: WeatherDetailCard(
                 title: 'Humidity',
                 value: '${weather.humidity}%',
-                subtitle: 'Dew point ${weather.dailyForecast.first.dewPointC}°',
+                subtitle: 'Current humidity',
                 icon: Icons.water,
                 color: Colors.teal,
               ),
