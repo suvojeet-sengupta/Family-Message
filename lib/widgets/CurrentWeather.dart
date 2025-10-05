@@ -17,7 +17,7 @@ class CurrentWeather extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               weather.locationName,
@@ -26,27 +26,35 @@ class CurrentWeather extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            Image.network(
-              weather.iconUrl,
-              height: 80,
-              width: 80,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${weather.temperature.round()}°',
-              style: const TextStyle(
-                fontSize: 96,
-                fontWeight: FontWeight.w200,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              weather.condition,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
-              ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${weather.temperature.round()}°',
+                      style: const TextStyle(
+                        fontSize: 80, // Slightly smaller
+                        fontWeight: FontWeight.w200,
+                      ),
+                    ),
+                    Text(
+                      weather.condition,
+                      style: const TextStyle(
+                        fontSize: 20, // Slightly smaller
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Image.network(
+                  weather.iconUrl,
+                  height: 100, // Slightly larger icon
+                  width: 100,
+                ),
+              ],
             ),
           ],
         ),

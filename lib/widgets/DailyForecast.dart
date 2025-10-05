@@ -11,6 +11,8 @@ class DailyForecastWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fiveDayForecast = dailyForecast.take(5).toList();
+
     return Card(
       color: Colors.black.withOpacity(0.2),
       shape: RoundedRectangleBorder(
@@ -22,7 +24,7 @@ class DailyForecastWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '10-DAY FORECAST',
+              '5-DAY FORECAST',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
@@ -33,9 +35,9 @@ class DailyForecastWidget extends StatelessWidget {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: dailyForecast.length,
+              itemCount: fiveDayForecast.length,
               itemBuilder: (context, index) {
-                final forecast = dailyForecast[index];
+                final forecast = fiveDayForecast[index];
                 return _buildForecastItem(context, forecast);
               },
             ),
