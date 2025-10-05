@@ -116,8 +116,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
           },
         ),
       ),
-      body: Center(
-        child: _buildWeatherContent(),
+      body: RefreshIndicator(
+        onRefresh: () => _fetchWeather(),
+        child: Center(
+          child: _buildWeatherContent(),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
