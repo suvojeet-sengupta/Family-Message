@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  Text(_loadingMessage),
+                  Text(_loadingMessage).animate(key: ValueKey(_loadingMessage)).fadeIn(duration: 300.ms),
                 ],
               ),
             )
