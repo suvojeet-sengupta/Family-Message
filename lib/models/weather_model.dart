@@ -132,12 +132,14 @@ class DailyForecast {
   final double maxTemp;
   final double minTemp;
   final String iconUrl;
+  final List<HourlyForecast> hourlyForecast;
 
   DailyForecast({
     required this.date,
     required this.maxTemp,
     required this.minTemp,
     required this.iconUrl,
+    required this.hourlyForecast,
   });
 
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
@@ -146,6 +148,9 @@ class DailyForecast {
       maxTemp: json['day']['maxtemp_c'],
       minTemp: json['day']['mintemp_c'],
       iconUrl: 'https:${json['day']['condition']['icon']}',
+      hourlyForecast: (json['hour'] as List)
+          .map((hour) => HourlyForecast.fromJson(hour))
+          .toList(),
     );
   }
 
@@ -155,6 +160,8 @@ class DailyForecast {
       'maxTemp': maxTemp,
       'minTemp': minTemp,
       'iconUrl': iconUrl,
+      'hourlyForecast':
+          jsonEncode(hourlyForecast.map((e) => e.toDatabaseMap()).toList()),
     };
   }
 
@@ -164,6 +171,9 @@ class DailyForecast {
       maxTemp: map['maxTemp'],
       minTemp: map['minTemp'],
       iconUrl: map['iconUrl'],
+      hourlyForecast: (jsonDecode(map['hourlyForecast']) as List)
+          .map((e) => HourlyForecast.fromDatabaseMap(e))
+          .toList(),
     );
   }
 }

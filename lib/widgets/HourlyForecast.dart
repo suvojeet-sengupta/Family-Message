@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/weather_model.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class HourlyForecastWidget extends StatelessWidget {
   final List<HourlyForecast> hourlyForecast;
@@ -39,14 +40,14 @@ class HourlyForecastWidget extends StatelessWidget {
                     time: DateFormat.j().format(DateTime.parse(forecast.time)),
                     iconUrl: forecast.iconUrl,
                     temperature: '${forecast.temperature.round()}°',
-                  );
+                  ).animate().fade(duration: 500.ms, delay: (100 * index).ms).slideX();
                 },
               ),
             ),
           ],
         ),
       ),
-    );
+    ).animate().fade(duration: 500.ms).slideY(begin: 0.5);
   }
 
   Widget _buildForecastItem({required String time, required String iconUrl, required String temperature}) {

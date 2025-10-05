@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/weather_model.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class WeatherInfo extends StatelessWidget {
   final Weather weather;
@@ -35,7 +36,7 @@ class WeatherInfo extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ).animate().fade(duration: 500.ms).slideY(begin: 0.5);
   }
 
   Widget _buildInfoItem(IconData icon, String label, String value) {
