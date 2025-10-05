@@ -3,11 +3,31 @@ import '../models/weather_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../screens/hourly_forecast_detail_screen.dart';
+import '../services/settings_service.dart';
 
-class HourlyForecastWidget extends StatelessWidget {
+class HourlyForecastWidget extends StatefulWidget {
   final List<HourlyForecast> hourlyForecast;
 
   const HourlyForecastWidget({super.key, required this.hourlyForecast});
+
+  @override
+  State<HourlyForecastWidget> createState() => _HourlyForecastWidgetState();
+}
+
+class _HourlyForecastWidgetState extends State<HourlyForecastWidget> {
+  final SettingsService _settingsService = SettingsService();
+  bool _isFahrenheit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    _isFahrenheit = await _settingsService.isFahrenheit();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +36,7 @@ class HourlyForecastWidget extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => HourlyForecastDetailScreen(hourlyForecast: hourlyForecast),
+            builder: (context) => HourlyForecastDetailScreen(hourlyForecast: widget.hourlyForecast, isFahrenheit: _isFahrenheit),
           ),
         );
       },
@@ -43,13 +63,15 @@ class HourlyForecastWidget extends StatelessWidget {
                 height: 120,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: hourlyForecast.length,
+                  itemCount: widget.hourlyForecast.length,
                   itemBuilder: (context, index) {
-                    final forecast = hourlyForecast[index];
+                    final forecast = widget.hourlyForecast[index];
                     return _buildForecastItem(
                       time: DateFormat.j().format(DateTime.parse(forecast.time)),
                       iconUrl: forecast.iconUrl,
-                      temperature: '${forecast.temperature.round()}°',
+                      temperature: _isFahrenheit
+                          ? '${forecast.temperatureF.round()}°F'
+                          : '${forecast.temperature.round()}°C',
                     ).animate().fade(duration: 300.ms);
                   },
                 ),

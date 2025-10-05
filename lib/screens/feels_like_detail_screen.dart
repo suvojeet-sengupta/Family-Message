@@ -3,8 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 class FeelsLikeDetailScreen extends StatelessWidget {
   final double feelsLike;
+  final bool isFahrenheit;
 
-  const FeelsLikeDetailScreen({super.key, required this.feelsLike});
+  const FeelsLikeDetailScreen({super.key, required this.feelsLike, required this.isFahrenheit});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class FeelsLikeDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${feelsLike.round()}°',
+            isFahrenheit ? '${feelsLike.round()}°F' : '${feelsLike.round()}°C',
             style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w200),
           ),
         ],
@@ -81,11 +82,12 @@ class FeelsLikeDetailScreen extends StatelessWidget {
   }
 
   String _getFeelsLikeAdvice(double temp) {
-    if (temp > 30) {
+    final tempC = isFahrenheit ? (temp - 32) * 5 / 9 : temp;
+    if (tempC > 30) {
       return 'It feels very hot. Stay hydrated, seek shade, and avoid strenuous activity during the hottest parts of the day.';
-    } else if (temp > 20) {
+    } else if (tempC > 20) {
       return 'It feels warm and pleasant. Enjoy the weather, but remember to stay hydrated.';
-    } else if (temp > 10) {
+    } else if (tempC > 10) {
       return 'It feels cool. A light jacket or sweater is recommended.';
     } else {
       return 'It feels cold. Dress in warm layers, and be mindful of wind chill.';

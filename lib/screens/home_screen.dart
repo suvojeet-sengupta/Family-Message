@@ -7,6 +7,8 @@ import 'weather_detail_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/database_helper.dart';
 import '../widgets/shimmer_loading.dart';
+import 'settings_screen.dart';
+import '../services/settings_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final Weather? initialWeather;
@@ -20,11 +22,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final WeatherService _weatherService = WeatherService();
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  final SettingsService _settingsService = SettingsService();
   List<String> _savedCities = [];
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
   bool _isInitialLoading = true;
   String _loadingMessage = 'Initializing...';
+  bool _isFahrenheit = false;
 
   @override
   void initState() {
@@ -43,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadData() async {
+    _isFahrenheit = await _settingsService.isFahrenheit();
     await _loadCachedData();
     await _fetchFreshData();
   }
@@ -141,6 +146,16 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Aurora Weather'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+              _loadData();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _fetchFreshData,
@@ -256,7 +271,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: [
                   Text(
-                    '${weather.temperature.round()}°',
+                    _isFahrenheit
+                        ? '${weather.temperatureF.round()}°F'
+                        : '${weather.temperature.round()}°C',
                     style: const TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.w200,

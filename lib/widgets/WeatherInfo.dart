@@ -5,11 +5,31 @@ import '../screens/uv_index_detail_screen.dart';
 import '../screens/feels_like_detail_screen.dart';
 import '../screens/wind_detail_screen.dart';
 import '../screens/humidity_detail_screen.dart';
+import '../services/settings_service.dart';
 
-class WeatherInfo extends StatelessWidget {
+class WeatherInfo extends StatefulWidget {
   final Weather weather;
 
   const WeatherInfo({super.key, required this.weather});
+
+  @override
+  State<WeatherInfo> createState() => _WeatherInfoState();
+}
+
+class _WeatherInfoState extends State<WeatherInfo> {
+  final SettingsService _settingsService = SettingsService();
+  bool _isFahrenheit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    _isFahrenheit = await _settingsService.isFahrenheit();
+    setState(() {});
+  }
 
   Route _createFadeRoute(Widget page) {
     return PageRouteBuilder(
@@ -41,19 +61,19 @@ class WeatherInfo extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(FeelsLikeDetailScreen(feelsLike: weather.feelsLike)),
+                      _createFadeRoute(FeelsLikeDetailScreen(feelsLike: _isFahrenheit ? widget.weather.feelsLikeF : widget.weather.feelsLike, isFahrenheit: _isFahrenheit)),
                     );
                   },
-                  child: _buildInfoItem(Icons.thermostat, 'Feels Like', '${weather.feelsLike.round()}°'),
+                  child: _buildInfoItem(Icons.thermostat, 'Feels Like', _isFahrenheit ? '${widget.weather.feelsLikeF.round()}°F' : '${widget.weather.feelsLike.round()}°C'),
                 ),
                 InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(WindDetailScreen(windSpeedKph: weather.wind)),
+                      _createFadeRoute(WindDetailScreen(windSpeedKph: widget.weather.wind)),
                     );
                   },
-                  child: _buildInfoItem(Icons.air, 'Wind', '${weather.wind.round()} km/h'),
+                  child: _buildInfoItem(Icons.air, 'Wind', '${widget.weather.wind.round()} km/h'),
                 ),
               ],
             ),
@@ -65,19 +85,19 @@ class WeatherInfo extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(HumidityDetailScreen(humidity: weather.humidity)),
+                      _createFadeRoute(HumidityDetailScreen(humidity: widget.weather.humidity)),
                     );
                   },
-                  child: _buildInfoItem(Icons.water_drop, 'Humidity', '${weather.humidity}%'),
+                  child: _buildInfoItem(Icons.water_drop, 'Humidity', '${widget.weather.humidity}%'),
                 ),
                 InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(UvIndexDetailScreen(uvIndex: weather.uvIndex)),
+                      _createFadeRoute(UvIndexDetailScreen(uvIndex: widget.weather.uvIndex)),
                     );
                   },
-                  child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${weather.uvIndex.round()}'),
+                  child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${widget.weather.uvIndex.round()}'),
                 ),
               ],
             ),

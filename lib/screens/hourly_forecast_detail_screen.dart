@@ -5,8 +5,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 class HourlyForecastDetailScreen extends StatelessWidget {
   final List<HourlyForecast> hourlyForecast;
+  final bool isFahrenheit;
 
-  const HourlyForecastDetailScreen({super.key, required this.hourlyForecast});
+  const HourlyForecastDetailScreen({super.key, required this.hourlyForecast, required this.isFahrenheit});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,9 @@ class HourlyForecastDetailScreen extends StatelessWidget {
                     width: 40,
                   ),
                   Text(
-                    '${forecast.temperature.round()}°',
+                    isFahrenheit
+                        ? '${forecast.temperatureF.round()}°F'
+                        : '${forecast.temperature.round()}°C',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],

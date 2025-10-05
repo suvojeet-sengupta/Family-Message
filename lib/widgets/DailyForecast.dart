@@ -3,15 +3,35 @@ import '../models/weather_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../screens/daily_detail_screen.dart';
+import '../services/settings_service.dart';
 
-class DailyForecastWidget extends StatelessWidget {
+class DailyForecastWidget extends StatefulWidget {
   final List<DailyForecast> dailyForecast;
 
   const DailyForecastWidget({super.key, required this.dailyForecast});
 
   @override
+  State<DailyForecastWidget> createState() => _DailyForecastWidgetState();
+}
+
+class _DailyForecastWidgetState extends State<DailyForecastWidget> {
+  final SettingsService _settingsService = SettingsService();
+  bool _isFahrenheit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    _isFahrenheit = await _settingsService.isFahrenheit();
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final fiveDayForecast = dailyForecast.take(5).toList();
+    final fiveDayForecast = widget.dailyForecast.take(5).toList();
 
     return Card(
       color: Colors.black.withOpacity(0.2),
@@ -59,7 +79,7 @@ class DailyForecastWidget extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DailyDetailScreen(dailyForecast: forecast),
+              builder: (context) => DailyDetailScreen(dailyForecast: forecast, isFahrenheit: _isFahrenheit),
             ),
           );
         },
@@ -86,7 +106,7 @@ class DailyForecastWidget extends StatelessWidget {
               SizedBox(
                 width: 50,
                 child: Text(
-                  '${forecast.maxTemp.round()}°',
+                  _isFahrenheit ? '${forecast.maxTempF.round()}°F' : '${forecast.maxTemp.round()}°C',
                   textAlign: TextAlign.right,
                   style: const TextStyle(
                     color: Colors.white,
@@ -98,7 +118,7 @@ class DailyForecastWidget extends StatelessWidget {
               SizedBox(
                 width: 50,
                 child: Text(
-                  '${forecast.minTemp.round()}°',
+                  _isFahrenheit ? '${forecast.minTempF.round()}°F' : '${forecast.minTemp.round()}°C',
                   textAlign: TextAlign.right,
                   style: const TextStyle(
                     color: Colors.white70,

@@ -26,10 +26,12 @@ class DatabaseHelper {
           CREATE TABLE weather(
             locationName TEXT PRIMARY KEY,
             temperature REAL,
+            temperatureF REAL,
             condition TEXT,
             conditionCode INTEGER,
             iconUrl TEXT,
             feelsLike REAL,
+            feelsLikeF REAL,
             wind REAL,
             humidity INTEGER,
             uvIndex REAL,
@@ -60,16 +62,7 @@ class DatabaseHelper {
     );
 
     if (maps.isNotEmpty) {
-      final cachedWeather = Weather.fromDatabaseMap(maps.first);
-      // Check if data is fresh (e.g., less than 15 minutes old)
-      final fifteenMinutesAgo = DateTime.now().subtract(const Duration(minutes: 15)).millisecondsSinceEpoch;
-      if (cachedWeather.timestamp > fifteenMinutesAgo) {
-        return cachedWeather;
-      } else {
-        // Data is old, delete it
-        await deleteWeather(locationName);
-        return null;
-      }
+      return Weather.fromDatabaseMap(maps.first);
     }
     return null;
   }
