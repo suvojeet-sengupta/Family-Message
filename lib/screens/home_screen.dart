@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/weather_service.dart';
-import '../models/weather_model.dart';
-import 'search_screen.dart';
-import 'weather_detail_screen.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import '../services/database_helper.dart';
-import '../widgets/shimmer_loading.dart';
-import 'settings_screen.dart';
-import '../services/settings_service.dart';
+import '../widgets/weather_card.dart';
 
 class HomeScreen extends StatefulWidget {
   final Weather? initialWeather;
@@ -144,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Aurora Weather'),
+        title: const Text('Weather'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -156,9 +148,12 @@ class _HomeScreenState extends State<HomeScreen> {
               _loadData();
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _fetchFreshData,
+          const Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundImage: NetworkImage('https://www.gravatar.com/avatar/'),
+            ),
           ),
         ],
       ),
@@ -175,6 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
             await _loadData();
           }
         },
+        backgroundColor: Colors.grey[800],
         child: const Icon(Icons.search),
       ),
     );
@@ -193,14 +189,43 @@ class _HomeScreenState extends State<HomeScreen> {
     return RefreshIndicator(
       onRefresh: _fetchFreshData,
       child: ListView(
+        padding: const EdgeInsets.all(16.0),
         children: [
+          const Row(
+            children: [
+              Icon(Icons.location_on_outlined),
+              SizedBox(width: 8),
+              Text('Current location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 16),
           if (_currentLocationWeather != null)
-            _buildWeatherCard(_currentLocationWeather!, isCurrentLocation: true),
+            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: _isFahrenheit),
+          if (_currentLocationWeather == null)
+            ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[800],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Text('Update location permissions'),
+            ),
+          const SizedBox(height: 24),
+          const Row(
+            children: [
+              Icon(Icons.bookmark_border),
+              SizedBox(width: 8),
+              Text('Saved locations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 16),
           ..._savedCities.map((city) {
             final weather = _weatherData[city];
             if (weather == null) {
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(vertical: 8),
                 color: Colors.red.withOpacity(0.5),
                 child: ListTile(
                   title: Text(city),
@@ -208,90 +233,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             }
-            return _buildWeatherCard(weather);
+            return WeatherCard(weather: weather, isFahrenheit: _isFahrenheit);
           }).toList(),
         ],
       ),
     );
-  }
-
-  Widget _buildWeatherCard(Weather weather, {bool isCurrentLocation = false}) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      color: isCurrentLocation ? Colors.blue.withOpacity(0.3) : Colors.white.withOpacity(0.1),
-      child: InkWell(
-        onTap: () async {
-          await _saveLastOpenedCity(weather.locationName);
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WeatherDetailScreen(weather: weather),
-            ),
-          );
-          await _clearLastOpenedCity();
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (isCurrentLocation)
-                          const Icon(Icons.location_on, size: 20),
-                        if (isCurrentLocation)
-                          const SizedBox(width: 8),
-                        Text(
-                          weather.locationName,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      weather.condition,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    _isFahrenheit
-                        ? '${weather.temperatureF.round()}°F'
-                        : '${weather.temperature.round()}°C',
-                    style: const TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w200,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Image.network(
-                    weather.iconUrl,
-                    height: 40,
-                    width: 40,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    ).animate().fade(duration: 300.ms).slideY();
   }
 }
