@@ -51,33 +51,42 @@ class HourlyForecastWidget extends StatelessWidget {
   }
 
   Widget _buildForecastItem({required String time, required String iconUrl, required String temperature}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        children: [
-          Text(
-            time,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
+    return Container(
+      width: 80,
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              time,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Image.network(
-            iconUrl,
-            height: 40,
-            width: 40,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            temperature,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 8),
+            Image.network(
+              iconUrl,
+              height: 40,
+              width: 40,
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              temperature,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
