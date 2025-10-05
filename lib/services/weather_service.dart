@@ -5,12 +5,15 @@ import 'package:geocoding/geocoding.dart';
 import '../models/weather_model.dart';
 import 'database_helper.dart';
 import 'open_meteo_service.dart';
+import 'open_weather_service.dart';
 
 class WeatherService {
-  final String apiKey = const String.fromEnvironment('WEATHER_API_KEY');
+  final String weatherApiKey = const String.fromEnvironment('WEATHER_API_KEY');
+  final String openWeatherApiKey = const String.fromEnvironment('OPEN_WEATHER_API');
   final String baseUrl = 'http://api.weatherapi.com/v1';
   final DatabaseHelper _dbHelper = DatabaseHelper();
   final OpenMeteoService _openMeteoService = OpenMeteoService();
+  final OpenWeatherService _openWeatherService = OpenWeatherService();
 
   Future<Position> getCurrentPosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -31,11 +34,6 @@ class WeatherService {
   }
 
   Future<Weather> fetchWeather() async {
-    if (apiKey.isEmpty) {
-      print('WEATHER_API_KEY is not set. Using Open-Meteo as fallback.');
-      final position = await getCurrentPosition();
-      return await _openMeteoService.fetchWeatherByPosition(position);
-    }
     final position = await getCurrentPosition();
     return await fetchWeatherByPosition(position);
   }
@@ -43,15 +41,14 @@ class WeatherService {
   Future<Weather> fetchWeatherByPosition(Position position) async {
     try {
       print('Attempting to fetch weather from WeatherAPI.com');
+      if (weatherApiKey.isEmpty) throw Exception('WeatherAPI key not set');
       final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
       final locationName = placemarks.first.locality ?? placemarks.first.name ?? 'Unknown';
       Weather? cachedWeather = await _dbHelper.getWeather(locationName);
-      if (cachedWeather != null) {
-        return cachedWeather;
-      }
+      if (cachedWeather != null) return cachedWeather;
 
       final response = await http.get(Uri.parse(
-          '$baseUrl/forecast.json?key=$apiKey&q=${position.latitude},${position.longitude}&days=10'));
+          '$baseUrl/forecast.json?key=$weatherApiKey&q=${position.latitude},${position.longitude}&days=10'));
 
       if (response.statusCode == 200) {
         final weather = Weather.fromJson(jsonDecode(response.body));
@@ -61,25 +58,26 @@ class WeatherService {
         throw Exception('Failed to load weather data from WeatherAPI.com');
       }
     } catch (e) {
-      print('Failed to fetch from WeatherAPI.com: $e. Using Open-Meteo as fallback.');
-      return await _openMeteoService.fetchWeatherByPosition(position);
+      print('Failed to fetch from WeatherAPI.com: $e. Trying OpenWeatherMap.');
+      try {
+        return await _openWeatherService.fetchWeatherByPosition(position);
+      } catch (e2) {
+        print('Failed to fetch from OpenWeatherMap: $e2. Using Open-Meteo as last resort.');
+        return await _openMeteoService.fetchWeatherByPosition(position);
+      }
     }
   }
 
   Future<Weather> fetchWeatherByCity(String city) async {
     try {
       print('Attempting to fetch weather for $city from WeatherAPI.com');
-      if (apiKey.isEmpty) {
-        throw Exception('WEATHER_API_KEY is not set.');
-      }
+      if (weatherApiKey.isEmpty) throw Exception('WeatherAPI key not set');
 
       Weather? cachedWeather = await _dbHelper.getWeather(city);
-      if (cachedWeather != null) {
-        return cachedWeather;
-      }
+      if (cachedWeather != null) return cachedWeather;
 
       final response = await http.get(Uri.parse(
-          '$baseUrl/forecast.json?key=$apiKey&q=$city&days=10'));
+          '$baseUrl/forecast.json?key=$weatherApiKey&q=$city&days=10'));
 
       if (response.statusCode == 200) {
         final weather = Weather.fromJson(jsonDecode(response.body));
@@ -89,13 +87,18 @@ class WeatherService {
         throw Exception('Failed to load weather data for $city from WeatherAPI.com');
       }
     } catch (e) {
-      print('Failed to fetch from WeatherAPI.com: $e. Using Open-Meteo as fallback.');
-      return await _openMeteoService.fetchWeatherByCity(city);
+      print('Failed to fetch from WeatherAPI.com: $e. Trying OpenWeatherMap.');
+      try {
+        return await _openWeatherService.fetchWeatherByCity(city);
+      } catch (e2) {
+        print('Failed to fetch from OpenWeatherMap: $e2. Using Open-Meteo as last resort.');
+        return await _openMeteoService.fetchWeatherByCity(city);
+      }
     }
   }
 
   Future<List<String>> searchCities(String query) async {
-    if (apiKey.isEmpty) {
+    if (weatherApiKey.isEmpty) {
       throw Exception('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
     }
 
@@ -104,7 +107,7 @@ class WeatherService {
     }
 
     final response = await http.get(Uri.parse(
-        '$baseUrl/search.json?key=$apiKey&q=$query'));
+        '$baseUrl/search.json?key=$weatherApiKey&q=$query'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);

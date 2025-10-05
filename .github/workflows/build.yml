@@ -56,7 +56,7 @@ jobs:
         run: flutter pub get
 
       - name: 💪 Build Release APK
-        run: flutter build apk --release --dart-define=WEATHER_API_KEY=${{ secrets.WEATHER_API_1 }}
+        run: flutter build apk --release --dart-define=WEATHER_API_KEY=${{ secrets.WEATHER_API_1 }} --dart-define=OPEN_WEATHER_API=${{ secrets.OPEN_WEATHER_API }}
         working-directory: ./
 
       - name: 📦 Prepare Release Artifacts
