@@ -62,8 +62,17 @@ class DatabaseHelper {
     );
 
     if (maps.isNotEmpty) {
-      return Weather.fromDatabaseMap(maps.first);
+      final weatherData = maps.first;
+      final timestamp = weatherData['timestamp'] as int;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final oneHourInMillis = 60 * 60 * 1000; // 1 hour
+
+      if ((now - timestamp) < oneHourInMillis) {
+        // Data is fresh, return it
+        return Weather.fromDatabaseMap(weatherData);
+      }
     }
+    // Data is stale or doesn't exist, return null to trigger a network fetch
     return null;
   }
 
