@@ -52,7 +52,7 @@ class WeatherCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${weather.maxTemperature.round()}° ${weather.minTemperature.round()}°',
+                      '${weather.dailyForecast.first.maxTemp.round()}° ${weather.dailyForecast.first.minTemp.round()}°',
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.white70,

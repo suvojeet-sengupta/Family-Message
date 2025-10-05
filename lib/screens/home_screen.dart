@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:AuroraWeather/models/weather_model.dart';
+import 'package:AuroraWeather/services/weather_service.dart';
+import 'package:AuroraWeather/services/database_helper.dart';
+import 'package:AuroraWeather/services/settings_service.dart';
+import 'package:AuroraWeather/screens/weather_detail_screen.dart';
+import 'package:AuroraWeather/screens/settings_screen.dart';
+import 'package:AuroraWeather/widgets/shimmer_loading.dart';
+import 'package:AuroraWeather/screens/search_screen.dart';
 import '../widgets/weather_card.dart';
 
 class HomeScreen extends StatefulWidget {
