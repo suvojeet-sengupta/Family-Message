@@ -11,6 +11,18 @@ class WeatherInfo extends StatelessWidget {
 
   const WeatherInfo({super.key, required this.weather});
 
+  Route _createFadeRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -29,9 +41,7 @@ class WeatherInfo extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => FeelsLikeDetailScreen(feelsLike: weather.feelsLike),
-                      ),
+                      _createFadeRoute(FeelsLikeDetailScreen(feelsLike: weather.feelsLike)),
                     );
                   },
                   child: _buildInfoItem(Icons.thermostat, 'Feels Like', '${weather.feelsLike.round()}°'),
@@ -40,9 +50,7 @@ class WeatherInfo extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => WindDetailScreen(windSpeedKph: weather.wind),
-                      ),
+                      _createFadeRoute(WindDetailScreen(windSpeedKph: weather.wind)),
                     );
                   },
                   child: _buildInfoItem(Icons.air, 'Wind', '${weather.wind.round()} km/h'),
@@ -57,9 +65,7 @@ class WeatherInfo extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => HumidityDetailScreen(humidity: weather.humidity),
-                      ),
+                      _createFadeRoute(HumidityDetailScreen(humidity: weather.humidity)),
                     );
                   },
                   child: _buildInfoItem(Icons.water_drop, 'Humidity', '${weather.humidity}%'),
@@ -68,9 +74,7 @@ class WeatherInfo extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => UvIndexDetailScreen(uvIndex: weather.uvIndex),
-                      ),
+                      _createFadeRoute(UvIndexDetailScreen(uvIndex: weather.uvIndex)),
                     );
                   },
                   child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${weather.uvIndex.round()}'),
