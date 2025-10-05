@@ -41,7 +41,7 @@ class DailyDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ).animate().fade(duration: 500.ms).slideX();
+          ).animate().fade(duration: 300.ms);
         },
       ),
     );

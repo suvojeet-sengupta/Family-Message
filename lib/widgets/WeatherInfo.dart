@@ -36,7 +36,7 @@ class WeatherInfo extends StatelessWidget {
           ],
         ),
       ),
-    ).animate().fade(duration: 500.ms).slideY(begin: 0.5);
+    ).animate().fade(duration: 300.ms);
   }
 
   Widget _buildInfoItem(IconData icon, String label, String value) {

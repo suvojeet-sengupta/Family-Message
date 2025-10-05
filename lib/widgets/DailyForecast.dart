@@ -44,7 +44,7 @@ class DailyForecastWidget extends StatelessWidget {
           ],
         ),
       ),
-    ).animate().fade(duration: 500.ms).slideY(begin: 0.5);
+    ).animate().fade(duration: 300.ms);
   }
 
   Widget _buildForecastItem(BuildContext context, DailyForecast forecast) {
@@ -110,6 +110,6 @@ class DailyForecastWidget extends StatelessWidget {
           ),
         ),
       ),
-    ).animate().fade(duration: 500.ms).slideX();
+    ).animate().fade(duration: 300.ms);
   }
 }

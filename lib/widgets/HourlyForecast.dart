@@ -40,14 +40,14 @@ class HourlyForecastWidget extends StatelessWidget {
                     time: DateFormat.j().format(DateTime.parse(forecast.time)),
                     iconUrl: forecast.iconUrl,
                     temperature: '${forecast.temperature.round()}°',
-                  ).animate().fade(duration: 500.ms, delay: (100 * index).ms).slideX();
+                  ).animate().fade(duration: 300.ms);
                 },
               ),
             ),
           ],
         ),
       ),
-    ).animate().fade(duration: 500.ms).slideY(begin: 0.5);
+    ).animate().fade(duration: 300.ms);
   }
 
   Widget _buildForecastItem({required String time, required String iconUrl, required String temperature}) {
