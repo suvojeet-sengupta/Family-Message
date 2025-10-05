@@ -54,7 +54,7 @@ class Weather {
           .toList(),
       dailyForecast: ((json['forecast']?['forecastday'] ?? []) as List)
           .map((day) => DailyForecast.fromJson(day))
-          .toList(),
+          .toList()..sort((a, b) => a.date.compareTo(b.date)),
       timestamp: DateTime.now().millisecondsSinceEpoch, // Set timestamp on creation
     );
   }

@@ -107,6 +107,7 @@ class OpenMeteoService {
         sunset: dailyData['sunset'][i],
       ));
     }
+    forecast.sort((a, b) => a.date.compareTo(b.date));
     return forecast;
   }
 
