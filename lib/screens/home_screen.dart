@@ -223,33 +223,35 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      if (isCurrentLocation)
-                        const Icon(Icons.location_on, size: 20),
-                      if (isCurrentLocation)
-                        const SizedBox(width: 8),
-                      Text(
-                        weather.locationName,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (isCurrentLocation)
+                          const Icon(Icons.location_on, size: 20),
+                        if (isCurrentLocation)
+                          const SizedBox(width: 8),
+                        Text(
+                          weather.locationName,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    weather.condition,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      weather.condition,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [
