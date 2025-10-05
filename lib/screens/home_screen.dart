@@ -66,24 +66,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aurora Weather'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final newCity = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SearchScreen()),
-              );
-              if (newCity != null && newCity.isNotEmpty) {
-                await _fetchAllWeatherData();
-              }
-            },
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _buildWeatherList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final newCity = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SearchScreen()),
+          );
+          if (newCity != null && newCity.isNotEmpty) {
+            await _fetchAllWeatherData();
+          }
+        },
+        child: const Icon(Icons.search),
+      ),
     );
   }
 
