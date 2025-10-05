@@ -150,6 +150,12 @@ class DailyForecast {
   final double minTempF;
   final String iconUrl;
   final List<HourlyForecast> hourlyForecast;
+  final double totalPrecipMm;
+  final double avgVisibilityKm;
+  final double pressureIn;
+  final double dewPointC;
+  final String sunrise;
+  final String sunset;
 
   DailyForecast({
     required this.date,
@@ -159,6 +165,12 @@ class DailyForecast {
     required this.minTempF,
     required this.iconUrl,
     required this.hourlyForecast,
+    required this.totalPrecipMm,
+    required this.avgVisibilityKm,
+    required this.pressureIn,
+    required this.dewPointC,
+    required this.sunrise,
+    required this.sunset,
   });
 
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
@@ -172,6 +184,12 @@ class DailyForecast {
       hourlyForecast: (json['hour'] as List)
           .map((hour) => HourlyForecast.fromJson(hour))
           .toList(),
+      totalPrecipMm: json['day']['totalprecip_mm'],
+      avgVisibilityKm: json['day']['avgvis_km'],
+      pressureIn: json['day']['pressure_in'],
+      dewPointC: json['day']['dewpoint_c'],
+      sunrise: json['day']['sunrise'],
+      sunset: json['day']['sunset'],
     );
   }
 
@@ -185,6 +203,12 @@ class DailyForecast {
       'iconUrl': iconUrl,
       'hourlyForecast':
           jsonEncode(hourlyForecast.map((e) => e.toDatabaseMap()).toList()),
+      'totalPrecipMm': totalPrecipMm,
+      'avgVisibilityKm': avgVisibilityKm,
+      'pressureIn': pressureIn,
+      'dewPointC': dewPointC,
+      'sunrise': sunrise,
+      'sunset': sunset,
     };
   }
 
@@ -199,6 +223,12 @@ class DailyForecast {
       hourlyForecast: (jsonDecode(map['hourlyForecast']) as List)
           .map((e) => HourlyForecast.fromDatabaseMap(e))
           .toList(),
+      totalPrecipMm: map['totalPrecipMm'],
+      avgVisibilityKm: map['avgVisibilityKm'],
+      pressureIn: map['pressureIn'],
+      dewPointC: map['dewPointC'],
+      sunrise: map['sunrise'],
+      sunset: map['sunset'],
     );
   }
 }

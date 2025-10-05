@@ -90,6 +90,10 @@ class OpenWeatherService {
       final dateString = '${date.year}-${date.month}-${date.day}';
 
       if (!dailyForecasts.containsKey(dateString)) {
+        final tempC = isFahrenheit ? (item['main']['temp'] - 32) * 5 / 9 : item['main']['temp'].toDouble();
+        final humidity = item['main']['humidity'].toDouble();
+        final dewPointC = tempC - ((100 - humidity) / 5);
+
         dailyForecasts[dateString] = DailyForecast(
           date: date.toIso8601String(),
           maxTemp: isFahrenheit ? (item['main']['temp_max'] - 32) * 5 / 9 : item['main']['temp_max'].toDouble(),
@@ -98,6 +102,12 @@ class OpenWeatherService {
           minTempF: isFahrenheit ? item['main']['temp_min'].toDouble() : (item['main']['temp_min'] * 9 / 5) + 32,
           iconUrl: 'http://openweathermap.org/img/wn/${item['weather'][0]['icon']}@2x.png',
           hourlyForecast: [], // Simplified for now
+          totalPrecipMm: 0.0,
+          avgVisibilityKm: 10.0,
+          pressureIn: item['main']['pressure'] * 0.02953,
+          dewPointC: dewPointC,
+          sunrise: '',
+          sunset: '',
         );
       }
     }
