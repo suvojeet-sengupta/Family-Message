@@ -67,7 +67,7 @@ class OpenWeatherService {
       uvIndex: 0.0, // Not available in free tier
       pressure: weatherData['main']['pressure']?.toDouble(),
       hourlyForecast: _mapToHourlyForecast(forecastData['list'], isFahrenheit),
-      dailyForecast: _mapToDailyForecast(forecastData['list'], isFahrenheit),
+      dailyForecast: _mapToDailyForecast(forecastData['list'], isFahrenheit, weatherData['sys']),
       timestamp: DateTime.now().millisecondsSinceEpoch,
     );
   }
@@ -83,8 +83,9 @@ class OpenWeatherService {
     }).toList();
   }
 
-  List<DailyForecast> _mapToDailyForecast(List<dynamic> forecastList, bool isFahrenheit) {
+  List<DailyForecast> _mapToDailyForecast(List<dynamic> forecastList, bool isFahrenheit, Map<String, dynamic>? sys) {
     Map<String, DailyForecast> dailyForecasts = {};
+    final today = DateTime.now();
 
     for (var item in forecastList) {
       final date = DateTime.fromMillisecondsSinceEpoch(item['dt'] * 1000);
@@ -92,6 +93,13 @@ class OpenWeatherService {
 
       if (!dailyForecasts.containsKey(dateString)) {
         final humidity = item['main']['humidity'].toDouble();
+        String sunrise = '';
+        String sunset = '';
+
+        if (sys != null && date.day == today.day && date.month == today.month && date.year == today.year) {
+          sunrise = DateTime.fromMillisecondsSinceEpoch(sys['sunrise'] * 1000).toIso8601String();
+          sunset = DateTime.fromMillisecondsSinceEpoch(sys['sunset'] * 1000).toIso8601String();
+        }
 
         dailyForecasts[dateString] = DailyForecast(
           date: date.toIso8601String(),
@@ -106,8 +114,8 @@ class OpenWeatherService {
           avgVisibilityKm: 10.0,
           avgHumidity: humidity,
           maxWindKph: (item['wind']['speed'] as num).toDouble() * 3.6, // Convert m/s to km/h
-          sunrise: '',
-          sunset: '',
+          sunrise: sunrise,
+          sunset: sunset,
           moonPhase: '',
         );
       }
