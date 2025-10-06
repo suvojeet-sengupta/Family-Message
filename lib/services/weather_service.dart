@@ -48,7 +48,7 @@ class WeatherService {
       if (cachedWeather != null) return cachedWeather;
 
       final response = await http.get(Uri.parse(
-          '$baseUrl/forecast.json?key=$weatherApiKey&q=${position.latitude},${position.longitude}&days=10'));
+          '$baseUrl/forecast.json?key=$weatherApiKey&q=${position.latitude},${position.longitude}&days=10&aqi=yes'));
 
       if (response.statusCode == 200) {
         final weather = Weather.fromJson(jsonDecode(response.body));
@@ -77,7 +77,7 @@ class WeatherService {
       if (cachedWeather != null) return cachedWeather;
 
       final response = await http.get(Uri.parse(
-          '$baseUrl/forecast.json?key=$weatherApiKey&q=$city&days=10'));
+          '$baseUrl/forecast.json?key=$weatherApiKey&q=$city&days=10&aqi=yes'));
 
       if (response.statusCode == 200) {
         final weather = Weather.fromJson(jsonDecode(response.body));

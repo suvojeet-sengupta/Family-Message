@@ -8,7 +8,7 @@ import 'package:AuroraWeather/screens/air_quality_detail_screen.dart';
 import 'package:AuroraWeather/screens/precipitation_detail_screen.dart';
 import 'package:AuroraWeather/screens/pressure_detail_screen.dart';
 import 'package:AuroraWeather/screens/sunrise_sunset_detail_screen.dart';
-import 'package:AuroraWeather/screens/uv_index_detail_screen.dart';
+
 import 'package:AuroraWeather/screens/visibility_detail_screen.dart';
 import 'package:AuroraWeather/screens/wind_detail_screen.dart';
 import 'package:AuroraWeather/screens/humidity_detail_screen.dart';
@@ -29,6 +29,26 @@ class WeatherDetailScreen extends StatelessWidget {
       ),
       body: _buildWeatherContent(context),
     );
+  }
+
+  String _getAqiSubtitle(int? aqi) {
+    if (aqi == null) return 'N/A';
+    switch (aqi) {
+      case 1:
+        return 'Good';
+      case 2:
+        return 'Moderate';
+      case 3:
+        return 'Unhealthy for sensitive groups';
+      case 4:
+        return 'Unhealthy';
+      case 5:
+        return 'Very Unhealthy';
+      case 6:
+        return 'Hazardous';
+      default:
+        return 'Unknown';
+    }
   }
 
   Widget _buildWeatherContent(BuildContext context) {
@@ -66,16 +86,7 @@ class WeatherDetailScreen extends StatelessWidget {
                 color: Colors.purple,
               ),
             ),
-            InkWell(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UvIndexDetailScreen(uvIndex: weather.uvIndex))),
-              child: WeatherDetailCard(
-                title: 'UV Index',
-                value: weather.uvIndex.round().toString(),
-                subtitle: 'Low',
-                icon: Icons.wb_sunny,
-                color: Colors.orange,
-              ),
-            ),
+
             InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeedKph: weather.wind))),
               child: WeatherDetailCard(
@@ -97,11 +108,11 @@ class WeatherDetailScreen extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AirQualityDetailScreen())),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AirQualityDetailScreen(airQuality: weather.airQuality))),
               child: WeatherDetailCard(
                 title: 'Air Quality',
-                value: '54',
-                subtitle: 'Satisfactory',
+                value: weather.airQuality?.usEpaIndex.toString() ?? 'N/A',
+                subtitle: _getAqiSubtitle(weather.airQuality?.usEpaIndex),
                 icon: Icons.air_outlined,
                 color: Colors.yellow,
               ),

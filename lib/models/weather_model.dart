@@ -11,7 +11,7 @@ class Weather {
   final double feelsLikeF;
   final double wind;
   final int humidity;
-  final double uvIndex;
+  final AirQuality? airQuality;
   final double? pressure;
   final List<HourlyForecast> hourlyForecast;
   final List<DailyForecast> dailyForecast;
@@ -28,7 +28,7 @@ class Weather {
     required this.feelsLikeF,
     required this.wind,
     required this.humidity,
-    required this.uvIndex,
+    this.airQuality,
     this.pressure,
     required this.hourlyForecast,
     required this.dailyForecast,
@@ -47,7 +47,9 @@ class Weather {
       feelsLikeF: (json['current']?['feelslike_f'] ?? 0.0).toDouble(),
       wind: (json['current']?['wind_kph'] ?? 0.0).toDouble(),
       humidity: json['current']?['humidity'] ?? 0,
-      uvIndex: (json['current']?['uv'] ?? 0.0).toDouble(),
+      airQuality: json['current']?['air_quality'] != null
+          ? AirQuality.fromJson(json['current']['air_quality'])
+          : null,
       pressure: (json['current']?['pressure_mb'] ?? 0.0).toDouble(),
       hourlyForecast: ((json['forecast']?['forecastday']?[0]?['hour'] ?? []) as List)
           .map((hour) => HourlyForecast.fromJson(hour))
@@ -72,7 +74,7 @@ class Weather {
       'feelsLikeF': feelsLikeF,
       'wind': wind,
       'humidity': humidity,
-      'uvIndex': uvIndex,
+      'airQuality': airQuality != null ? jsonEncode(airQuality!.toDatabaseMap()) : null,
       'pressure': pressure,
       'hourlyForecast': jsonEncode(hourlyForecast.map((e) => e.toDatabaseMap()).toList()),
       'dailyForecast': jsonEncode(dailyForecast.map((e) => e.toDatabaseMap()).toList()),
@@ -93,7 +95,9 @@ class Weather {
       feelsLikeF: map['feelsLikeF'],
       wind: map['wind'],
       humidity: map['humidity'],
-      uvIndex: map['uvIndex'],
+      airQuality: map['airQuality'] != null
+          ? AirQuality.fromDatabaseMap(jsonDecode(map['airQuality']))
+          : null,
       pressure: map['pressure'],
       hourlyForecast: (jsonDecode(map['hourlyForecast']) as List)
           .map((e) => HourlyForecast.fromDatabaseMap(e))
@@ -242,7 +246,30 @@ class DailyForecast {
       maxWindKph: map['maxWindKph'],
       sunrise: map['sunrise'],
       sunset: map['sunset'],
-      moonPhase: map['moonPhase'],
+    );
+  }
+}
+
+class AirQuality {
+  final int usEpaIndex;
+
+  AirQuality({required this.usEpaIndex});
+
+  factory AirQuality.fromJson(Map<String, dynamic> json) {
+    return AirQuality(
+      usEpaIndex: json['us-epa-index'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toDatabaseMap() {
+    return {
+      'us-epa-index': usEpaIndex,
+    };
+  }
+
+  factory AirQuality.fromDatabaseMap(Map<String, dynamic> map) {
+    return AirQuality(
+      usEpaIndex: map['us-epa-index'],
     );
   }
 }

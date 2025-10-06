@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/weather_model.dart';
 
 class AirQualityDetailScreen extends StatelessWidget {
-  const AirQualityDetailScreen({super.key});
+  final AirQuality? airQuality;
+
+  const AirQualityDetailScreen({super.key, this.airQuality});
 
   @override
   Widget build(BuildContext context) {
@@ -26,17 +29,17 @@ class AirQualityDetailScreen extends StatelessWidget {
                   children: [
                     const Text('Air Quality Index (AQI)', style: TextStyle(color: Colors.white70)),
                     const SizedBox(height: 8),
-                    const Text(
-                      '54',
-                      style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                    Text(
+                      airQuality?.usEpaIndex.toString() ?? 'N/A',
+                      style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Satisfactory',
-                      style: TextStyle(fontSize: 24, color: Colors.green),
+                    Text(
+                      _getAqiSubtitle(airQuality?.usEpaIndex),
+                      style: TextStyle(fontSize: 24, color: _getAqiColor(airQuality?.usEpaIndex)),
                     ),
                   ],
-                ),
+                ), 
               ),
             ),
             const SizedBox(height: 24),
@@ -48,5 +51,45 @@ class AirQualityDetailScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getAqiSubtitle(int? aqi) {
+    if (aqi == null) return 'N/A';
+    switch (aqi) {
+      case 1:
+        return 'Good';
+      case 2:
+        return 'Moderate';
+      case 3:
+        return 'Unhealthy for sensitive groups';
+      case 4:
+        return 'Unhealthy';
+      case 5:
+        return 'Very Unhealthy';
+      case 6:
+        return 'Hazardous';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  Color _getAqiColor(int? aqi) {
+    if (aqi == null) return Colors.white;
+    switch (aqi) {
+      case 1:
+        return Colors.green;
+      case 2:
+        return Colors.yellow;
+      case 3:
+        return Colors.orange;
+      case 4:
+        return Colors.red;
+      case 5:
+        return Colors.purple;
+      case 6:
+        return Colors.brown;
+      default:
+        return Colors.white;
+    }
   }
 }
