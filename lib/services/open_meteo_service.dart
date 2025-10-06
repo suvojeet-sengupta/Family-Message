@@ -12,9 +12,7 @@ class OpenMeteoService {
   final String geocodingUrl = 'https://geocoding-api.open-meteo.com/v1';
   final Logger _logger = Logger();
 
-  Future<Weather> fetchWeatherByPosition(Position position) async {
-    final settings = SettingsService();
-    final isFahrenheit = await settings.isFahrenheit();
+final isFahrenheit = settings.useFahrenheit;
     final tempUnit = isFahrenheit ? 'fahrenheit' : 'celsius';
 
     final response = await http.get(Uri.parse(
@@ -33,7 +31,7 @@ class OpenMeteoService {
 
   Future<Weather> fetchWeatherByCity(String city) async {
     final settings = SettingsService();
-    final isFahrenheit = await settings.isFahrenheit();
+    final isFahrenheit = settings.useFahrenheit;
     final tempUnit = isFahrenheit ? 'fahrenheit' : 'celsius';
 
     final geocodingResponse = await http.get(Uri.parse('$geocodingUrl/search?name=$city&count=1')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));

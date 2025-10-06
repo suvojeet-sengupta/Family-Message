@@ -1,31 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../services/settings_service.dart';
 
-class CurrentWeather extends StatefulWidget {
+class CurrentWeather extends StatelessWidget {
   final Weather weather;
+  final bool isFahrenheit;
 
-  const CurrentWeather({super.key, required this.weather});
-
-  @override
-  State<CurrentWeather> createState() => _CurrentWeatherState();
-}
-
-class _CurrentWeatherState extends State<CurrentWeather> {
-  final SettingsService _settingsService = SettingsService();
-  bool _isFahrenheit = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    _isFahrenheit = await _settingsService.isFahrenheit();
-    setState(() {});
-  }
+  const CurrentWeather({super.key, required this.weather, this.isFahrenheit = false});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +21,7 @@ class _CurrentWeatherState extends State<CurrentWeather> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.weather.locationName,
+              weather.locationName,
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -54,16 +35,16 @@ class _CurrentWeatherState extends State<CurrentWeather> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _isFahrenheit
-                          ? '${widget.weather.temperatureF.round()}°F'
-                          : '${widget.weather.temperature.round()}°C',
+                      isFahrenheit
+                          ? '${weather.temperatureF.round()}°F'
+                          : '${weather.temperature.round()}°C',
                       style: const TextStyle(
                         fontSize: 80, // Slightly smaller
                         fontWeight: FontWeight.w200,
                       ),
                     ),
                     Text(
-                      widget.weather.condition,
+                      weather.condition,
                       style: const TextStyle(
                         fontSize: 20, // Slightly smaller
                         fontWeight: FontWeight.w500,
@@ -72,7 +53,7 @@ class _CurrentWeatherState extends State<CurrentWeather> {
                   ],
                 ),
                 Image.network(
-                  widget.weather.iconUrl,
+                  weather.iconUrl,
                   height: 100, // Slightly larger icon
                   width: 100,
                 ),

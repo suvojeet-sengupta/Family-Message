@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/settings_service.dart';
 import '../widgets/CurrentWeather.dart';
 import '../models/weather_model.dart';
 import '../widgets/ten_day_forecast.dart';
@@ -20,6 +22,9 @@ class WeatherDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = Provider.of<SettingsService>(context);
+    final isFahrenheit = settingsService.useFahrenheit;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(weather.locationName),
@@ -27,7 +32,7 @@ class WeatherDetailScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body: _buildWeatherContent(context),
+      body: _buildWeatherContent(context, isFahrenheit),
     );
   }
 
@@ -41,11 +46,11 @@ class WeatherDetailScreen extends StatelessWidget {
     return 'Hazardous';
   }
 
-  Widget _buildWeatherContent(BuildContext context) {
+  Widget _buildWeatherContent(BuildContext context, bool isFahrenheit) {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        CurrentWeather(weather: weather),
+        CurrentWeather(weather: weather, isFahrenheit: isFahrenheit),
         const SizedBox(height: 24),
         TenDayForecast(dailyForecast: weather.dailyForecast),
         const SizedBox(height: 24),
