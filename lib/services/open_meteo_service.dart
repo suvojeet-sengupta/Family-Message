@@ -3,10 +3,14 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import '../models/weather_model.dart';
 import 'settings_service.dart';
+import 'weather_exceptions.dart';
+import 'package:logger/logger.dart';
+import '../config/weather_config.dart';
 
 class OpenMeteoService {
   final String baseUrl = 'https://api.open-meteo.com/v1';
   final String geocodingUrl = 'https://geocoding-api.open-meteo.com/v1';
+  final Logger _logger = Logger();
 
   Future<Weather> fetchWeatherByPosition(Position position) async {
     final settings = SettingsService();
@@ -14,12 +18,16 @@ class OpenMeteoService {
     final tempUnit = isFahrenheit ? 'fahrenheit' : 'celsius';
 
     final response = await http.get(Uri.parse(
-                    '$baseUrl/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto'));
+                    '$baseUrl/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return _mapToWeatherModel(data, 'Current Location', isFahrenheit);
     } else {
-      throw Exception('Failed to load weather data from Open-Meteo');
+      throw WeatherApiException(
+        provider: 'Open-Meteo',
+        message: 'Failed to load weather data',
+        statusCode: response.statusCode,
+      );
     }
   }
 
@@ -28,7 +36,7 @@ class OpenMeteoService {
     final isFahrenheit = await settings.isFahrenheit();
     final tempUnit = isFahrenheit ? 'fahrenheit' : 'celsius';
 
-    final geocodingResponse = await http.get(Uri.parse('$geocodingUrl/search?name=$city&count=1'));
+    final geocodingResponse = await http.get(Uri.parse('$geocodingUrl/search?name=$city&count=1')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
     if (geocodingResponse.statusCode == 200) {
       final geocodingData = jsonDecode(geocodingResponse.body);
       if (geocodingData['results'] != null && geocodingData['results'].isNotEmpty) {
@@ -37,19 +45,30 @@ class OpenMeteoService {
         final locationName = geocodingData['results'][0]['name'];
 
         final response = await http.get(Uri.parse(
-            '$baseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto'));
+            '$baseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           return _mapToWeatherModel(data, locationName, isFahrenheit);
         } else {
-          throw Exception('Failed to load weather data from Open-Meteo');
+          throw WeatherApiException(
+            provider: 'Open-Meteo',
+            message: 'Failed to load weather data',
+            statusCode: response.statusCode,
+          );
         }
       } else {
-        throw Exception('City not found');
+        throw WeatherApiException(
+          provider: 'Open-Meteo',
+          message: 'City not found',
+        );
       }
     } else {
-      throw Exception('Failed to geocode city');
+      throw WeatherApiException(
+        provider: 'Open-Meteo',
+        message: 'Failed to geocode city',
+        statusCode: geocodingResponse.statusCode,
+      );
     }
   }
 

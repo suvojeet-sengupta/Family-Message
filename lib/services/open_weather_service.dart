@@ -3,14 +3,16 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import '../models/weather_model.dart';
 import 'settings_service.dart';
+import 'weather_exceptions.dart';
+import 'package:logger/logger.dart';
+import '../config/weather_config.dart';
 
 class OpenWeatherService {
-  final String apiKey = const String.fromEnvironment('OPEN_WEATHER_API');
-  final String baseUrl = 'https://api.openweathermap.org/data/2.5';
+  final Logger _logger = Logger();
 
   Future<Weather> fetchWeatherByPosition(Position position) async {
-    if (apiKey.isEmpty) {
-      throw Exception('OPEN_WEATHER_API key is not set.');
+    if (WeatherConfig.openWeatherApiKey.isEmpty) {
+      throw ConfigurationException('OPEN_WEATHER_API key is not set.');
     }
 
     final settings = SettingsService();
@@ -18,11 +20,11 @@ class OpenWeatherService {
     final units = isFahrenheit ? 'imperial' : 'metric';
 
     final weatherResponse = await http.get(Uri.parse(
-        '$baseUrl/weather?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=$units'));
+        '${WeatherConfig.openWeatherBaseUrl}/weather?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
     final forecastResponse = await http.get(Uri.parse(
-        '$baseUrl/forecast?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=$units'));
+        '${WeatherConfig.openWeatherBaseUrl}/forecast?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
     final airPollutionResponse = await http.get(Uri.parse(
-        '$baseUrl/air_pollution?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey'));
+        '${WeatherConfig.openWeatherBaseUrl}/air_pollution?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
 
     if (weatherResponse.statusCode == 200 && forecastResponse.statusCode == 200 && airPollutionResponse.statusCode == 200) {
       final weatherData = jsonDecode(weatherResponse.body);
@@ -30,37 +32,49 @@ class OpenWeatherService {
       final airPollutionData = jsonDecode(airPollutionResponse.body);
       return _mapToWeatherModel(weatherData, forecastData, airPollutionData, isFahrenheit);
     } else {
-      throw Exception('Failed to load weather data from OpenWeatherMap');
+      throw WeatherApiException(
+        provider: 'OpenWeatherMap',
+        message: 'Failed to load weather data',
+        statusCode: weatherResponse.statusCode, // Or combine status codes
+      );
     }
   }
 
   Future<Weather> fetchWeatherByCity(String city) async {
-    if (apiKey.isEmpty) {
-      throw Exception('OPEN_WEATHER_API key is not set.');
+    if (WeatherConfig.openWeatherApiKey.isEmpty) {
+      throw ConfigurationException('OPEN_WEATHER_API key is not set.');
     }
 
     final settings = SettingsService();
     final isFahrenheit = await settings.isFahrenheit();
     final units = isFahrenheit ? 'imperial' : 'metric';
 
-    final weatherResponse = await http.get(Uri.parse('$baseUrl/weather?q=$city&appid=$apiKey&units=$units'));
-    final forecastResponse = await http.get(Uri.parse('$baseUrl/forecast?q=$city&appid=$apiKey&units=$units'));
+    final weatherResponse = await http.get(Uri.parse('${WeatherConfig.openWeatherBaseUrl}/weather?q=$city&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
+    final forecastResponse = await http.get(Uri.parse('${WeatherConfig.openWeatherBaseUrl}/forecast?q=$city&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
 
     if (weatherResponse.statusCode == 200 && forecastResponse.statusCode == 200) {
       final weatherData = jsonDecode(weatherResponse.body);
       final forecastData = jsonDecode(forecastResponse.body);
       final lat = weatherData['coord']['lat'];
       final lon = weatherData['coord']['lon'];
-      final airPollutionResponse = await http.get(Uri.parse('$baseUrl/air_pollution?lat=$lat&lon=$lon&appid=$apiKey'));
+      final airPollutionResponse = await http.get(Uri.parse('${WeatherConfig.openWeatherBaseUrl}/air_pollution?lat=$lat&lon=$lon&appid=${WeatherConfig.openWeatherApiKey}')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
 
       if (airPollutionResponse.statusCode == 200) {
         final airPollutionData = jsonDecode(airPollutionResponse.body);
         return _mapToWeatherModel(weatherData, forecastData, airPollutionData, isFahrenheit);
       } else {
-        throw Exception('Failed to load air pollution data from OpenWeatherMap for $city');
+        throw WeatherApiException(
+          provider: 'OpenWeatherMap',
+          message: 'Failed to load air pollution data for $city',
+          statusCode: airPollutionResponse.statusCode,
+        );
       }
     } else {
-      throw Exception('Failed to load weather data from OpenWeatherMap for $city');
+      throw WeatherApiException(
+        provider: 'OpenWeatherMap',
+        message: 'Failed to load weather data for $city',
+        statusCode: weatherResponse.statusCode,
+      );
     }
   }
 
@@ -72,7 +86,7 @@ class OpenWeatherService {
       temperatureF: isFahrenheit ? weatherData['main']['temp'].toDouble() : (weatherData['main']['temp'] * 9 / 5) + 32,
       condition: weatherData['weather'][0]['description'],
       conditionCode: weatherData['weather'][0]['id'],
-      iconUrl: 'http://openweathermap.org/img/wn/${weatherData['weather'][0]['icon']}@2x.png',
+      iconUrl: 'https://openweathermap.org/img/wn/${weatherData['weather'][0]['icon']}@2x.png',
       feelsLike: isFahrenheit ? (weatherData['main']['feels_like'] - 32) * 5 / 9 : weatherData['main']['feels_like'].toDouble(),
       feelsLikeF: isFahrenheit ? weatherData['main']['feels_like'].toDouble() : (weatherData['main']['feels_like'] * 9 / 5) + 32,
       wind: weatherData['wind']['speed'].toDouble() * 3.6, // Convert m/s to km/h
@@ -110,7 +124,7 @@ class OpenWeatherService {
         time: DateTime.fromMillisecondsSinceEpoch(item['dt'] * 1000).toIso8601String(),
         temperature: isFahrenheit ? (item['main']['temp'] - 32) * 5 / 9 : item['main']['temp'].toDouble(),
         temperatureF: isFahrenheit ? item['main']['temp'].toDouble() : (item['main']['temp'] * 9 / 5) + 32,
-        iconUrl: 'http://openweathermap.org/img/wn/${item['weather'][0]['icon']}@2x.png',
+        iconUrl: 'https://openweathermap.org/img/wn/${item['weather'][0]['icon']}@2x.png',
       );
     }).toList();
   }
@@ -158,7 +172,7 @@ class OpenWeatherService {
         maxTempF: isFahrenheit ? data['maxTemp'].toDouble() : (data['maxTemp'] * 9 / 5) + 32,
         minTemp: isFahrenheit ? (data['minTemp'] - 32) * 5 / 9 : data['minTemp'].toDouble(),
         minTempF: isFahrenheit ? data['minTemp'].toDouble() : (data['minTemp'] * 9 / 5) + 32,
-        iconUrl: 'http://openweathermap.org/img/wn/${data['icon']}@2x.png',
+        iconUrl: 'https://openweathermap.org/img/wn/${data['icon']}@2x.png',
         condition: data['description'],
         hourlyForecast: [], // Simplified for now
         totalPrecipMm: data['totalPrecipMm'].toDouble(),

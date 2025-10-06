@@ -1,31 +1,41 @@
+
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../models/weather_model.dart';
+import '../models/cache_key.dart';
 import 'database_helper.dart';
 import 'open_meteo_service.dart';
 import 'open_weather_service.dart';
+import 'weather_exceptions.dart';
+import 'package:logger/logger.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../config/weather_config.dart';
 
 class WeatherService {
-  final String weatherApiKey = const String.fromEnvironment('WEATHER_API_KEY');
-  final String openWeatherApiKey = const String.fromEnvironment('OPEN_WEATHER_API');
-  final String baseUrl = 'http://api.weatherapi.com/v1';
   final DatabaseHelper _dbHelper = DatabaseHelper();
   final OpenMeteoService _openMeteoService = OpenMeteoService();
   final OpenWeatherService _openWeatherService = OpenWeatherService();
+  final Logger _logger = Logger();
+  final Connectivity _connectivity = Connectivity();
+
+  WeatherService() {
+    WeatherConfig.validate();
+  }
 
   Future<Position> getCurrentPosition() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+        throw LocationPermissionDeniedException('Location permissions are denied');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      return Future.error(
+      throw LocationPermissionDeniedException(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
 
@@ -35,71 +45,112 @@ class WeatherService {
 
   Future<Weather> fetchWeather() async {
     final position = await getCurrentPosition();
-    return await fetchWeatherByPosition(position);
-  }
-
-  Future<Weather> fetchWeatherByPosition(Position position) async {
-    try {
-      print('Attempting to fetch weather from WeatherAPI.com');
-      if (weatherApiKey.isEmpty) throw Exception('WeatherAPI key not set');
-      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-      final locationName = placemarks.first.locality ?? placemarks.first.name ?? 'Unknown';
-      Weather? cachedWeather = await _dbHelper.getWeather(locationName);
-      if (cachedWeather != null) return cachedWeather;
-
-      final response = await http.get(Uri.parse(
-          '$baseUrl/forecast.json?key=$weatherApiKey&q=${position.latitude},${position.longitude}&days=10&aqi=yes'));
-
-      if (response.statusCode == 200) {
-        final weather = Weather.fromJson(jsonDecode(response.body));
-        await _dbHelper.insertWeather(weather);
-        return weather;
-      } else {
-        throw Exception('Failed to load weather data from WeatherAPI.com');
-      }
-    } catch (e) {
-      print('Failed to fetch from WeatherAPI.com: $e. Trying OpenWeatherMap.');
-      try {
-        return await _openWeatherService.fetchWeatherByPosition(position);
-      } catch (e2) {
-        print('Failed to fetch from OpenWeatherMap: $e2. Using Open-Meteo as last resort.');
-        return await _openMeteoService.fetchWeatherByPosition(position);
-      }
-    }
+    return await _fetchWithFallback(position: position);
   }
 
   Future<Weather> fetchWeatherByCity(String city) async {
+    return await _fetchWithFallback(city: city);
+  }
+
+  Future<Weather> fetchWeatherByPosition(Position position) async {
+    return await _fetchWithFallback(position: position);
+  }
+
+  Future<Weather> _fetchWithFallback({String? city, Position? position}) async {
+    if (await _connectivity.checkConnectivity() == ConnectivityResult.none) {
+      _logger.w('No internet connection. Returning cached data.');
+      final cacheKey = city ?? (await _getCacheKeyFromPosition(position!));
+      final cachedWeather = await _dbHelper.getAnyWeather(cacheKey);
+      if (cachedWeather != null) {
+        return cachedWeather;
+      }
+      throw NoInternetException('No internet connection and no cached data available.');
+    }
+
+    final cacheKey = city != null ? CacheKey.fromCity(city, null).toString() : (await _getCacheKeyFromPosition(position!));
+    final cachedWeather = await _dbHelper.getWeather(cacheKey);
+    if (cachedWeather != null) {
+      _logger.d('Returning fresh cached weather for $cacheKey');
+      return cachedWeather;
+    }
+
+    // Try WeatherAPI
     try {
-      print('Attempting to fetch weather for $city from WeatherAPI.com');
-      if (weatherApiKey.isEmpty) throw Exception('WeatherAPI key not set');
+      return await _fetchWithRetry(() => _fetchFromWeatherApi(city: city, position: position));
+    } catch (e, stackTrace) {
+      _logger.w('WeatherAPI.com failed after retries', error: e, stackTrace: stackTrace);
+    }
 
-      Weather? cachedWeather = await _dbHelper.getWeather(city);
-      if (cachedWeather != null) return cachedWeather;
-
-      final response = await http.get(Uri.parse(
-          '$baseUrl/forecast.json?key=$weatherApiKey&q=$city&days=10&aqi=yes'));
-
-      if (response.statusCode == 200) {
-        final weather = Weather.fromJson(jsonDecode(response.body));
-        await _dbHelper.insertWeather(weather);
-        return weather;
-      } else {
-        throw Exception('Failed to load weather data for $city from WeatherAPI.com');
+    // Try OpenWeatherMap
+    try {
+      if (city != null) {
+        return await _fetchWithRetry(() => _openWeatherService.fetchWeatherByCity(city));
+      } else if (position != null) {
+        return await _fetchWithRetry(() => _openWeatherService.fetchWeatherByPosition(position));
       }
-    } catch (e) {
-      print('Failed to fetch from WeatherAPI.com: $e. Trying OpenWeatherMap.');
-      try {
-        return await _openWeatherService.fetchWeatherByCity(city);
-      } catch (e2) {
-        print('Failed to fetch from OpenWeatherMap: $e2. Using Open-Meteo as last resort.');
-        return await _openMeteoService.fetchWeatherByCity(city);
+    } catch (e, stackTrace) {
+      _logger.w('OpenWeatherMap failed after retries', error: e, stackTrace: stackTrace);
+    }
+
+    // Try Open-Meteo
+    try {
+      if (city != null) {
+        return await _fetchWithRetry(() => _openMeteoService.fetchWeatherByCity(city));
+      } else if (position != null) {
+        return await _fetchWithRetry(() => _openMeteoService.fetchWeatherByPosition(position));
       }
+    } catch (e, stackTrace) {
+      _logger.e('All weather providers failed after retries', error: e, stackTrace: stackTrace);
+      throw Exception('Failed to fetch weather from all providers.');
+    }
+
+    throw Exception('Should not be reached');
+  }
+
+  Future<String> _getCacheKeyFromPosition(Position position) async {
+    final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+    if (placemarks.isNotEmpty) {
+      return CacheKey.fromCity(placemarks.first.locality ?? placemarks.first.name ?? 'Unknown', placemarks.first.country).toString();
+    }
+    return CacheKey.fromCoordinates(position.latitude, position.longitude).toString();
+  }
+
+  Future<Weather> _fetchFromWeatherApi({String? city, Position? position}) async {
+    if (WeatherConfig.weatherApiKey.isEmpty) {
+      throw ConfigurationException('WEATHER_API_KEY is not set.');
+    }
+
+    String url;
+    if (city != null) {
+      url = '${WeatherConfig.weatherApiBaseUrl}/forecast.json?key=${WeatherConfig.weatherApiKey}&q=$city&days=${WeatherConfig.forecastDays}&aqi=${WeatherConfig.includeAqi ? 'yes' : 'no'}';
+    } else if (position != null) {
+      url = '${WeatherConfig.weatherApiBaseUrl}/forecast.json?key=${WeatherConfig.weatherApiKey}&q=${position.latitude},${position.longitude}&days=${WeatherConfig.forecastDays}&aqi=${WeatherConfig.includeAqi ? 'yes' : 'no'}';
+    } else {
+      throw ArgumentError('Either city or position must be provided.');
+    }
+
+    final response = await http.get(Uri.parse(url)).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (!jsonData.containsKey('location') || !jsonData.containsKey('current')) {
+        throw ParseException('Invalid API response format from WeatherAPI.com');
+      }
+      final weather = Weather.fromJson(jsonData);
+      await _dbHelper.insertWeather(weather);
+      return weather;
+    } else {
+      throw WeatherApiException(
+        provider: 'WeatherAPI.com',
+        message: 'Failed to fetch weather',
+        statusCode: response.statusCode,
+      );
     }
   }
 
   Future<List<String>> searchCities(String query) async {
-    if (weatherApiKey.isEmpty) {
-      throw Exception('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
+    if (WeatherConfig.weatherApiKey.isEmpty) {
+      throw ConfigurationException('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
     }
 
     if (query.isEmpty) {
@@ -107,13 +158,36 @@ class WeatherService {
     }
 
     final response = await http.get(Uri.parse(
-        '$baseUrl/search.json?key=$weatherApiKey&q=$query'));
+        '${WeatherConfig.weatherApiBaseUrl}/search.json?key=${WeatherConfig.weatherApiKey}&q=$query')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => e['name'] as String).toList();
     } else {
-      throw Exception('Failed to search for cities');
+      throw WeatherApiException(
+        provider: 'WeatherAPI.com',
+        message: 'Failed to search for cities',
+        statusCode: response.statusCode,
+      );
     }
+  }
+
+  Future<Weather> _fetchWithRetry(
+    Future<Weather> Function() fetchFunction, {
+    int maxRetries = 3,
+    Duration retryDelay = const Duration(seconds: 2),
+  }) async {
+    int attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await fetchFunction();
+      } catch (e) {
+        attempt++;
+        if (attempt >= maxRetries) rethrow;
+        _logger.w('Attempt $attempt failed, retrying in ${retryDelay.inSeconds}s...');
+        await Future.delayed(retryDelay);
+      }
+    }
+    throw Exception('All retry attempts failed');
   }
 }
