@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+enum _RefreshState {
+  idle,
+  dragging,
+  refreshing,
+}
+
 class CustomRefreshIndicator extends StatefulWidget {
   final Future<void> Function() onRefresh;
   final Widget child;
@@ -18,8 +24,8 @@ class CustomRefreshIndicator extends StatefulWidget {
 class _CustomRefreshIndicatorState extends State<CustomRefreshIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController;
+  _RefreshState _state = _RefreshState.idle;
   double _dragOffset = 0.0;
-  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -36,52 +42,59 @@ class _CustomRefreshIndicatorState extends State<CustomRefreshIndicator>
     super.dispose();
   }
 
-  void _onDragUpdate(DragUpdateDetails details) {
-    if (_isRefreshing) return;
-    setState(() {
-      _dragOffset += details.delta.dy;
-      if (_dragOffset < 0) _dragOffset = 0;
-    });
-  }
-
-  Future<void> _onDragEnd(DragEndDetails details) async {
-    if (_dragOffset > 100) {
+  bool _onNotification(ScrollNotification notification) {
+    if (notification is ScrollStartNotification && notification.metrics.extentBefore == 0) {
       setState(() {
-        _isRefreshing = true;
-        _animationController.repeat();
-      });
-      await widget.onRefresh();
-      setState(() {
-        _isRefreshing = false;
-        _dragOffset = 0;
-        _animationController.stop();
+        _state = _RefreshState.dragging;
       });
     }
-    setState(() {
-      _dragOffset = 0;
-    });
+    if (_state == _RefreshState.dragging && notification is ScrollUpdateNotification) {
+      setState(() {
+        _dragOffset = notification.metrics.pixels * -1;
+      });
+    }
+    if (_state == _RefreshState.dragging && notification is ScrollEndNotification) {
+      if (_dragOffset > 100) {
+        setState(() {
+          _state = _RefreshState.refreshing;
+          _dragOffset = 0;
+          _animationController.repeat();
+        });
+        widget.onRefresh().whenComplete(() {
+          setState(() {
+            _state = _RefreshState.idle;
+            _animationController.stop();
+          });
+        });
+      } else {
+        setState(() {
+          _state = _RefreshState.idle;
+          _dragOffset = 0;
+        });
+      }
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onVerticalDragUpdate: _onDragUpdate,
-      onVerticalDragEnd: _onDragEnd,
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onNotification,
       child: Stack(
         children: [
-          Transform.translate(
-            offset: Offset(0, _dragOffset),
-            child: widget.child,
-          ),
-          if (_dragOffset > 0 || _isRefreshing)
+          widget.child,
+          if (_state != _RefreshState.idle)
             Positioned(
-              top: _dragOffset - 30,
+              top: 0,
               left: 0,
               right: 0,
               child: Center(
-                child: RotationTransition(
-                  turns: _animationController,
-                  child: const Icon(Icons.wb_sunny, color: Colors.amber, size: 30),
+                child: SizedBox(
+                  height: _dragOffset > 100 ? 100 : _dragOffset,
+                  child: RotationTransition(
+                    turns: _animationController,
+                    child: const Icon(Icons.wb_sunny, color: Colors.amber, size: 30),
+                  ),
                 ),
               ),
             ),
