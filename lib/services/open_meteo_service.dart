@@ -12,7 +12,9 @@ class OpenMeteoService {
   final String geocodingUrl = 'https://geocoding-api.open-meteo.com/v1';
   final Logger _logger = Logger();
 
-final isFahrenheit = settings.useFahrenheit;
+  Future<Weather> fetchWeatherByPosition(Position position) async {
+    final settings = SettingsService();
+    final isFahrenheit = settings.useFahrenheit;
     final tempUnit = isFahrenheit ? 'fahrenheit' : 'celsius';
 
     final response = await http.get(Uri.parse(

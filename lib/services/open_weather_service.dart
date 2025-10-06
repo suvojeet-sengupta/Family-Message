@@ -10,7 +10,13 @@ import '../config/weather_config.dart';
 class OpenWeatherService {
   final Logger _logger = Logger();
 
-final isFahrenheit = settings.useFahrenheit;
+  Future<Weather> fetchWeatherByPosition(Position position) async {
+    if (WeatherConfig.openWeatherApiKey.isEmpty) {
+      throw ConfigurationException('OPEN_WEATHER_API key is not set.');
+    }
+
+    final settings = SettingsService();
+    final isFahrenheit = settings.useFahrenheit;
     final units = isFahrenheit ? 'imperial' : 'metric';
 
     final weatherResponse = await http.get(Uri.parse(
