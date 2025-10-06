@@ -163,10 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _refreshStaleData(force: true),
-          ),
+          
         ],
       ),
       body: _buildWeatherList(isFahrenheit),
