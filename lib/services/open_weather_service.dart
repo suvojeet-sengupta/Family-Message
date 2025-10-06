@@ -21,11 +21,14 @@ class OpenWeatherService {
         '$baseUrl/weather?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=$units'));
     final forecastResponse = await http.get(Uri.parse(
         '$baseUrl/forecast?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=$units'));
+    final airPollutionResponse = await http.get(Uri.parse(
+        '$baseUrl/air_pollution?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey'));
 
-    if (weatherResponse.statusCode == 200 && forecastResponse.statusCode == 200) {
+    if (weatherResponse.statusCode == 200 && forecastResponse.statusCode == 200 && airPollutionResponse.statusCode == 200) {
       final weatherData = jsonDecode(weatherResponse.body);
       final forecastData = jsonDecode(forecastResponse.body);
-      return _mapToWeatherModel(weatherData, forecastData, isFahrenheit);
+      final airPollutionData = jsonDecode(airPollutionResponse.body);
+      return _mapToWeatherModel(weatherData, forecastData, airPollutionData, isFahrenheit);
     } else {
       throw Exception('Failed to load weather data from OpenWeatherMap');
     }
@@ -46,13 +49,23 @@ class OpenWeatherService {
     if (weatherResponse.statusCode == 200 && forecastResponse.statusCode == 200) {
       final weatherData = jsonDecode(weatherResponse.body);
       final forecastData = jsonDecode(forecastResponse.body);
-      return _mapToWeatherModel(weatherData, forecastData, isFahrenheit);
+      final lat = weatherData['coord']['lat'];
+      final lon = weatherData['coord']['lon'];
+      final airPollutionResponse = await http.get(Uri.parse('$baseUrl/air_pollution?lat=$lat&lon=$lon&appid=$apiKey'));
+
+      if (airPollutionResponse.statusCode == 200) {
+        final airPollutionData = jsonDecode(airPollutionResponse.body);
+        return _mapToWeatherModel(weatherData, forecastData, airPollutionData, isFahrenheit);
+      } else {
+        throw Exception('Failed to load air pollution data from OpenWeatherMap for $city');
+      }
     } else {
       throw Exception('Failed to load weather data from OpenWeatherMap for $city');
     }
   }
 
-  Weather _mapToWeatherModel(Map<String, dynamic> weatherData, Map<String, dynamic> forecastData, bool isFahrenheit) {
+  Weather _mapToWeatherModel(Map<String, dynamic> weatherData, Map<String, dynamic> forecastData, Map<String, dynamic> airPollutionData, bool isFahrenheit) {
+    final aqi = airPollutionData['list'][0]['main']['aqi'];
     return Weather(
       locationName: weatherData['name'],
       temperature: isFahrenheit ? (weatherData['main']['temp'] - 32) * 5 / 9 : weatherData['main']['temp'].toDouble(),
@@ -64,6 +77,7 @@ class OpenWeatherService {
       feelsLikeF: isFahrenheit ? weatherData['main']['feels_like'].toDouble() : (weatherData['main']['feels_like'] * 9 / 5) + 32,
       wind: weatherData['wind']['speed'].toDouble() * 3.6, // Convert m/s to km/h
       humidity: weatherData['main']['humidity'],
+      airQuality: aqi != null ? AirQuality(usEpaIndex: aqi) : null,
       pressure: weatherData['main']['pressure']?.toDouble(),
       hourlyForecast: _mapToHourlyForecast(forecastData['list'], isFahrenheit),
       dailyForecast: _mapToDailyForecast(forecastData['list'], isFahrenheit, weatherData['sys']),
