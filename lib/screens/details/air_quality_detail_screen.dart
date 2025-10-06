@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/weather_model.dart';
+import '../../models/weather_model.dart';
 
 class AirQualityDetailScreen extends StatelessWidget {
   final AirQuality? airQuality;

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../screens/hourly_forecast_detail_screen.dart';
+import '../screens/details/hourly_forecast_detail_screen.dart';
 import '../services/settings_service.dart';
 
 class HourlyForecastWidget extends StatelessWidget {

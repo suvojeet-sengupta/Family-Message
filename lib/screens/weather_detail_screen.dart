@@ -6,14 +6,14 @@ import '../models/weather_model.dart';
 import '../widgets/ten_day_forecast.dart';
 import '../widgets/weather_detail_card.dart';
 
-import 'package:AuroraWeather/screens/air_quality_detail_screen.dart';
-import 'package:AuroraWeather/screens/precipitation_detail_screen.dart';
-import 'package:AuroraWeather/screens/pressure_detail_screen.dart';
-import 'package:AuroraWeather/screens/sunrise_sunset_detail_screen.dart';
+import './details/air_quality_detail_screen.dart';
+import './details/precipitation_detail_screen.dart';
+import './details/pressure_detail_screen.dart';
+import './details/sunrise_sunset_detail_screen.dart';
 
 
-import 'package:AuroraWeather/screens/wind_detail_screen.dart';
-import 'package:AuroraWeather/screens/humidity_detail_screen.dart';
+import './details/wind_detail_screen.dart';
+import './details/humidity_detail_screen.dart';
 
 class WeatherDetailScreen extends StatelessWidget {
   final Weather weather;

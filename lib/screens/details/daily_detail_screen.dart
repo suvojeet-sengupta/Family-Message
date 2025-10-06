@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import '../models/weather_model.dart';
+import '../../models/weather_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-class HourlyForecastDetailScreen extends StatelessWidget {
-  final List<HourlyForecast> hourlyForecast;
+class DailyDetailScreen extends StatelessWidget {
+  final DailyForecast dailyForecast;
   final bool isFahrenheit;
 
-  const HourlyForecastDetailScreen({super.key, required this.hourlyForecast, required this.isFahrenheit});
+  const DailyDetailScreen({super.key, required this.dailyForecast, required this.isFahrenheit});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hourly Forecast'),
+        title: Text(DateFormat.yMMMEd().format(DateTime.parse(dailyForecast.date))),
       ),
       body: ListView.builder(
-        itemCount: hourlyForecast.length,
+        itemCount: dailyForecast.hourlyForecast.length,
         itemBuilder: (context, index) {
-          final forecast = hourlyForecast[index];
+          final forecast = dailyForecast.hourlyForecast[index];
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Padding(

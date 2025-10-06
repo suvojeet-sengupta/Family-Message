@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 // import '../screens/uv_index_detail_screen.dart'; // Commented out: uvIndex missing from model and screen not provided.
-import '../screens/feels_like_detail_screen.dart';
-import '../screens/wind_detail_screen.dart';
-import '../screens/humidity_detail_screen.dart';
+import '../screens/details/feels_like_detail_screen.dart';
+import '../screens/details/wind_detail_screen.dart';
+import '../screens/details/humidity_detail_screen.dart';
 import '../services/settings_service.dart';
 
 class WeatherInfo extends StatelessWidget {
