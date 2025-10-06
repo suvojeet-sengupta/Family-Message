@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 enum _RefreshState {
   idle,
@@ -21,26 +20,9 @@ class CustomRefreshIndicator extends StatefulWidget {
   State<CustomRefreshIndicator> createState() => _CustomRefreshIndicatorState();
 }
 
-class _CustomRefreshIndicatorState extends State<CustomRefreshIndicator>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animationController;
+class _CustomRefreshIndicatorState extends State<CustomRefreshIndicator> {
   _RefreshState _state = _RefreshState.idle;
   double _dragOffset = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
 
   bool _onNotification(ScrollNotification notification) {
     if (notification is ScrollStartNotification && notification.metrics.extentBefore == 0) {
@@ -50,21 +32,21 @@ class _CustomRefreshIndicatorState extends State<CustomRefreshIndicator>
     }
     if (_state == _RefreshState.dragging && notification is ScrollUpdateNotification) {
       setState(() {
-        _dragOffset = notification.metrics.pixels * -1;
+        _dragOffset = (notification.metrics.pixels * -1) / 2.0;
       });
     }
     if (_state == _RefreshState.dragging && notification is ScrollEndNotification) {
-      if (_dragOffset > 100) {
+      if (_dragOffset > 60) {
         setState(() {
           _state = _RefreshState.refreshing;
           _dragOffset = 0;
-          _animationController.repeat();
         });
         widget.onRefresh().whenComplete(() {
-          setState(() {
-            _state = _RefreshState.idle;
-            _animationController.stop();
-          });
+          if (mounted) {
+            setState(() {
+              _state = _RefreshState.idle;
+            });
+          }
         });
       } else {
         setState(() {
@@ -78,6 +60,17 @@ class _CustomRefreshIndicatorState extends State<CustomRefreshIndicator>
 
   @override
   Widget build(BuildContext context) {
+    double indicatorHeight = 0;
+    double indicatorOpacity = 0;
+
+    if (_state == _RefreshState.dragging) {
+      indicatorHeight = _dragOffset;
+      indicatorOpacity = (_dragOffset / 100).clamp(0.0, 1.0);
+    } else if (_state == _RefreshState.refreshing) {
+      indicatorHeight = 60;
+      indicatorOpacity = 1.0;
+    }
+
     return NotificationListener<ScrollNotification>(
       onNotification: _onNotification,
       child: Stack(
@@ -85,15 +78,24 @@ class _CustomRefreshIndicatorState extends State<CustomRefreshIndicator>
           widget.child,
           if (_state != _RefreshState.idle)
             Positioned(
-              top: 0,
+              top: 20,
               left: 0,
               right: 0,
               child: Center(
-                child: SizedBox(
-                  height: _dragOffset > 100 ? 100 : _dragOffset,
-                  child: RotationTransition(
-                    turns: _animationController,
-                    child: const Icon(Icons.wb_sunny, color: Colors.amber, size: 30),
+                child: Opacity(
+                  opacity: indicatorOpacity,
+                  child: SizedBox(
+                    height: indicatorHeight,
+                    width: 30,
+                    child: _state == _RefreshState.refreshing
+                        ? const CircularProgressIndicator(
+                            strokeWidth: 2.0,
+                            color: Colors.white,
+                          )
+                        : Transform.rotate(
+                            angle: -_dragOffset * 0.1,
+                            child: const Icon(Icons.arrow_downward, color: Colors.white, size: 30),
+                          ),
                   ),
                 ),
               ),
