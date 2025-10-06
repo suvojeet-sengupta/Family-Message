@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/settings_service.dart';
 
@@ -11,28 +12,18 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final SettingsService _settingsService = SettingsService();
-  bool _isFahrenheit = false;
   List<String> _savedCities = [];
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _loadSavedCities();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> _loadSavedCities() async {
     final prefs = await SharedPreferences.getInstance();
-    _isFahrenheit = await _settingsService.isFahrenheit();
     setState(() {
       _savedCities = prefs.getStringList('recentSearches') ?? [];
-    });
-  }
-
-  Future<void> _toggleTemperatureUnit(bool value) async {
-    await _settingsService.setFahrenheit(value);
-    setState(() {
-      _isFahrenheit = value;
     });
   }
 
@@ -56,6 +47,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = Provider.of<SettingsService>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -64,8 +57,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           SwitchListTile(
             title: const Text('Use Fahrenheit'),
-            value: _isFahrenheit,
-            onChanged: _toggleTemperatureUnit,
+            value: settingsService.useFahrenheit,
+            onChanged: (value) {
+              settingsService.toggleUnit(value);
+            },
           ),
           const Divider(),
           const Padding(

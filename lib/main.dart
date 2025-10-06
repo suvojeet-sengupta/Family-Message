@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/weather_model.dart';
 import 'screens/home_screen.dart';
+import 'services/settings_service.dart';
 import 'services/weather_service.dart';
 
 void main() async {
@@ -19,7 +21,12 @@ void main() async {
     }
   }
 
-  runApp(AuroraWeather(initialWeather: initialWeather));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => SettingsService(),
+      child: AuroraWeather(initialWeather: initialWeather),
+    ),
+  );
 }
 
 class AuroraWeather extends StatelessWidget {

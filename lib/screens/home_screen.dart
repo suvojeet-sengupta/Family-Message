@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:AuroraWeather/models/weather_model.dart';
@@ -23,11 +24,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final WeatherService _weatherService = WeatherService();
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  final SettingsService _settingsService = SettingsService();
   List<String> _savedCities = [];
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
-  bool _isFahrenheit = false;
   final Map<String, bool> _isRefreshing = {};
 
   @override
@@ -43,13 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ).then((_) => _clearLastOpenedCity());
       });
     }
-    _loadInitialData();
-  }
-
-  Future<void> _loadInitialData() async {
-    _isFahrenheit = await _settingsService.isFahrenheit();
-    await _loadCachedData();
-    await _refreshStaleData();
+    _loadCachedData();
+    _refreshStaleData();
   }
 
   Future<void> _loadCachedData() async {
@@ -153,18 +147,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = Provider.of<SettingsService>(context);
+    final isFahrenheit = settingsService.useFahrenheit;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Aurora Weather'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () async {
-              await Navigator.push(
+            onPressed: () {
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
-              _loadInitialData();
             },
           ),
           IconButton(
@@ -173,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _buildWeatherList(),
+      body: _buildWeatherList(isFahrenheit),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final newCity = await Navigator.push(
@@ -181,7 +177,8 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (context) => const SearchScreen()),
           );
           if (newCity != null && newCity.isNotEmpty) {
-            _loadInitialData();
+            _loadCachedData();
+            _refreshStaleData();
           }
         },
         child: const Icon(Icons.search),
@@ -189,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWeatherList() {
+  Widget _buildWeatherList(bool isFahrenheit) {
     if (_savedCities.isEmpty && _currentLocationWeather == null) {
       return const Center(
         child: Column(
@@ -217,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           if (_currentLocationWeather != null)
-            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: _isFahrenheit, isRefreshing: _isRefreshing['current'] ?? false),
+            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: isFahrenheit, isRefreshing: _isRefreshing['current'] ?? false),
           if (_currentLocationWeather == null)
             const ShimmerLoading(), // Show shimmer while initially fetching
           const SizedBox(height: 24),
@@ -234,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (weather == null) {
               return const ShimmerLoading(); // Show shimmer for cities being fetched
             }
-            return WeatherCard(weather: weather, isFahrenheit: _isFahrenheit, isRefreshing: _isRefreshing[city] ?? false);
+            return WeatherCard(weather: weather, isFahrenheit: isFahrenheit, isRefreshing: _isRefreshing[city] ?? false);
           }).toList(),
         ],
       ),
