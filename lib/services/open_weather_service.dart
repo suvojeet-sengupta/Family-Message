@@ -77,12 +77,31 @@ class OpenWeatherService {
       feelsLikeF: isFahrenheit ? weatherData['main']['feels_like'].toDouble() : (weatherData['main']['feels_like'] * 9 / 5) + 32,
       wind: weatherData['wind']['speed'].toDouble() * 3.6, // Convert m/s to km/h
       humidity: weatherData['main']['humidity'],
-      airQuality: aqi != null ? AirQuality(usEpaIndex: aqi) : null,
+      airQuality: aqi != null ? AirQuality(usEpaIndex: _convertOwmAqiToEpaAqi(aqi)) : null,
       pressure: weatherData['main']['pressure']?.toDouble(),
       hourlyForecast: _mapToHourlyForecast(forecastData['list'], isFahrenheit),
       dailyForecast: _mapToDailyForecast(forecastData['list'], isFahrenheit, weatherData['sys']),
       timestamp: DateTime.now().millisecondsSinceEpoch,
     );
+  }
+
+  num _convertOwmAqiToEpaAqi(dynamic aqi) {
+    if (aqi == null) return 0;
+    final aqiValue = aqi as int;
+    switch (aqiValue) {
+      case 1:
+        return 25; // Good
+      case 2:
+        return 75; // Fair
+      case 3:
+        return 125; // Moderate
+      case 4:
+        return 175; // Poor
+      case 5:
+        return 250; // Very Poor
+      default:
+        return 0;
+    }
   }
 
   List<HourlyForecast> _mapToHourlyForecast(List<dynamic> forecastList, bool isFahrenheit) {

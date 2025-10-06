@@ -66,23 +66,12 @@ class OpenMeteoService {
       feelsLikeF: isFahrenheit ? data['current']['apparent_temperature'].toDouble() : (data['current']['apparent_temperature'] * 9 / 5) + 32,
       wind: data['current']['wind_speed_10m'].toDouble(),
       humidity: data['current']['relative_humidity_2m'],
-      airQuality: usAqi != null ? AirQuality(usEpaIndex: _convertAqiToEpaIndex(usAqi)) : null,
+      airQuality: usAqi != null ? AirQuality(usEpaIndex: usAqi) : null,
       pressure: data['current']['pressure_msl']?.toDouble(),
       hourlyForecast: _mapToHourlyForecast(data['hourly'], isFahrenheit),
       dailyForecast: _mapToDailyForecast(data['daily'], isFahrenheit),
       timestamp: DateTime.now().millisecondsSinceEpoch,
     );
-  }
-
-  int _convertAqiToEpaIndex(dynamic aqi) {
-    if (aqi == null) return 0;
-    final aqiValue = aqi as num;
-    if (aqiValue <= 50) return 1;
-    if (aqiValue <= 100) return 2;
-    if (aqiValue <= 150) return 3;
-    if (aqiValue <= 200) return 4;
-    if (aqiValue <= 300) return 5;
-    return 6;
   }
 
   List<HourlyForecast> _mapToHourlyForecast(Map<String, dynamic> hourlyData, bool isFahrenheit) {

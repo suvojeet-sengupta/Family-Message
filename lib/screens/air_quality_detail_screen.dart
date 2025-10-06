@@ -53,43 +53,23 @@ class AirQualityDetailScreen extends StatelessWidget {
     );
   }
 
-  String _getAqiSubtitle(int? aqi) {
+  String _getAqiSubtitle(num? aqi) {
     if (aqi == null) return 'N/A';
-    switch (aqi) {
-      case 1:
-        return 'Good';
-      case 2:
-        return 'Moderate';
-      case 3:
-        return 'Unhealthy for sensitive groups';
-      case 4:
-        return 'Unhealthy';
-      case 5:
-        return 'Very Unhealthy';
-      case 6:
-        return 'Hazardous';
-      default:
-        return 'Unknown';
-    }
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for sensitive groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
   }
 
-  Color _getAqiColor(int? aqi) {
+  Color _getAqiColor(num? aqi) {
     if (aqi == null) return Colors.white;
-    switch (aqi) {
-      case 1:
-        return Colors.green;
-      case 2:
-        return Colors.yellow;
-      case 3:
-        return Colors.orange;
-      case 4:
-        return Colors.red;
-      case 5:
-        return Colors.purple;
-      case 6:
-        return Colors.brown;
-      default:
-        return Colors.white;
-    }
+    if (aqi <= 50) return Colors.green;
+    if (aqi <= 100) return Colors.yellow;
+    if (aqi <= 150) return Colors.orange;
+    if (aqi <= 200) return Colors.red;
+    if (aqi <= 300) return Colors.purple;
+    return Colors.brown;
   }
 }

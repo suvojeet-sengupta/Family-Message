@@ -31,24 +31,14 @@ class WeatherDetailScreen extends StatelessWidget {
     );
   }
 
-  String _getAqiSubtitle(int? aqi) {
+  String _getAqiSubtitle(num? aqi) {
     if (aqi == null) return 'N/A';
-    switch (aqi) {
-      case 1:
-        return 'Good';
-      case 2:
-        return 'Moderate';
-      case 3:
-        return 'Unhealthy for sensitive groups';
-      case 4:
-        return 'Unhealthy';
-      case 5:
-        return 'Very Unhealthy';
-      case 6:
-        return 'Hazardous';
-      default:
-        return 'Unknown';
-    }
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for sensitive groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
   }
 
   Widget _buildWeatherContent(BuildContext context) {
@@ -111,7 +101,7 @@ class WeatherDetailScreen extends StatelessWidget {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AirQualityDetailScreen(airQuality: weather.airQuality))),
               child: WeatherDetailCard(
                 title: 'Air Quality',
-                value: weather.airQuality?.usEpaIndex.toString() ?? 'N/A',
+                value: weather.airQuality?.usEpaIndex.round().toString() ?? 'N/A',
                 subtitle: _getAqiSubtitle(weather.airQuality?.usEpaIndex),
                 icon: Icons.air_outlined,
                 color: Colors.yellow,

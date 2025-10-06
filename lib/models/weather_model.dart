@@ -252,7 +252,7 @@ class DailyForecast {
 }
 
 class AirQuality {
-  final int usEpaIndex;
+  final num usEpaIndex;
 
   AirQuality({required this.usEpaIndex});
 
