@@ -9,7 +9,7 @@ import 'package:AuroraWeather/screens/precipitation_detail_screen.dart';
 import 'package:AuroraWeather/screens/pressure_detail_screen.dart';
 import 'package:AuroraWeather/screens/sunrise_sunset_detail_screen.dart';
 
-import 'package:AuroraWeather/screens/visibility_detail_screen.dart';
+
 import 'package:AuroraWeather/screens/wind_detail_screen.dart';
 import 'package:AuroraWeather/screens/humidity_detail_screen.dart';
 
@@ -66,16 +66,7 @@ class WeatherDetailScreen extends StatelessWidget {
                 color: Colors.blue,
               ),
             ),
-            InkWell(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VisibilityDetailScreen(visibility: weather.dailyForecast.first.avgVisibilityKm))),
-              child: WeatherDetailCard(
-                title: 'Visibility',
-                value: weather.dailyForecast.first.avgVisibilityKm < 0 ? 'N/A' : '${weather.dailyForecast.first.avgVisibilityKm.toStringAsFixed(1)} km',
-                subtitle: 'Average visibility',
-                icon: Icons.visibility,
-                color: Colors.purple,
-              ),
-            ),
+
 
             InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeedKph: weather.wind))),

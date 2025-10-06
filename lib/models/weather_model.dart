@@ -161,7 +161,6 @@ class DailyForecast {
   final String condition; // Add this
   final List<HourlyForecast> hourlyForecast;
   final double totalPrecipMm;
-  final double avgVisibilityKm;
   final double avgHumidity; // Better option than pressure
   final double maxWindKph;  // Useful data
   final String sunrise;
@@ -178,7 +177,6 @@ class DailyForecast {
     required this.condition,
     required this.hourlyForecast,
     required this.totalPrecipMm,
-    required this.avgVisibilityKm,
     required this.avgHumidity,
     required this.maxWindKph,
     required this.sunrise,
@@ -199,7 +197,6 @@ class DailyForecast {
           .map((hour) => HourlyForecast.fromJson(hour))
           .toList(),
       totalPrecipMm: (json['day']?['totalprecip_mm'] ?? 0.0).toDouble(),
-      avgVisibilityKm: (json['day']?['avgvis_km'] ?? 0.0).toDouble(),
       avgHumidity: (json['day']?['avghumidity'] ?? 0.0).toDouble(),
       maxWindKph: (json['day']?['maxwind_kph'] ?? 0.0).toDouble(),
       sunrise: json['astro']?['sunrise'] ?? '', // ✅ FIXED
@@ -219,7 +216,6 @@ class DailyForecast {
       'condition': condition,
       'hourlyForecast': jsonEncode(hourlyForecast.map((e) => e.toDatabaseMap()).toList()),
       'totalPrecipMm': totalPrecipMm,
-      'avgVisibilityKm': avgVisibilityKm,
       'avgHumidity': avgHumidity,
       'maxWindKph': maxWindKph,
       'sunrise': sunrise,
@@ -241,7 +237,6 @@ class DailyForecast {
           .map((e) => HourlyForecast.fromDatabaseMap(e))
           .toList(),
       totalPrecipMm: map['totalPrecipMm'],
-      avgVisibilityKm: map['avgVisibilityKm'],
       avgHumidity: map['avgHumidity'],
       maxWindKph: map['maxWindKph'],
       sunrise: map['sunrise'],
