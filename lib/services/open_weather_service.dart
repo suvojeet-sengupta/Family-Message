@@ -131,11 +131,13 @@ class OpenWeatherService {
           'windSpeed': item['wind']['speed'],
           'description': item['weather'][0]['description'],
           'icon': item['weather'][0]['icon'],
+          'visibilityList': [item['visibility'] ?? 10000],
         };
       } else {
         dailyData[dateString]!['maxTemp'] = (item['main']['temp_max'] > dailyData[dateString]!['maxTemp']) ? item['main']['temp_max'] : dailyData[dateString]!['maxTemp'];
         dailyData[dateString]!['minTemp'] = (item['main']['temp_min'] < dailyData[dateString]!['minTemp']) ? item['main']['temp_min'] : dailyData[dateString]!['minTemp'];
         dailyData[dateString]!['totalPrecipMm'] += item['rain']?['3h'] ?? 0.0;
+        (dailyData[dateString]!['visibilityList'] as List).add(item['visibility'] ?? 10000);
       }
     }
 
@@ -152,6 +154,9 @@ class OpenWeatherService {
         sunset = DateTime.fromMillisecondsSinceEpoch(sys['sunset'] * 1000).toIso8601String();
       }
 
+      final visibilityList = data['visibilityList'] as List;
+      final avgVisibility = visibilityList.reduce((a, b) => a + b) / visibilityList.length / 1000;
+
       dailyForecasts.add(DailyForecast(
         date: date.toIso8601String(),
         maxTemp: isFahrenheit ? (data['maxTemp'] - 32) * 5 / 9 : data['maxTemp'].toDouble(),
@@ -162,7 +167,7 @@ class OpenWeatherService {
         condition: data['description'],
         hourlyForecast: [], // Simplified for now
         totalPrecipMm: data['totalPrecipMm'].toDouble(),
-        avgVisibilityKm: 10.0, // Not available in daily summary
+        avgVisibilityKm: avgVisibility.toDouble(),
         avgHumidity: data['humidity'].toDouble(),
         maxWindKph: (data['windSpeed'] as num).toDouble() * 3.6, // Convert m/s to km/h
         sunrise: sunrise,
