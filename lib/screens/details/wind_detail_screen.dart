@@ -1,10 +1,18 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class WindDetailScreen extends StatelessWidget {
   final double windSpeedKph;
+  final int windDegree;
+  final String windDir;
 
-  const WindDetailScreen({super.key, required this.windSpeedKph});
+  const WindDetailScreen({
+    super.key,
+    required this.windSpeedKph,
+    required this.windDegree,
+    required this.windDir,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +21,7 @@ class WindDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wind Speed'),
+        title: const Text('Wind'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -22,11 +30,46 @@ class WindDetailScreen extends StatelessWidget {
           children: [
             _buildCurrentWindSpeed(beaufort),
             const SizedBox(height: 24),
+            _buildWindDirection(),
+            const SizedBox(height: 24),
             _buildBeaufortInfo(),
             const SizedBox(height: 24),
             _buildBeaufortScale(),
           ],
         ).animate().fade(duration: 300.ms),
+      ),
+    );
+  }
+
+  Widget _buildWindDirection() {
+    return Center(
+      child: Column(
+        children: [
+          const Text(
+            'Wind Direction',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 200,
+            height: 200,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                const Icon(Icons.compass_calibration_outlined, size: 200, color: Colors.grey),
+                Transform.rotate(
+                  angle: (windDegree * math.pi / 180) * -1, // Rotate clockwise
+                  child: const Icon(Icons.arrow_upward_rounded, size: 150, color: Colors.blue),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '$windDir ($windDegree°)',
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+          ),
+        ],
       ),
     );
   }

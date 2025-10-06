@@ -12,6 +12,7 @@ import './settings_screen.dart';
 import '../widgets/shimmer_loading.dart';
 import './search_screen.dart';
 import '../widgets/weather_card.dart';
+import '../widgets/custom_refresh_indicator.dart';
 import '../constants/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -203,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return RefreshIndicator(
+    return CustomRefreshIndicator(
       onRefresh: () => _refreshStaleData(force: true),
       child: ListView(
         padding: const EdgeInsets.all(16.0),

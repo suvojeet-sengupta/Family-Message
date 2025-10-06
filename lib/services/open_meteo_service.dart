@@ -18,7 +18,7 @@ class OpenMeteoService {
     final tempUnit = isFahrenheit ? 'fahrenheit' : 'celsius';
 
     final response = await http.get(Uri.parse(
-                    '$baseUrl/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
+                    '$baseUrl/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return _mapToWeatherModel(data, 'Current Location', isFahrenheit);
@@ -45,7 +45,7 @@ class OpenMeteoService {
         final locationName = geocodingData['results'][0]['name'];
 
         final response = await http.get(Uri.parse(
-            '$baseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
+            '$baseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl,us_aqi&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&temperature_unit=$tempUnit&timezone=auto')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -74,6 +74,7 @@ class OpenMeteoService {
 
   Weather _mapToWeatherModel(Map<String, dynamic> data, String locationName, bool isFahrenheit) {
     final usAqi = data['current']?['us_aqi'];
+    final windDegree = (data['current']?['wind_direction_10m'] ?? 0).toInt();
     return Weather(
       locationName: locationName,
       temperature: isFahrenheit ? (data['current']['temperature_2m'] - 32) * 5 / 9 : data['current']['temperature_2m'].toDouble(),
@@ -84,6 +85,8 @@ class OpenMeteoService {
       feelsLike: isFahrenheit ? (data['current']['apparent_temperature'] - 32) * 5 / 9 : data['current']['apparent_temperature'].toDouble(),
       feelsLikeF: isFahrenheit ? data['current']['apparent_temperature'].toDouble() : (data['current']['apparent_temperature'] * 9 / 5) + 32,
       wind: data['current']['wind_speed_10m'].toDouble(),
+      windDir: _getWindDirectionFromDegree(windDegree),
+      windDegree: windDegree,
       humidity: data['current']['relative_humidity_2m'],
       airQuality: usAqi != null ? AirQuality(usEpaIndex: usAqi) : null,
       pressure: data['current']['pressure_msl']?.toDouble(),
@@ -91,6 +94,12 @@ class OpenMeteoService {
       dailyForecast: _mapToDailyForecast(data['daily'], isFahrenheit),
       timestamp: DateTime.now().millisecondsSinceEpoch,
     );
+  }
+
+  String _getWindDirectionFromDegree(int degree) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    final index = ((degree + 11.25) / 22.5).floor() % 16;
+    return directions[index];
   }
 
   List<HourlyForecast> _mapToHourlyForecast(Map<String, dynamic> hourlyData, bool isFahrenheit) {

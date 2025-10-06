@@ -11,6 +11,7 @@ import 'open_meteo_service.dart';
 import 'open_weather_service.dart';
 import 'weather_exceptions.dart';
 import 'package:logger/logger.dart';
+import '../models/search_result.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../config/weather_config.dart';
 
@@ -148,7 +149,7 @@ class WeatherService {
     }
   }
 
-  Future<List<String>> searchCities(String query) async {
+  Future<List<SearchResult>> searchCities(String query) async {
     if (WeatherConfig.weatherApiKey.isEmpty) {
       throw ConfigurationException('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
     }
@@ -162,7 +163,7 @@ class WeatherService {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((e) => e['name'] as String).toList();
+      return data.map((e) => SearchResult.fromJson(e)).toList();
     } else {
       throw WeatherApiException(
         provider: 'WeatherAPI.com',

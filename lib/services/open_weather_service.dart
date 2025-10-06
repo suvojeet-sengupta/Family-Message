@@ -80,6 +80,7 @@ class OpenWeatherService {
 
   Weather _mapToWeatherModel(Map<String, dynamic> weatherData, Map<String, dynamic> forecastData, Map<String, dynamic> airPollutionData, bool isFahrenheit) {
     final aqi = airPollutionData['list'][0]['main']['aqi'];
+    final windDegree = (weatherData['wind']?['deg'] ?? 0).toInt();
     return Weather(
       locationName: weatherData['name'],
       temperature: isFahrenheit ? (weatherData['main']['temp'] - 32) * 5 / 9 : weatherData['main']['temp'].toDouble(),
@@ -90,6 +91,8 @@ class OpenWeatherService {
       feelsLike: isFahrenheit ? (weatherData['main']['feels_like'] - 32) * 5 / 9 : weatherData['main']['feels_like'].toDouble(),
       feelsLikeF: isFahrenheit ? weatherData['main']['feels_like'].toDouble() : (weatherData['main']['feels_like'] * 9 / 5) + 32,
       wind: weatherData['wind']['speed'].toDouble() * 3.6, // Convert m/s to km/h
+      windDir: _getWindDirectionFromDegree(windDegree),
+      windDegree: windDegree,
       humidity: weatherData['main']['humidity'],
       airQuality: aqi != null ? AirQuality(usEpaIndex: _convertOwmAqiToEpaAqi(aqi)) : null,
       pressure: weatherData['main']['pressure']?.toDouble(),
@@ -97,6 +100,12 @@ class OpenWeatherService {
       dailyForecast: _mapToDailyForecast(forecastData['list'], isFahrenheit, weatherData['sys']),
       timestamp: DateTime.now().millisecondsSinceEpoch,
     );
+  }
+
+  String _getWindDirectionFromDegree(int degree) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    final index = ((degree + 11.25) / 22.5).floor() % 16;
+    return directions[index];
   }
 
   num _convertOwmAqiToEpaAqi(dynamic aqi) {

@@ -13,6 +13,8 @@ class Weather {
   final double feelsLike;
   final double feelsLikeF;
   final double wind;
+  final String windDir;
+  final int windDegree;
   final int humidity;
   final AirQuality? airQuality;
   final double? pressure;
@@ -30,6 +32,8 @@ class Weather {
     required this.feelsLike,
     required this.feelsLikeF,
     required this.wind,
+    required this.windDir,
+    required this.windDegree,
     required this.humidity,
     this.airQuality,
     this.pressure,
@@ -49,6 +53,8 @@ class Weather {
       feelsLike: (json['current']?['feelslike_c'] ?? 0.0).toDouble(),
       feelsLikeF: (json['current']?['feelslike_f'] ?? 0.0).toDouble(),
       wind: (json['current']?['wind_kph'] ?? 0.0).toDouble(),
+      windDir: json['current']?['wind_dir'] ?? '',
+      windDegree: json['current']?['wind_degree'] ?? 0,
       humidity: json['current']?['humidity'] ?? 0,
       airQuality: json['current']?['air_quality'] != null
           ? AirQuality.fromJson(json['current']['air_quality'])
@@ -76,6 +82,8 @@ class Weather {
       'feelsLike': feelsLike,
       'feelsLikeF': feelsLikeF,
       'wind': wind,
+      'windDir': windDir,
+      'windDegree': windDegree,
       'humidity': humidity,
       'airQuality': airQuality != null ? jsonEncode(airQuality!.toDatabaseMap()) : null,
       'pressure': pressure,
@@ -97,6 +105,8 @@ class Weather {
       feelsLike: map['feelsLike'],
       feelsLikeF: map['feelsLikeF'],
       wind: map['wind'],
+      windDir: map['windDir'] ?? '',
+      windDegree: map['windDegree'] ?? 0,
       humidity: map['humidity'],
       airQuality: map['airQuality'] != null
           ? AirQuality.fromDatabaseMap(jsonDecode(map['airQuality']))

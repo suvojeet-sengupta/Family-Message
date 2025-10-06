@@ -74,11 +74,11 @@ class WeatherDetailScreen extends StatelessWidget {
 
 
             InkWell(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeedKph: weather.wind))),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeedKph: weather.wind, windDegree: weather.windDegree, windDir: weather.windDir))),
               child: WeatherDetailCard(
                 title: 'Wind',
                 value: '${weather.wind.round()} kph',
-                subtitle: 'From W',
+                subtitle: 'From ${weather.windDir}',
                 icon: Icons.air,
                 color: Colors.green,
               ),

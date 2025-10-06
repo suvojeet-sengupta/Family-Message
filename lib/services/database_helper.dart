@@ -33,9 +33,11 @@ class DatabaseHelper {
             feelsLike REAL,
             feelsLikeF REAL,
             wind REAL,
+            windDir TEXT,
+            windDegree INTEGER,
             humidity INTEGER,
-            uvIndex REAL,
-            hourlyForecast TEXT,
+            airQuality TEXT, -- Storing as JSON String
+            pressure REAL,
             dailyForecast TEXT,
             timestamp INTEGER
           )
