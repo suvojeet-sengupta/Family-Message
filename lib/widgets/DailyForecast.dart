@@ -1,37 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../screens/daily_detail_screen.dart';
 import '../services/settings_service.dart';
 
-class DailyForecastWidget extends StatefulWidget {
+class DailyForecastWidget extends StatelessWidget {
   final List<DailyForecast> dailyForecast;
 
   const DailyForecastWidget({super.key, required this.dailyForecast});
 
   @override
-  State<DailyForecastWidget> createState() => _DailyForecastWidgetState();
-}
-
-class _DailyForecastWidgetState extends State<DailyForecastWidget> {
-  final SettingsService _settingsService = SettingsService();
-  bool _isFahrenheit = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    _isFahrenheit = await _settingsService.isFahrenheit();
-    setState(() {});
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final fiveDayForecast = widget.dailyForecast.take(5).toList();
+    final settingsService = Provider.of<SettingsService>(context);
+    final isFahrenheit = settingsService.useFahrenheit;
+    final fiveDayForecast = dailyForecast.take(5).toList();
 
     return Card(
       color: Colors.black.withOpacity(0.2),
@@ -58,7 +42,7 @@ class _DailyForecastWidgetState extends State<DailyForecastWidget> {
               itemCount: fiveDayForecast.length,
               itemBuilder: (context, index) {
                 final forecast = fiveDayForecast[index];
-                return _buildForecastItem(context, forecast);
+                return _buildForecastItem(context, forecast, isFahrenheit);
               },
             ),
           ],
@@ -67,7 +51,7 @@ class _DailyForecastWidgetState extends State<DailyForecastWidget> {
     ).animate().fade(duration: 300.ms);
   }
 
-  Widget _buildForecastItem(BuildContext context, DailyForecast forecast) {
+  Widget _buildForecastItem(BuildContext context, DailyForecast forecast, bool isFahrenheit) {
     return Card(
       color: Colors.white.withOpacity(0.1),
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -79,7 +63,7 @@ class _DailyForecastWidgetState extends State<DailyForecastWidget> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DailyDetailScreen(dailyForecast: forecast, isFahrenheit: _isFahrenheit),
+              builder: (context) => DailyDetailScreen(dailyForecast: forecast, isFahrenheit: isFahrenheit),
             ),
           );
         },
@@ -106,7 +90,7 @@ class _DailyForecastWidgetState extends State<DailyForecastWidget> {
               SizedBox(
                 width: 50,
                 child: Text(
-                  _isFahrenheit ? '${forecast.maxTempF.round()}°F' : '${forecast.maxTemp.round()}°C',
+                  isFahrenheit ? '${forecast.maxTempF.round()}°F' : '${forecast.maxTemp.round()}°C',
                   textAlign: TextAlign.right,
                   style: const TextStyle(
                     color: Colors.white,
@@ -118,7 +102,7 @@ class _DailyForecastWidgetState extends State<DailyForecastWidget> {
               SizedBox(
                 width: 50,
                 child: Text(
-                  _isFahrenheit ? '${forecast.minTempF.round()}°F' : '${forecast.minTemp.round()}°C',
+                  isFahrenheit ? '${forecast.minTempF.round()}°F' : '${forecast.minTemp.round()}°C',
                   textAlign: TextAlign.right,
                   style: const TextStyle(
                     color: Colors.white70,

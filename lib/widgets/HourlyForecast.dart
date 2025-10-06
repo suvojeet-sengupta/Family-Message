@@ -1,42 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../screens/hourly_forecast_detail_screen.dart';
 import '../services/settings_service.dart';
 
-class HourlyForecastWidget extends StatefulWidget {
+class HourlyForecastWidget extends StatelessWidget {
   final List<HourlyForecast> hourlyForecast;
 
   const HourlyForecastWidget({super.key, required this.hourlyForecast});
 
   @override
-  State<HourlyForecastWidget> createState() => _HourlyForecastWidgetState();
-}
-
-class _HourlyForecastWidgetState extends State<HourlyForecastWidget> {
-  final SettingsService _settingsService = SettingsService();
-  bool _isFahrenheit = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    _isFahrenheit = await _settingsService.isFahrenheit();
-    setState(() {});
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final isFahrenheit = Provider.of<SettingsService>(context).useFahrenheit;
+
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => HourlyForecastDetailScreen(hourlyForecast: widget.hourlyForecast, isFahrenheit: _isFahrenheit),
+            builder: (context) => HourlyForecastDetailScreen(hourlyForecast: hourlyForecast, isFahrenheit: isFahrenheit),
           ),
         );
       },
@@ -63,13 +47,13 @@ class _HourlyForecastWidgetState extends State<HourlyForecastWidget> {
                 height: 120,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: widget.hourlyForecast.length,
+                  itemCount: hourlyForecast.length,
                   itemBuilder: (context, index) {
-                    final forecast = widget.hourlyForecast[index];
+                    final forecast = hourlyForecast[index];
                     return _buildForecastItem(
                       time: DateFormat.j().format(DateTime.parse(forecast.time)),
                       iconUrl: forecast.iconUrl,
-                      temperature: _isFahrenheit
+                      temperature: isFahrenheit
                           ? '${forecast.temperatureF.round()}°F'
                           : '${forecast.temperature.round()}°C',
                     ).animate().fade(duration: 300.ms);

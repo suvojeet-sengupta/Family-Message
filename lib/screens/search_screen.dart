@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/app_constants.dart';
 import '../services/weather_service.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -52,13 +53,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _saveSearch(String city) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> recentSearches = prefs.getStringList('recentSearches') ?? [];
+    List<String> recentSearches = prefs.getStringList(AppConstants.recentSearchesKey) ?? [];
     if (!recentSearches.contains(city)) {
       recentSearches.insert(0, city);
       if (recentSearches.length > 5) {
         recentSearches.removeLast();
       }
-      await prefs.setStringList('recentSearches', recentSearches);
+      await prefs.setStringList(AppConstants.recentSearchesKey, recentSearches);
     }
   }
 

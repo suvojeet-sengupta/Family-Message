@@ -1,16 +1,18 @@
+import 'package:AuroraWeather/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:AuroraWeather/models/weather_model.dart';
-import 'package:AuroraWeather/services/weather_service.dart';
-import 'package:AuroraWeather/services/database_helper.dart';
-import 'package:AuroraWeather/services/settings_service.dart';
-import 'package:AuroraWeather/screens/weather_detail_screen.dart';
-import 'package:AuroraWeather/screens/settings_screen.dart';
-import 'package:AuroraWeather/widgets/shimmer_loading.dart';
-import 'package:AuroraWeather/screens/search_screen.dart';
+import '../models/weather_model.dart';
+import '../services/weather_service.dart';
+import '../services/database_helper.dart';
+import '../services/settings_service.dart';
+import './weather_detail_screen.dart';
+import './settings_screen.dart';
+import '../widgets/shimmer_loading.dart';
+import './search_screen.dart';
 import '../widgets/weather_card.dart';
+import '../constants/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
   final Weather? initialWeather;
@@ -48,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadCachedData() async {
     final prefs = await SharedPreferences.getInstance();
-    _savedCities = prefs.getStringList('recentSearches') ?? [];
+    _savedCities = prefs.getStringList(AppConstants.recentSearchesKey) ?? [];
 
     final cachedCurrent = await _dbHelper.getLatestWeather();
     if (cachedCurrent != null) {
@@ -137,12 +139,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _saveLastOpenedCity(String city) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('lastOpenedCity', city);
+    await prefs.setString(AppConstants.lastOpenedCityKey, city);
   }
 
   Future<void> _clearLastOpenedCity() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('lastOpenedCity');
+    await prefs.remove(AppConstants.lastOpenedCityKey);
   }
 
   @override

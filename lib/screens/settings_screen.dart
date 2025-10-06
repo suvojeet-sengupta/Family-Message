@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/app_constants.dart';
 import '../services/settings_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -23,14 +24,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSavedCities() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _savedCities = prefs.getStringList('recentSearches') ?? [];
+      _savedCities = prefs.getStringList(AppConstants.recentSearchesKey) ?? [];
     });
   }
 
   Future<void> _deleteCity(String city) async {
     final prefs = await SharedPreferences.getInstance();
     _savedCities.remove(city);
-    await prefs.setStringList('recentSearches', _savedCities);
+    await prefs.setStringList(AppConstants.recentSearchesKey, _savedCities);
     setState(() {});
   }
 
@@ -41,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final city = _savedCities.removeAt(oldIndex);
     _savedCities.insert(newIndex, city);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('recentSearches', _savedCities);
+    await prefs.setStringList(AppConstants.recentSearchesKey, _savedCities);
     setState(() {});
   }
 

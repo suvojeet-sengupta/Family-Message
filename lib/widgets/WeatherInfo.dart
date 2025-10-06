@@ -1,35 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../screens/uv_index_detail_screen.dart';
+// import '../screens/uv_index_detail_screen.dart'; // Commented out: uvIndex missing from model and screen not provided.
 import '../screens/feels_like_detail_screen.dart';
 import '../screens/wind_detail_screen.dart';
 import '../screens/humidity_detail_screen.dart';
 import '../services/settings_service.dart';
 
-class WeatherInfo extends StatefulWidget {
+class WeatherInfo extends StatelessWidget {
   final Weather weather;
 
   const WeatherInfo({super.key, required this.weather});
-
-  @override
-  State<WeatherInfo> createState() => _WeatherInfoState();
-}
-
-class _WeatherInfoState extends State<WeatherInfo> {
-  final SettingsService _settingsService = SettingsService();
-  bool _isFahrenheit = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    _isFahrenheit = await _settingsService.isFahrenheit();
-    setState(() {});
-  }
 
   Route _createFadeRoute(Widget page) {
     return PageRouteBuilder(
@@ -45,6 +27,8 @@ class _WeatherInfoState extends State<WeatherInfo> {
 
   @override
   Widget build(BuildContext context) {
+    final isFahrenheit = Provider.of<SettingsService>(context).useFahrenheit;
+
     return Card(
       color: Colors.black.withOpacity(0.2),
       shape: RoundedRectangleBorder(
@@ -61,19 +45,19 @@ class _WeatherInfoState extends State<WeatherInfo> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(FeelsLikeDetailScreen(feelsLike: _isFahrenheit ? widget.weather.feelsLikeF : widget.weather.feelsLike, isFahrenheit: _isFahrenheit)),
+                      _createFadeRoute(FeelsLikeDetailScreen(feelsLike: isFahrenheit ? weather.feelsLikeF : weather.feelsLike, isFahrenheit: isFahrenheit)),
                     );
                   },
-                  child: _buildInfoItem(Icons.thermostat, 'Feels Like', _isFahrenheit ? '${widget.weather.feelsLikeF.round()}°F' : '${widget.weather.feelsLike.round()}°C'),
+                  child: _buildInfoItem(Icons.thermostat, 'Feels Like', isFahrenheit ? '${weather.feelsLikeF.round()}°F' : '${weather.feelsLike.round()}°C'),
                 ),
                 InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(WindDetailScreen(windSpeedKph: widget.weather.wind)),
+                      _createFadeRoute(WindDetailScreen(windSpeedKph: weather.wind)),
                     );
                   },
-                  child: _buildInfoItem(Icons.air, 'Wind', '${widget.weather.wind.round()} km/h'),
+                  child: _buildInfoItem(Icons.air, 'Wind', '${weather.wind.round()} km/h'),
                 ),
               ],
             ),
@@ -85,20 +69,20 @@ class _WeatherInfoState extends State<WeatherInfo> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(HumidityDetailScreen(humidity: widget.weather.humidity)),
+                      _createFadeRoute(HumidityDetailScreen(humidity: weather.humidity)),
                     );
                   },
-                  child: _buildInfoItem(Icons.water_drop, 'Humidity', '${widget.weather.humidity}%'),
+                  child: _buildInfoItem(Icons.water_drop, 'Humidity', '${weather.humidity}%'),
                 ),
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      _createFadeRoute(UvIndexDetailScreen(uvIndex: widget.weather.uvIndex)),
-                    );
-                  },
-                  child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${widget.weather.uvIndex.round()}'),
-                ),
+                // InkWell(
+                //   onTap: () {
+                //     // Navigator.push(
+                //     //   context,
+                //     //   _createFadeRoute(UvIndexDetailScreen(uvIndex: weather.uvIndex)),
+                //     // );
+                //   },
+                //   child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${weather.uvIndex.round()}'),
+                // ),
               ],
             ),
           ],
