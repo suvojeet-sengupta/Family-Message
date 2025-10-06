@@ -177,8 +177,12 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (context) => const SearchScreen()),
           );
           if (newCity != null && newCity.isNotEmpty) {
-            _loadCachedData();
-            _refreshStaleData();
+            if (!_savedCities.contains(newCity)) {
+              setState(() {
+                _savedCities.insert(0, newCity);
+              });
+              _fetchWeatherForCity(newCity);
+            }
           }
         },
         child: const Icon(Icons.search),
