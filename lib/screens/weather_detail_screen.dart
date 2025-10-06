@@ -70,7 +70,7 @@ class WeatherDetailScreen extends StatelessWidget {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VisibilityDetailScreen(visibility: weather.dailyForecast.first.avgVisibilityKm))),
               child: WeatherDetailCard(
                 title: 'Visibility',
-                value: '${weather.dailyForecast.first.avgVisibilityKm} km',
+                value: weather.dailyForecast.first.avgVisibilityKm < 0 ? 'N/A' : '${weather.dailyForecast.first.avgVisibilityKm.toStringAsFixed(1)} km',
                 subtitle: 'Average visibility',
                 icon: Icons.visibility,
                 color: Colors.purple,

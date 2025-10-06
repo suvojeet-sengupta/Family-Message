@@ -154,8 +154,10 @@ class OpenWeatherService {
         sunset = DateTime.fromMillisecondsSinceEpoch(sys['sunset'] * 1000).toIso8601String();
       }
 
-      final visibilityList = data['visibilityList'] as List;
-      final avgVisibility = visibilityList.reduce((a, b) => a + b) / visibilityList.length / 1000;
+      final visibilityList = (data['visibilityList'] as List).where((v) => v != null).toList();
+      final avgVisibility = visibilityList.isNotEmpty
+          ? visibilityList.reduce((a, b) => a + b) / visibilityList.length / 1000
+          : -1.0;
 
       dailyForecasts.add(DailyForecast(
         date: date.toIso8601String(),

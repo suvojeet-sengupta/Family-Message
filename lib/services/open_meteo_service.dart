@@ -99,7 +99,7 @@ class OpenMeteoService {
         iconUrl: _getWeatherIcon(dailyData['weather_code'][i]),
         hourlyForecast: [], // Open-Meteo doesn't provide hourly forecast per day in the same way
         totalPrecipMm: dailyData['precipitation_sum'][i].toDouble(),
-        avgVisibilityKm: dailyData['visibility'][i].toDouble(),
+        avgVisibilityKm: (dailyData['visibility'][i] as num).toDouble() / 1000,
         condition: _getWeatherDescription(dailyData['weather_code'][i]),
         avgHumidity: 0.0,
         maxWindKph: 0.0,
