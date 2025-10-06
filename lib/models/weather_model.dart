@@ -246,6 +246,7 @@ class DailyForecast {
       maxWindKph: map['maxWindKph'],
       sunrise: map['sunrise'],
       sunset: map['sunset'],
+      moonPhase: map['moonPhase'] ?? '',
     );
   }
 }
