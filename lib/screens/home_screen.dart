@@ -73,26 +73,23 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _refreshStaleData({bool force = false}) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     const thirtyMinutesInMillis = 30 * 60 * 1000;
+    final List<Future> refreshFutures = [];
 
     // Refresh current location
-    if (_currentLocationWeather != null) {
-      if (force || (now - _currentLocationWeather!.timestamp) > thirtyMinutesInMillis) {
-        _fetchWeatherForCurrentLocation();
-      }
-    } else {
-       _fetchWeatherForCurrentLocation();
+    if (_currentLocationWeather == null || force || (now - _currentLocationWeather!.timestamp) > thirtyMinutesInMillis) {
+      refreshFutures.add(_fetchWeatherForCurrentLocation());
     }
 
     // Refresh saved cities
     for (var city in _savedCities) {
       final weather = _weatherData[city];
-      if (weather != null) {
-        if (force || (now - weather.timestamp) > thirtyMinutesInMillis) {
-          _fetchWeatherForCity(city);
-        }
-      } else {
-        _fetchWeatherForCity(city);
+      if (weather == null || force || (now - weather.timestamp) > thirtyMinutesInMillis) {
+        refreshFutures.add(_fetchWeatherForCity(city));
       }
+    }
+
+    if (refreshFutures.isNotEmpty) {
+      await Future.wait(refreshFutures);
     }
   }
 
@@ -105,15 +102,19 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final position = await _weatherService.getCurrentPosition();
       final freshCurrent = await _weatherService.fetchWeatherByPosition(position);
-      setState(() {
-        _currentLocationWeather = freshCurrent;
-      });
+      if (mounted) {
+        setState(() {
+          _currentLocationWeather = freshCurrent;
+        });
+      }
     } catch (e) {
       print('Error fetching fresh current weather: $e');
     } finally {
-      setState(() {
-        _isRefreshing['current'] = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isRefreshing['current'] = false;
+        });
+      }
     }
   }
 
@@ -125,15 +126,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final freshWeather = await _weatherService.fetchWeatherByCity(city);
-      setState(() {
-        _weatherData[city] = freshWeather;
-      });
+      if (mounted) {
+        setState(() {
+          _weatherData[city] = freshWeather;
+        });
+      }
     } catch (e) {
       print('Error fetching fresh weather for $city: $e');
     } finally {
-      setState(() {
-        _isRefreshing[city] = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isRefreshing[city] = false;
+        });
+      }
     }
   }
 
