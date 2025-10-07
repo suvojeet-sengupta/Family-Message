@@ -25,7 +25,7 @@ jobs:
   build_artifacts:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Only read permission needed for building artifacts
+      contents: write # Write permission needed to commit pubspec.lock
     outputs:
       release_tag: ${{ steps.setup_vars.outputs.release_tag }}
 
@@ -54,6 +54,12 @@ jobs:
 
       - name: 🔄 Get Dependencies
         run: flutter pub get
+
+      - name: 🔐 Commit pubspec.lock changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(deps): Update pubspec.lock"
+          file_pattern: "pubspec.lock"
 
       - name: 💪 Build Release APK
         run: flutter build apk --release --dart-define=WEATHER_API_KEY=${{ secrets.WEATHER_API_1 }} --dart-define=OPEN_WEATHER_API=${{ secrets.OPEN_WEATHER_API }}
