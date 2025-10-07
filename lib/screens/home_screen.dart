@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _savedCities = [];
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
-  final Map<String, bool> _isRefreshing = {};
+  bool _isGloballyRefreshing = false;
 
   @override
   void initState() {
@@ -71,6 +71,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refreshStaleData({bool force = false}) async {
+    if (_isGloballyRefreshing) return;
+
+    setState(() {
+      _isGloballyRefreshing = true;
+    });
+
     final now = DateTime.now().millisecondsSinceEpoch;
     const thirtyMinutesInMillis = 30 * 60 * 1000;
     final List<Future> refreshFutures = [];
@@ -89,16 +95,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (refreshFutures.isNotEmpty) {
-      await Future.wait(refreshFutures);
+      try {
+        await Future.wait(refreshFutures);
+      } catch (e) {
+        print('Error during refresh: $e');
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isGloballyRefreshing = false;
+      });
     }
   }
 
   Future<void> _fetchWeatherForCurrentLocation() async {
-    if (_isRefreshing['current'] == true) return;
-    setState(() {
-      _isRefreshing['current'] = true;
-    });
-
     try {
       final position = await _weatherService.getCurrentPosition();
       final freshCurrent = await _weatherService.fetchWeatherByPosition(position);
@@ -109,21 +120,12 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       print('Error fetching fresh current weather: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isRefreshing['current'] = false;
-        });
-      }
+      // Optionally rethrow to let Future.wait catch it
+      rethrow;
     }
   }
 
   Future<void> _fetchWeatherForCity(String city) async {
-    if (_isRefreshing[city] == true) return;
-    setState(() {
-      _isRefreshing[city] = true;
-    });
-
     try {
       final freshWeather = await _weatherService.fetchWeatherByCity(city);
       if (mounted) {
@@ -133,12 +135,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       print('Error fetching fresh weather for $city: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isRefreshing[city] = false;
-        });
-      }
+      // Optionally rethrow to let Future.wait catch it
+      rethrow;
     }
   }
 
@@ -174,7 +172,30 @@ class _HomeScreenState extends State<HomeScreen> {
           
         ],
       ),
-      body: _buildWeatherList(isFahrenheit),
+      body: Column(
+        children: [
+          if (_isGloballyRefreshing)
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              color: Colors.black.withOpacity(0.5),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  ),
+                  SizedBox(width: 16),
+                  Text('Updating weather...'),
+                ],
+              ),
+            ),
+          Expanded(
+            child: _buildWeatherList(isFahrenheit),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final newCity = await Navigator.push(
@@ -225,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           if (_currentLocationWeather != null)
-            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: isFahrenheit, isRefreshing: _isRefreshing['current'] ?? false),
+            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: isFahrenheit),
           if (_currentLocationWeather == null)
             const ShimmerLoading(), // Show shimmer while initially fetching
           const SizedBox(height: 24),
@@ -242,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (weather == null) {
               return const ShimmerLoading(); // Show shimmer for cities being fetched
             }
-            return WeatherCard(weather: weather, isFahrenheit: isFahrenheit, isRefreshing: _isRefreshing[city] ?? false);
+            return WeatherCard(weather: weather, isFahrenheit: isFahrenheit);
           }).toList(),
         ],
       ),
