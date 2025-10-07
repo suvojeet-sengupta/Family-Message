@@ -15,6 +15,18 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
     return DateFormat('h:mm a').format(dateTime);
   }
 
+  String _calculateDaylight(String sunrise, String sunset) {
+    if (sunrise.isEmpty || sunset.isEmpty) {
+      return 'N/A';
+    }
+    final sunriseTime = DateTime.parse(sunrise);
+    final sunsetTime = DateTime.parse(sunset);
+    final duration = sunsetTime.difference(sunriseTime);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    return '$hours hours $minutes minutes';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,48 +35,66 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              color: Colors.grey[900],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
+        child: Card(
+          color: Colors.grey[900],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    const Icon(Icons.wb_sunny, color: Colors.amber, size: 40),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          children: [
-                            const Text('Sunrise', style: TextStyle(color: Colors.white70)),
-                            const SizedBox(height: 8),
-                            Text(
-                              _formatTime(sunrise),
-                              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            const Text('Sunset', style: TextStyle(color: Colors.white70)),
-                            const SizedBox(height: 8),
-                            Text(
-                              _formatTime(sunset),
-                              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                        const Text('Sunrise', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                        Text(
+                          _formatTime(sunrise),
+                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Icon(Icons.brightness_3, color: Colors.blue, size: 40),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Sunset', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                        Text(
+                          _formatTime(sunset),
+                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                const Divider(color: Colors.white24),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.hourglass_bottom, color: Colors.white70, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Daylight: ${_calculateDaylight(sunrise, sunset)}',
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
