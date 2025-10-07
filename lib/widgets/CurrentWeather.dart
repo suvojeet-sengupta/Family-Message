@@ -8,6 +8,22 @@ class CurrentWeather extends StatelessWidget {
 
   const CurrentWeather({super.key, required this.weather, this.isFahrenheit = false});
 
+  String _getFeelsLikeExplanation() {
+    final temp = isFahrenheit ? weather.temperatureF : weather.temperature;
+    final feelsLike = isFahrenheit ? weather.feelsLikeF : weather.feelsLike;
+
+    if ((feelsLike - temp).abs() < 2) {
+      return 'Similar to the actual temperature.';
+    }
+    if (feelsLike < temp) {
+      return 'Feels colder due to the wind.';
+    }
+    if (feelsLike > temp) {
+      return 'Feels warmer due to humidity.';
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -58,6 +74,24 @@ class CurrentWeather extends StatelessWidget {
                   width: 100,
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(color: Colors.white24),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Icon(Icons.thermostat, color: Colors.white70, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Feels like ${isFahrenheit ? weather.feelsLikeF.round() : weather.feelsLike.round()}°',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _getFeelsLikeExplanation(),
+              style: const TextStyle(fontSize: 14, color: Colors.white70),
             ),
           ],
         ),
