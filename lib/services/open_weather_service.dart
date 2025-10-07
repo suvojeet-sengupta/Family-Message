@@ -19,12 +19,18 @@ class OpenWeatherService {
     final isFahrenheit = settings.useFahrenheit;
     final units = isFahrenheit ? 'imperial' : 'metric';
 
-    final weatherResponse = await http.get(Uri.parse(
-        '${WeatherConfig.openWeatherBaseUrl}/weather?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
-    final forecastResponse = await http.get(Uri.parse(
-        '${WeatherConfig.openWeatherBaseUrl}/forecast?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
-    final airPollutionResponse = await http.get(Uri.parse(
-        '${WeatherConfig.openWeatherBaseUrl}/air_pollution?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
+    final responses = await Future.wait([
+      http.get(Uri.parse(
+          '${WeatherConfig.openWeatherBaseUrl}/weather?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds)),
+      http.get(Uri.parse(
+          '${WeatherConfig.openWeatherBaseUrl}/forecast?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds)),
+      http.get(Uri.parse(
+          '${WeatherConfig.openWeatherBaseUrl}/air_pollution?lat=${position.latitude}&lon=${position.longitude}&appid=${WeatherConfig.openWeatherApiKey}')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds)),
+    ]);
+
+    final weatherResponse = responses[0];
+    final forecastResponse = responses[1];
+    final airPollutionResponse = responses[2];
 
     if (weatherResponse.statusCode == 200 && forecastResponse.statusCode == 200 && airPollutionResponse.statusCode == 200) {
       final weatherData = jsonDecode(weatherResponse.body);
@@ -49,8 +55,13 @@ class OpenWeatherService {
     final isFahrenheit = settings.useFahrenheit;
     final units = isFahrenheit ? 'imperial' : 'metric';
 
-    final weatherResponse = await http.get(Uri.parse('${WeatherConfig.openWeatherBaseUrl}/weather?q=$city&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
-    final forecastResponse = await http.get(Uri.parse('${WeatherConfig.openWeatherBaseUrl}/forecast?q=$city&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
+    final responses = await Future.wait([
+      http.get(Uri.parse('${WeatherConfig.openWeatherBaseUrl}/weather?q=$city&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds)),
+      http.get(Uri.parse('${WeatherConfig.openWeatherBaseUrl}/forecast?q=$city&appid=${WeatherConfig.openWeatherApiKey}&units=$units')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds))
+    ]);
+
+    final weatherResponse = responses[0];
+    final forecastResponse = responses[1];
 
     if (weatherResponse.statusCode == 200 && forecastResponse.statusCode == 200) {
       final weatherData = jsonDecode(weatherResponse.body);
