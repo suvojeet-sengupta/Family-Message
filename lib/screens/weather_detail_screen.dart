@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 import '../services/weather_service.dart';
@@ -47,6 +48,14 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
       // Optionally, show a snackbar or toast on error
       print('Failed to refresh weather: $e');
     }
+  }
+
+  String _formatTime(String time) {
+    if (time.isEmpty) {
+      return 'N/A';
+    }
+    final dateTime = DateTime.parse(time);
+    return DateFormat('h:mm a').format(dateTime);
   }
 
   @override
@@ -148,9 +157,10 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SunriseSunsetDetailScreen(sunrise: _weather.dailyForecast.first.sunrise, sunset: _weather.dailyForecast.first.sunset))),
                 child: WeatherDetailCard(
                   title: 'Sunrise & Sunset',
-                  value: (_weather.dailyForecast.first.sunrise.isNotEmpty && _weather.dailyForecast.first.sunset.isNotEmpty)
-                      ? '${_weather.dailyForecast.first.sunrise.substring(11, 16)} am / ${_weather.dailyForecast.first.sunset.substring(11, 16)} pm'
-                      : 'N/A',
+                  value: (
+                    _weather.dailyForecast.first.sunrise.isNotEmpty &&
+                    _weather.dailyForecast.first.sunset.isNotEmpty
+                  ) ? '${_formatTime(_weather.dailyForecast.first.sunrise)} / ${_formatTime(_weather.dailyForecast.first.sunset)}' : 'N/A',
                   subtitle: 'Sunrise and sunset',
                   icon: Icons.brightness_6,
                   color: Colors.amber,

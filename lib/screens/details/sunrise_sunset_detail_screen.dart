@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class SunriseSunsetDetailScreen extends StatelessWidget {
   final String sunrise;
   final String sunset;
 
   const SunriseSunsetDetailScreen({super.key, required this.sunrise, required this.sunset});
+
+  String _formatTime(String time) {
+    if (time.isEmpty) {
+      return 'N/A';
+    }
+    final dateTime = DateTime.parse(time);
+    return DateFormat('h:mm a').format(dateTime);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +43,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                             const Text('Sunrise', style: TextStyle(color: Colors.white70)),
                             const SizedBox(height: 8),
                             Text(
-                              sunrise.isNotEmpty ? sunrise.substring(11, 16) : 'N/A',
+                              _formatTime(sunrise),
                               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -44,7 +53,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                             const Text('Sunset', style: TextStyle(color: Colors.white70)),
                             const SizedBox(height: 8),
                             Text(
-                              sunset.isNotEmpty ? sunset.substring(11, 16) : 'N/A',
+                              _formatTime(sunset),
                               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                             ),
                           ],
