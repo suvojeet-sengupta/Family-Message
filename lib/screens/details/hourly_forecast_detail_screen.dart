@@ -30,11 +30,16 @@ class HourlyForecastDetailScreen extends StatelessWidget {
                     DateFormat.j().format(DateTime.parse(forecast.time)),
                     style: const TextStyle(fontSize: 16),
                   ),
-                  Image.network(
-                    forecast.iconUrl,
-                    height: 40,
-                    width: 40,
-                  ),
+                  (forecast.iconUrl.startsWith('https://cdn.weatherapi.com')
+                      ? Image.network(
+                          forecast.iconUrl,
+                          height: 40,
+                          width: 40,
+                        )
+                      : const SizedBox(
+                          height: 40,
+                          width: 40,
+                        )),
                   Text(
                     isFahrenheit
                         ? '${forecast.temperatureF.round()}°F'

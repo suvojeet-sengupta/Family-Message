@@ -68,11 +68,16 @@ class CurrentWeather extends StatelessWidget {
                     ),
                   ],
                 ),
-                Image.network(
-                  weather.iconUrl,
-                  height: 100, // Slightly larger icon
-                  width: 100,
-                ),
+                (weather.iconUrl.startsWith('https://cdn.weatherapi.com')
+                    ? Image.network(
+                        weather.iconUrl,
+                        height: 100, // Slightly larger icon
+                        width: 100,
+                      )
+                    : const SizedBox(
+                        height: 100,
+                        width: 100,
+                      )),
               ],
             ),
             const SizedBox(height: 16),

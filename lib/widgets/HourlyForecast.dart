@@ -88,11 +88,16 @@ class HourlyForecastWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Image.network(
-              iconUrl,
-              height: 40,
-              width: 40,
-            ),
+            (iconUrl.startsWith('https://cdn.weatherapi.com')
+                ? Image.network(
+                    iconUrl,
+                    height: 40,
+                    width: 40,
+                  )
+                : const SizedBox(
+                    height: 40,
+                    width: 40,
+                  )),
             const SizedBox(height: 8),
             Text(
               temperature,

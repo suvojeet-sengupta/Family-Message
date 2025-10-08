@@ -64,12 +64,17 @@ class WeatherCard extends StatelessWidget {
               ),
               Row(
                 children: [
-                  Image.network(
-                    weather.iconUrl,
-                    height: 40,
-                    width: 40,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                  ),
+                  (weather.iconUrl.startsWith('https://cdn.weatherapi.com')
+                      ? Image.network(
+                          weather.iconUrl,
+                          height: 40,
+                          width: 40,
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+                        )
+                      : const SizedBox(
+                          height: 40,
+                          width: 40,
+                        )),
                   const SizedBox(width: 8),
                   Text(
                     isFahrenheit

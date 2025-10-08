@@ -82,11 +82,16 @@ class DailyForecastWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              Image.network(
-                forecast.iconUrl,
-                height: 32,
-                width: 32,
-              ),
+              (forecast.iconUrl.startsWith('https://cdn.weatherapi.com')
+                  ? Image.network(
+                      forecast.iconUrl,
+                      height: 32,
+                      width: 32,
+                    )
+                  : const SizedBox(
+                      height: 32,
+                      width: 32,
+                    )),
               SizedBox(
                 width: 50,
                 child: Text(

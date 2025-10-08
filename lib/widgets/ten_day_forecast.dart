@@ -41,11 +41,16 @@ class TenDayForecast extends StatelessWidget {
                         ),
                         Text(DateFormat('MM/dd').format(DateTime.parse(day.date))),
                         const SizedBox(height: 8),
-                        Image.network(
-                          day.iconUrl,
-                          height: 40,
-                          width: 40,
-                        ),
+                        (day.iconUrl.startsWith('https://cdn.weatherapi.com')
+                            ? Image.network(
+                                day.iconUrl,
+                                height: 40,
+                                width: 40,
+                              )
+                            : const SizedBox(
+                                height: 40,
+                                width: 40,
+                              )),
                         const SizedBox(height: 8),
                         Text('${day.maxTemp.round()}° / ${day.minTemp.round()}°'),
                       ],
