@@ -14,9 +14,7 @@ import './search_screen.dart';
 import '../widgets/weather_card.dart';
 
 class HomeScreen extends StatefulWidget {
-  final Weather? initialWeather;
-
-  const HomeScreen({super.key, this.initialWeather});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -38,17 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadCacheFuture.then((_) {
       _refreshStaleData();
     });
-
-    if (widget.initialWeather != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WeatherDetailScreen(weather: widget.initialWeather!),
-          ),
-);
-      });
-    }
   }
 
   Future<void> _loadCachedData() async {
