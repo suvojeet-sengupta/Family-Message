@@ -7,8 +7,6 @@ import 'package:geocoding/geocoding.dart';
 import '../models/weather_model.dart';
 import '../models/cache_key.dart';
 import 'database_helper.dart';
-import 'open_meteo_service.dart';
-import 'open_weather_service.dart';
 import 'weather_exceptions.dart';
 import 'package:logger/logger.dart';
 import '../models/search_result.dart';
@@ -17,8 +15,6 @@ import '../config/weather_config.dart';
 
 class WeatherService {
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  final OpenMeteoService _openMeteoService = OpenMeteoService();
-  final OpenWeatherService _openWeatherService = OpenWeatherService();
   final Logger _logger = Logger();
   final Connectivity _connectivity = Connectivity();
 
@@ -46,18 +42,18 @@ class WeatherService {
 
   Future<Weather> fetchWeather() async {
     final position = await getCurrentPosition();
-    return await _fetchWithFallback(position: position);
+    return await _fetchWeatherData(position: position);
   }
 
   Future<Weather> fetchWeatherByCity(String city) async {
-    return await _fetchWithFallback(city: city);
+    return await _fetchWeatherData(city: city);
   }
 
   Future<Weather> fetchWeatherByPosition(Position position) async {
-    return await _fetchWithFallback(position: position);
+    return await _fetchWeatherData(position: position);
   }
 
-  Future<Weather> _fetchWithFallback({String? city, Position? position}) async {
+  Future<Weather> _fetchWeatherData({String? city, Position? position}) async {
     if (await _connectivity.checkConnectivity() == ConnectivityResult.none) {
       _logger.w('No internet connection. Returning cached data.');
       final cacheKey = city ?? (await _getCacheKeyFromPosition(position!));
@@ -75,37 +71,13 @@ class WeatherService {
       return cachedWeather;
     }
 
-    // Try WeatherAPI
+    // Only fetch from WeatherAPI
     try {
       return await _fetchWithRetry(() => _fetchFromWeatherApi(city: city, position: position));
     } catch (e, stackTrace) {
-      _logger.w('WeatherAPI.com failed after retries', error: e, stackTrace: stackTrace);
+      _logger.e('WeatherAPI.com failed after retries', error: e, stackTrace: stackTrace);
+      rethrow;
     }
-
-    // Try OpenWeatherMap
-    try {
-      if (city != null) {
-        return await _fetchWithRetry(() => _openWeatherService.fetchWeatherByCity(city));
-      } else if (position != null) {
-        return await _fetchWithRetry(() => _openWeatherService.fetchWeatherByPosition(position));
-      }
-    } catch (e, stackTrace) {
-      _logger.w('OpenWeatherMap failed after retries', error: e, stackTrace: stackTrace);
-    }
-
-    // Try Open-Meteo
-    try {
-      if (city != null) {
-        return await _fetchWithRetry(() => _openMeteoService.fetchWeatherByCity(city));
-      } else if (position != null) {
-        return await _fetchWithRetry(() => _openMeteoService.fetchWeatherByPosition(position));
-      }
-    } catch (e, stackTrace) {
-      _logger.e('All weather providers failed after retries', error: e, stackTrace: stackTrace);
-      throw Exception('Failed to fetch weather from all providers.');
-    }
-
-    throw Exception('Should not be reached');
   }
 
   Future<String> _getCacheKeyFromPosition(Position position) async {
