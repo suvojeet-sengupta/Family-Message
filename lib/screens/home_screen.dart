@@ -231,59 +231,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWeatherList(bool isFahrenheit) {
-    if (_savedCities.isEmpty && _currentLocationWeather == null) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    Widget _buildWeatherList(bool isFahrenheit) {
+      if (_savedCities.isEmpty && _currentLocationWeather == null && _isGloballyRefreshing) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Fetching weather...', style: TextStyle(fontSize: 18)),
+            ],
+          ),
+        );
+      }
+  
+      if (_savedCities.isEmpty && _currentLocationWeather == null && !_isGloballyRefreshing) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.search, size: 64, color: Colors.white54),
+              SizedBox(height: 16),
+              Text('Search for a city to get started', style: TextStyle(fontSize: 18, color: Colors.white54)),
+            ],
+          ),
+        );
+      }
+  
+      return RefreshIndicator(
+        onRefresh: () => _refreshStaleData(force: true),
+        color: Colors.amber,
+        backgroundColor: Colors.grey[900],
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
           children: [
-            Icon(Icons.search, size: 64, color: Colors.white54),
-            SizedBox(height: 16),
-            Text('Search for a city to get started', style: TextStyle(fontSize: 18, color: Colors.white54)),
+            if (_currentLocationWeather != null) ...[
+              const Row(
+                children: [
+                  Icon(Icons.location_on_outlined),
+                  SizedBox(width: 8),
+                  Text('Current location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              WeatherCard(weather: _currentLocationWeather!, isFahrenheit: isFahrenheit),
+            ],
+            if (_currentLocationWeather != null && _savedCities.isNotEmpty)
+              const SizedBox(height: 24),
+            if (_savedCities.isNotEmpty) ...[
+              const Row(
+                children: [
+                  Icon(Icons.bookmark_border),
+                  SizedBox(width: 8),
+                  Text('Saved locations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ..._savedCities.map((city) {
+                final weather = _weatherData[city];
+                if (weather == null) {
+                  return const ShimmerLoading();
+                }
+                return WeatherCard(weather: weather, isFahrenheit: isFahrenheit);
+              }).toList(),
+            ],
           ],
         ),
       );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () => _refreshStaleData(force: true),
-      color: Colors.amber,
-      backgroundColor: Colors.grey[900],
-      child: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          if (_currentLocationWeather != null) ...[
-            const Row(
-              children: [
-                Icon(Icons.location_on_outlined),
-                SizedBox(width: 8),
-                Text('Current location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            WeatherCard(weather: _currentLocationWeather!, isFahrenheit: isFahrenheit),
-          ],
-          if (_currentLocationWeather != null && _savedCities.isNotEmpty)
-            const SizedBox(height: 24),
-          if (_savedCities.isNotEmpty) ...[
-            const Row(
-              children: [
-                Icon(Icons.bookmark_border),
-                SizedBox(width: 8),
-                Text('Saved locations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ..._savedCities.map((city) {
-              final weather = _weatherData[city];
-              if (weather == null) {
-                return const ShimmerLoading();
-              }
-              return WeatherCard(weather: weather, isFahrenheit: isFahrenheit);
-            }).toList(),
-          ],
-        ],
-      ),
-    );
   }
-}
