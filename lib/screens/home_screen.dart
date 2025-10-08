@@ -31,10 +31,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, Weather> _weatherData = {};
   Weather? _currentLocationWeather;
   bool _isGloballyRefreshing = false;
+  late Future<void> _loadCacheFuture;
 
   @override
   void initState() {
     super.initState();
+    _loadCacheFuture = _loadCachedData();
+    _loadCacheFuture.then((_) {
+      _refreshStaleData();
+    });
+
     if (widget.initialWeather != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.push(
@@ -45,28 +51,27 @@ class _HomeScreenState extends State<HomeScreen> {
         ).then((_) => _clearLastOpenedCity());
       });
     }
-    _loadCachedData();
-    _refreshStaleData();
   }
 
   Future<void> _loadCachedData() async {
     final prefs = await SharedPreferences.getInstance();
-    _savedCities = prefs.getStringList(AppConstants.recentSearchesKey) ?? [];
-
+    final savedCities = prefs.getStringList(AppConstants.recentSearchesKey) ?? [];
     final cachedCurrent = await _dbHelper.getLatestWeather();
-    if (cachedCurrent != null) {
-      setState(() {
-        _currentLocationWeather = cachedCurrent;
-      });
-    }
+    final Map<String, Weather> weatherData = {};
 
-    for (var city in _savedCities) {
+    for (var city in savedCities) {
       final cachedWeather = await _dbHelper.getAnyWeather(city);
       if (cachedWeather != null) {
-        setState(() {
-          _weatherData[city] = cachedWeather;
-        });
+        weatherData[city] = cachedWeather;
       }
+    }
+
+    if (mounted) {
+      setState(() {
+        _currentLocationWeather = cachedCurrent;
+        _savedCities = savedCities;
+        _weatherData = weatherData;
+      });
     }
   }
 
@@ -81,12 +86,10 @@ class _HomeScreenState extends State<HomeScreen> {
     const thirtyMinutesInMillis = 30 * 60 * 1000;
     final List<Future> refreshFutures = [];
 
-    // Refresh current location
     if (_currentLocationWeather == null || force || (now - _currentLocationWeather!.timestamp) > thirtyMinutesInMillis) {
       refreshFutures.add(_fetchWeatherForCurrentLocation());
     }
 
-    // Refresh saved cities
     for (var city in _savedCities) {
       final weather = _weatherData[city];
       if (weather == null || force || (now - weather.timestamp) > thirtyMinutesInMillis) {
@@ -120,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       print('Error fetching fresh current weather: $e');
-      // Optionally rethrow to let Future.wait catch it
       rethrow;
     }
   }
@@ -135,11 +137,9 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       print('Error fetching fresh weather for $city: $e');
-      // Optionally rethrow to let Future.wait catch it
       rethrow;
     }
   }
-
 
   Future<void> _saveLastOpenedCity(String city) async {
     final prefs = await SharedPreferences.getInstance();
@@ -169,32 +169,47 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-          
         ],
       ),
-      body: Column(
-        children: [
-          if (_isGloballyRefreshing)
-            Container(
-              padding: const EdgeInsets.all(8.0),
-              color: Colors.black.withOpacity(0.5),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+      body: FutureBuilder<void>(
+        future: _loadCacheFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: ShimmerLoading(),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error loading data: ${snapshot.error}'));
+          }
+
+          return Column(
+            children: [
+              if (_isGloballyRefreshing)
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  color: Colors.black.withOpacity(0.5),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      ),
+                      SizedBox(width: 16),
+                      Text('Updating weather...'),
+                    ],
                   ),
-                  SizedBox(width: 16),
-                  Text('Updating weather...'),
-                ],
+                ),
+              Expanded(
+                child: _buildWeatherList(isFahrenheit),
               ),
-            ),
-          Expanded(
-            child: _buildWeatherList(isFahrenheit),
-          ),
-        ],
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -222,9 +237,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
+            Icon(Icons.search, size: 64, color: Colors.white54),
             SizedBox(height: 16),
-            Text('Fetching weather...', style: TextStyle(fontSize: 18)),
+            Text('Search for a city to get started', style: TextStyle(fontSize: 18, color: Colors.white54)),
           ],
         ),
       );
@@ -237,34 +252,36 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          const Row(
-            children: [
-              Icon(Icons.location_on_outlined),
-              SizedBox(width: 8),
-              Text('Current location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_currentLocationWeather != null)
+          if (_currentLocationWeather != null) ...[
+            const Row(
+              children: [
+                Icon(Icons.location_on_outlined),
+                SizedBox(width: 8),
+                Text('Current location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
             WeatherCard(weather: _currentLocationWeather!, isFahrenheit: isFahrenheit),
-          if (_currentLocationWeather == null)
-            const ShimmerLoading(), // Show shimmer while initially fetching
-          const SizedBox(height: 24),
-          const Row(
-            children: [
-              Icon(Icons.bookmark_border),
-              SizedBox(width: 8),
-              Text('Saved locations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ..._savedCities.map((city) {
-            final weather = _weatherData[city];
-            if (weather == null) {
-              return const ShimmerLoading(); // Show shimmer for cities being fetched
-            }
-            return WeatherCard(weather: weather, isFahrenheit: isFahrenheit);
-          }).toList(),
+          ],
+          if (_currentLocationWeather != null && _savedCities.isNotEmpty)
+            const SizedBox(height: 24),
+          if (_savedCities.isNotEmpty) ...[
+            const Row(
+              children: [
+                Icon(Icons.bookmark_border),
+                SizedBox(width: 8),
+                Text('Saved locations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ..._savedCities.map((city) {
+              final weather = _weatherData[city];
+              if (weather == null) {
+                return const ShimmerLoading();
+              }
+              return WeatherCard(weather: weather, isFahrenheit: isFahrenheit);
+            }).toList(),
+          ],
         ],
       ),
     );
