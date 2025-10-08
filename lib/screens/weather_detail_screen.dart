@@ -29,14 +29,19 @@ class WeatherDetailScreen extends StatefulWidget {
 class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
   late Weather _weather;
   final WeatherService _weatherService = WeatherService();
+  bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
     _weather = widget.weather;
+    _onRefresh();
   }
 
   Future<void> _onRefresh() async {
+    setState(() {
+      _isRefreshing = true;
+    });
     try {
       final freshWeather = await _weatherService.fetchWeatherByCity(_weather.locationName);
       if (mounted) {
@@ -47,6 +52,12 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
     } catch (e) {
       // Optionally, show a snackbar or toast on error
       print('Failed to refresh weather: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
     }
   }
 
@@ -70,7 +81,30 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body: _buildWeatherContent(context, isFahrenheit),
+      body: Column(
+        children: [
+          if (_isRefreshing)
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              color: Colors.black.withOpacity(0.5),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  ),
+                  SizedBox(width: 16),
+                  Text('Updating weather...'),
+                ],
+              ),
+            ),
+          Expanded(
+            child: _buildWeatherContent(context, isFahrenheit),
+          ),
+        ],
+      ),
     );
   }
 

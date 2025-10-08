@@ -177,23 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           return Column(
             children: [
-              if (_isGloballyRefreshing)
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  color: Colors.black.withOpacity(0.5),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      ),
-                      SizedBox(width: 16),
-                      Text('Updating weather...'),
-                    ],
-                  ),
-                ),
+
               Expanded(
                 child: _buildWeatherList(isFahrenheit),
               ),
