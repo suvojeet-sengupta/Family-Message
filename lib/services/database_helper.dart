@@ -20,7 +20,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'weather_app.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE weather(
@@ -38,6 +38,7 @@ class DatabaseHelper {
             humidity INTEGER,
             airQuality TEXT, -- Storing as JSON String
             pressure REAL,
+            hourlyForecast TEXT,
             dailyForecast TEXT,
             timestamp INTEGER,
             vis_km REAL,
@@ -47,6 +48,11 @@ class DatabaseHelper {
             last_updated TEXT
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE weather ADD COLUMN hourlyForecast TEXT');
+        }
       },
     );
   }
