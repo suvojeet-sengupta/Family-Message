@@ -39,7 +39,12 @@ class DatabaseHelper {
             airQuality TEXT, -- Storing as JSON String
             pressure REAL,
             dailyForecast TEXT,
-            timestamp INTEGER
+            timestamp INTEGER,
+            vis_km REAL,
+            vis_miles REAL,
+            dewpoint_c REAL,
+            dewpoint_f REAL,
+            last_updated TEXT
           )
         ''');
       },

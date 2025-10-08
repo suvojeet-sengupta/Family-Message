@@ -15,6 +15,8 @@ import './details/air_quality_detail_screen.dart';
 import './details/precipitation_detail_screen.dart';
 import './details/pressure_detail_screen.dart';
 import './details/sunrise_sunset_detail_screen.dart';
+import './details/visibility_detail_screen.dart';
+import './details/dew_point_detail_screen.dart';
 
 
 import './details/wind_detail_screen.dart';
@@ -60,6 +62,11 @@ class WeatherDetailScreen extends StatelessWidget {
         )
       ],
       timestamp: 0,
+      vis_km: 0,
+      vis_miles: 0,
+      dewpoint_c: 0,
+      dewpoint_f: 0,
+      last_updated: '',
     );
   }
 
@@ -225,6 +232,26 @@ class WeatherDetailScreen extends StatelessWidget {
                   subtitle: 'Sunrise and sunset',
                   icon: Icons.brightness_6,
                   color: Colors.amber,
+                ),
+              ),
+              InkWell(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VisibilityDetailScreen(visKm: weather.vis_km, visMiles: weather.vis_miles))),
+                child: WeatherDetailCard(
+                  title: 'Visibility',
+                  value: '${weather.vis_km} km',
+                  subtitle: 'Clear conditions',
+                  icon: Icons.visibility,
+                  color: Colors.purple,
+                ),
+              ),
+              InkWell(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DewPointDetailScreen(dewPoint: isFahrenheit ? weather.dewpoint_f : weather.dewpoint_c, isFahrenheit: isFahrenheit))),
+                child: WeatherDetailCard(
+                  title: 'Dew Point',
+                  value: isFahrenheit ? '${weather.dewpoint_f.round()}°' : '${weather.dewpoint_c.round()}°',
+                  subtitle: 'Comfort level',
+                  icon: Icons.thermostat_auto,
+                  color: Colors.lightBlue,
                 ),
               ),
             ],

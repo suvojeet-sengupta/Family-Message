@@ -93,6 +93,17 @@ class CurrentWeather extends StatelessWidget {
               _getFeelsLikeExplanation(),
               style: const TextStyle(fontSize: 14, color: Colors.white70),
             ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.update, color: Colors.white70, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Last updated: ${weather.last_updated}',
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                ),
+              ],
+            ),
           ],
         ),
       ),

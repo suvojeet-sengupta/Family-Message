@@ -21,6 +21,11 @@ class Weather {
   final List<HourlyForecast> hourlyForecast;
   final List<DailyForecast> dailyForecast;
   final int timestamp; // Added timestamp
+  final double vis_km;
+  final double vis_miles;
+  final double dewpoint_c;
+  final double dewpoint_f;
+  final String last_updated;
 
   Weather({
     required this.locationName,
@@ -40,6 +45,11 @@ class Weather {
     required this.hourlyForecast,
     required this.dailyForecast,
     required this.timestamp, // Added timestamp
+    required this.vis_km,
+    required this.vis_miles,
+    required this.dewpoint_c,
+    required this.dewpoint_f,
+    required this.last_updated,
   });
 
   factory Weather.fromJson(Map<String, dynamic> json) {
@@ -67,6 +77,11 @@ class Weather {
           .map((day) => DailyForecast.fromJson(day))
           .toList()..sort((a, b) => a.date.compareTo(b.date)),
       timestamp: DateTime.now().millisecondsSinceEpoch, // Set timestamp on creation
+      vis_km: (json['current']?['vis_km'] ?? 0.0).toDouble(),
+      vis_miles: (json['current']?['vis_miles'] ?? 0.0).toDouble(),
+      dewpoint_c: (json['current']?['dewpoint_c'] ?? 0.0).toDouble(),
+      dewpoint_f: (json['current']?['dewpoint_f'] ?? 0.0).toDouble(),
+      last_updated: json['current']?['last_updated'] ?? '',
     );
   }
 
@@ -90,6 +105,11 @@ class Weather {
       'hourlyForecast': jsonEncode(hourlyForecast.map((e) => e.toDatabaseMap()).toList()),
       'dailyForecast': jsonEncode(dailyForecast.map((e) => e.toDatabaseMap()).toList()),
       'timestamp': timestamp,
+      'vis_km': vis_km,
+      'vis_miles': vis_miles,
+      'dewpoint_c': dewpoint_c,
+      'dewpoint_f': dewpoint_f,
+      'last_updated': last_updated,
     };
   }
 
@@ -119,6 +139,11 @@ class Weather {
           .map((e) => DailyForecast.fromDatabaseMap(e))
           .toList(),
       timestamp: map['timestamp'],
+      vis_km: map['vis_km'] ?? 0.0,
+      vis_miles: map['vis_miles'] ?? 0.0,
+      dewpoint_c: map['dewpoint_c'] ?? 0.0,
+      dewpoint_f: map['dewpoint_f'] ?? 0.0,
+      last_updated: map['last_updated'] ?? '',
     );
   }
 }
