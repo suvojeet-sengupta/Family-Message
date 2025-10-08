@@ -2,13 +2,17 @@ import 'package:AuroraWeather/screens/weather_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/settings_service.dart';
+import 'services/weather_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => SettingsService(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => SettingsService()),
+        ChangeNotifierProvider(create: (context) => WeatherProvider()),
+      ],
       child: const AuroraWeather(),
     ),
   );
