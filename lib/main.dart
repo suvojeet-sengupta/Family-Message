@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'constants/app_constants.dart';
 import 'models/weather_model.dart';
 import 'screens/home_screen.dart';
 import 'services/settings_service.dart';
@@ -10,16 +8,11 @@ import 'services/weather_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final prefs = await SharedPreferences.getInstance();
-  final lastOpenedCity = prefs.getString(AppConstants.lastOpenedCityKey);
-
   Weather? initialWeather;
-  if (lastOpenedCity != null) {
-    try {
-      initialWeather = await WeatherService().fetchWeatherByCity(lastOpenedCity);
-    } catch (e) {
-      print('Error fetching initial weather: $e');
-    }
+  try {
+    initialWeather = await WeatherService().fetchWeather();
+  } catch (e) {
+    print('Error fetching initial weather for current location: $e');
   }
 
   runApp(

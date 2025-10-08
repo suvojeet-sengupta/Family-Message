@@ -13,8 +13,6 @@ import '../widgets/shimmer_loading.dart';
 import './search_screen.dart';
 import '../widgets/weather_card.dart';
 
-import '../constants/app_constants.dart';
-
 class HomeScreen extends StatefulWidget {
   final Weather? initialWeather;
 
@@ -48,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(
             builder: (context) => WeatherDetailScreen(weather: widget.initialWeather!),
           ),
-        ).then((_) => _clearLastOpenedCity());
+);
       });
     }
   }
@@ -141,15 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _saveLastOpenedCity(String city) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.lastOpenedCityKey, city);
-  }
 
-  Future<void> _clearLastOpenedCity() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(AppConstants.lastOpenedCityKey);
-  }
 
   @override
   Widget build(BuildContext context) {
