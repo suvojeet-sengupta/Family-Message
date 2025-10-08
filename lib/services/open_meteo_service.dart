@@ -93,6 +93,11 @@ class OpenMeteoService {
       hourlyForecast: _mapToHourlyForecast(data['hourly'], isFahrenheit),
       dailyForecast: _mapToDailyForecast(data['daily'], isFahrenheit),
       timestamp: DateTime.now().millisecondsSinceEpoch,
+      vis_km: 0.0,
+      vis_miles: 0.0,
+      dewpoint_c: 0.0,
+      dewpoint_f: 0.0,
+      last_updated: '',
     );
   }
 

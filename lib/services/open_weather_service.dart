@@ -92,6 +92,11 @@ class OpenWeatherService {
   Weather _mapToWeatherModel(Map<String, dynamic> weatherData, Map<String, dynamic> forecastData, Map<String, dynamic> airPollutionData, bool isFahrenheit) {
     final aqi = airPollutionData['list'][0]['main']['aqi'];
     final windDegree = (weatherData['wind']?['deg'] ?? 0).toInt();
+    final visibilityMeters = weatherData['visibility'] ?? 0;
+    final visKm = visibilityMeters / 1000.0;
+    final visMiles = visKm * 0.621371;
+    final lastUpdated = DateTime.fromMillisecondsSinceEpoch((weatherData['dt'] ?? 0) * 1000).toString();
+
     return Weather(
       locationName: weatherData['name'],
       temperature: isFahrenheit ? (weatherData['main']['temp'] - 32) * 5 / 9 : weatherData['main']['temp'].toDouble(),
@@ -110,6 +115,11 @@ class OpenWeatherService {
       hourlyForecast: _mapToHourlyForecast(forecastData['list'], isFahrenheit),
       dailyForecast: _mapToDailyForecast(forecastData['list'], isFahrenheit, weatherData['sys']),
       timestamp: DateTime.now().millisecondsSinceEpoch,
+      vis_km: visKm,
+      vis_miles: visMiles,
+      dewpoint_c: 0.0, // Not available in this API
+      dewpoint_f: 0.0, // Not available in this API
+      last_updated: lastUpdated,
     );
   }
 
