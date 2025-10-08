@@ -21,7 +21,8 @@ import './details/wind_detail_screen.dart';
 import './details/humidity_detail_screen.dart';
 
 class WeatherDetailScreen extends StatelessWidget {
-  const WeatherDetailScreen({super.key});
+  final Weather? weather;
+  const WeatherDetailScreen({super.key, this.weather});
 
   Weather _createPlaceholderWeather({String? error}) {
     return Weather(
@@ -77,7 +78,7 @@ class WeatherDetailScreen extends StatelessWidget {
 
     return Consumer<WeatherProvider>(
       builder: (context, weatherProvider, child) {
-        final weather = weatherProvider.currentLocationWeather ?? _createPlaceholderWeather(error: weatherProvider.error);
+        final weatherToDisplay = weather ?? weatherProvider.currentLocationWeather ?? _createPlaceholderWeather(error: weatherProvider.error);
         final isLoading = weatherProvider.isLoading;
 
         return Scaffold(
@@ -91,7 +92,7 @@ class WeatherDetailScreen extends StatelessWidget {
                 );
               },
             ),
-            title: Text(weather.locationName),
+            title: Text(weatherToDisplay.locationName),
             centerTitle: true,
             elevation: 0,
             backgroundColor: Colors.transparent,
@@ -116,7 +117,7 @@ class WeatherDetailScreen extends StatelessWidget {
                   ),
                 ),
               Expanded(
-                child: _buildWeatherContent(context, isFahrenheit, weather, weatherProvider),
+                child: _buildWeatherContent(context, isFahrenheit, weatherToDisplay, weatherProvider),
               ),
             ],
           ),
@@ -137,7 +138,7 @@ class WeatherDetailScreen extends StatelessWidget {
 
   Widget _buildWeatherContent(BuildContext context, bool isFahrenheit, Weather weather, WeatherProvider weatherProvider) {
     return RefreshIndicator(
-      onRefresh: () => weatherProvider.fetchCurrentLocationWeather(force: true),
+      onRefresh: () => this.weather == null ? weatherProvider.fetchCurrentLocationWeather(force: true) : weatherProvider.fetchWeatherForCity(weather.locationName, force: true),
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
