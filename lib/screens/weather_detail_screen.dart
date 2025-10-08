@@ -263,7 +263,7 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                 ),
               ),
               InkWell(
-                onTap: () => Navigator.push(.gemini-executor-replaced-tool-code-2-context, MaterialPageRoute(builder: (_) => AirQualityDetailScreen(airQuality: _weather.airQuality))),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AirQualityDetailScreen(airQuality: _weather.airQuality))),
                 child: WeatherDetailCard(
                   title: 'Air Quality',
                   value: _weather.airQuality?.usEpaIndex.round().toString() ?? 'N/A',
