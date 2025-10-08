@@ -1,3 +1,4 @@
+import 'package:AuroraWeather/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -92,7 +93,8 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
     } catch (e) {
       // Optionally, show a snackbar or toast on error
       print('Failed to refresh weather: $e');
-    } finally {
+    }
+    finally {
       if (mounted) {
         setState(() {
           _isRefreshing = false;
@@ -155,6 +157,15 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.home),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          },
+        ),
         title: Text(_weather.locationName),
         centerTitle: true,
         elevation: 0,
@@ -252,7 +263,7 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                 ),
               ),
               InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AirQualityDetailScreen(airQuality: _weather.airQuality))),
+                onTap: () => Navigator.push(.gemini-executor-replaced-tool-code-2-context, MaterialPageRoute(builder: (_) => AirQualityDetailScreen(airQuality: _weather.airQuality))),
                 child: WeatherDetailCard(
                   title: 'Air Quality',
                   value: _weather.airQuality?.usEpaIndex.round().toString() ?? 'N/A',
