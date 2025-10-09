@@ -74,13 +74,50 @@ class HomeScreen extends StatelessWidget {
     }
 
     if (savedCities.isEmpty && currentLocationWeather == null && !isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search, size: 64, color: Colors.white54),
-            SizedBox(height: 16),
-            Text('Search for a city to get started', style: TextStyle(fontSize: 18, color: Colors.white54)),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(Icons.cloud_outlined, size: 120, color: Colors.white.withOpacity(0.1)),
+                Icon(Icons.search, size: 60, color: Colors.white.withOpacity(0.8)),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'No cities yet',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Search for a city to add it to your list.',
+              style: TextStyle(fontSize: 16, color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                ).then((newCity) {
+                  if (newCity != null && newCity.isNotEmpty) {
+                    Provider.of<WeatherProvider>(context, listen: false).fetchWeatherForCity(newCity);
+                  }
+                });
+              },
+              icon: const Icon(Icons.search),
+              label: const Text('Search City'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black, backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
           ],
         ),
       );
