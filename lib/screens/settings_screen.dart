@@ -63,6 +63,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(),
+          // Theme selection section
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Theme',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Consumer<SettingsService>(
+            builder: (context, settingsService, child) {
+              return Column(
+                children: [
+                  RadioListTile<ThemePreference>(
+                    title: const Text('System Default'),
+                    value: ThemePreference.system,
+                    groupValue: settingsService.themePreference,
+                    onChanged: (ThemePreference? value) {
+                      if (value != null) {
+                        settingsService.setThemePreference(value);
+                      }
+                    },
+                  ),
+                  RadioListTile<ThemePreference>(
+                    title: const Text('Light Theme'),
+                    value: ThemePreference.light,
+                    groupValue: settingsService.themePreference,
+                    onChanged: (ThemePreference? value) {
+                      if (value != null) {
+                        settingsService.setThemePreference(value);
+                      }
+                    },
+                  ),
+                  RadioListTile<ThemePreference>(
+                    title: const Text('Dark Theme'),
+                    value: ThemePreference.dark,
+                    groupValue: settingsService.themePreference,
+                    onChanged: (ThemePreference? value) {
+                      if (value != null) {
+                        settingsService.setThemePreference(value);
+                      }
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+          const Divider(),
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(

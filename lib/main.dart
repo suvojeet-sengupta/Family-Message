@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/settings_service.dart';
 import 'services/weather_provider.dart';
+import 'config/app_themes.dart'; // New import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,14 +24,17 @@ class AuroraWeather extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AuroraWeather',
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFF1A1A1A),
-      ),
-      home: const WeatherDetailScreen(),
-      debugShowCheckedModeBanner: false,
+    return Consumer<SettingsService>(
+      builder: (context, settingsService, child) {
+        return MaterialApp(
+          title: 'AuroraWeather',
+          theme: AppThemes.lightTheme, // Use light theme as default
+          darkTheme: AppThemes.darkTheme, // Use dark theme
+          themeMode: settingsService.themeMode, // Apply selected theme mode
+          home: const WeatherDetailScreen(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

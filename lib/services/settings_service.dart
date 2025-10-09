@@ -27,12 +27,31 @@ class CustomizableDetailCard {
   }
 }
 
+import 'package:flutter/material.dart'; // For ThemeMode
+
+enum ThemePreference { system, light, dark }
+
 class SettingsService with ChangeNotifier {
   bool _useFahrenheit = false;
-  List<CustomizableDetailCard> _detailCardPreferences = []; // New field
+  List<CustomizableDetailCard> _detailCardPreferences = [];
+  ThemePreference _themePreference = ThemePreference.system; // New field
 
   bool get useFahrenheit => _useFahrenheit;
-  List<CustomizableDetailCard> get detailCardPreferences => _detailCardPreferences; // New getter
+  List<CustomizableDetailCard> get detailCardPreferences => _detailCardPreferences;
+  ThemePreference get themePreference => _themePreference; // New getter
+
+  // Convert ThemePreference to ThemeMode for MaterialApp
+  ThemeMode get themeMode {
+    switch (_themePreference) {
+      case ThemePreference.light:
+        return ThemeMode.light;
+      case ThemePreference.dark:
+        return ThemeMode.dark;
+      case ThemePreference.system:
+      default:
+        return ThemeMode.system;
+    }
+  }
 
   SettingsService() {
     _loadSettings();
@@ -41,6 +60,15 @@ class SettingsService with ChangeNotifier {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _useFahrenheit = prefs.getBool(AppConstants.isFahrenheitKey) ?? false;
+
+    // Load theme preference
+    final String? themeString = prefs.getString(AppConstants.themePreference);
+    if (themeString != null) {
+      _themePreference = ThemePreference.values.firstWhere(
+        (e) => e.toString() == themeString,
+        orElse: () => ThemePreference.system,
+      );
+    }
 
     // Load detail card preferences
     final String? cardsJson = prefs.getString(detailCardPreferencesKey);
@@ -82,6 +110,13 @@ class SettingsService with ChangeNotifier {
     _useFahrenheit = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.isFahrenheitKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setThemePreference(ThemePreference preference) async {
+    _themePreference = preference;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.themePreference, preference.toString());
     notifyListeners();
   }
 
