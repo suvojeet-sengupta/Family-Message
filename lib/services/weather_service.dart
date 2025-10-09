@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -71,13 +70,30 @@ class WeatherService {
       return cachedWeather;
     }
 
-    // Only fetch from WeatherAPI
-    try {
-      return await _fetchWithRetry(() => _fetchFromWeatherApi(city: city, position: position));
-    } catch (e, stackTrace) {
-      _logger.e('WeatherAPI.com failed after retries', error: e, stackTrace: stackTrace);
-      rethrow;
+    final apiKeys = WeatherConfig.weatherApiKeys;
+    if (apiKeys.isEmpty) {
+      throw ConfigurationException('No weather API keys are set.');
     }
+
+    for (var i = 0; i < apiKeys.length; i++) {
+      try {
+        final apiKey = apiKeys[i];
+        _logger.d('Attempting to fetch weather with API key #${i + 1}');
+        return await _fetchWithRetry(() => _fetchFromWeatherApi(city: city, position: position, apiKey: apiKey));
+      } catch (e) {
+        _logger.w('API key #${i + 1} failed.', error: e);
+        if (e is WeatherApiException && (e.statusCode == 401 || e.statusCode == 403 || e.statusCode == 429)) {
+          // Auth or rate limit error, try next key
+          if (i < apiKeys.length - 1) {
+            _logger.i('Switching to next API key.');
+            continue;
+          }
+        }
+        // For other errors or if it's the last key, rethrow
+        rethrow;
+      }
+    }
+    throw Exception('All API keys failed.');
   }
 
   Future<String> _getCacheKeyFromPosition(Position position) async {
@@ -88,16 +104,12 @@ class WeatherService {
     return CacheKey.fromCoordinates(position.latitude, position.longitude).toString();
   }
 
-  Future<Weather> _fetchFromWeatherApi({String? city, Position? position}) async {
-    if (WeatherConfig.weatherApiKey.isEmpty) {
-      throw ConfigurationException('WEATHER_API_KEY is not set.');
-    }
-
+  Future<Weather> _fetchFromWeatherApi({String? city, Position? position, required String apiKey}) async {
     String url;
     if (city != null) {
-      url = '${WeatherConfig.weatherApiBaseUrl}/forecast.json?key=${WeatherConfig.weatherApiKey}&q=$city&days=${WeatherConfig.forecastDays}&aqi=${WeatherConfig.includeAqi ? 'yes' : 'no'}';
+      url = '${WeatherConfig.weatherApiBaseUrl}/forecast.json?key=$apiKey&q=$city&days=${WeatherConfig.forecastDays}&aqi=${WeatherConfig.includeAqi ? 'yes' : 'no'}';
     } else if (position != null) {
-      url = '${WeatherConfig.weatherApiBaseUrl}/forecast.json?key=${WeatherConfig.weatherApiKey}&q=${position.latitude},${position.longitude}&days=${WeatherConfig.forecastDays}&aqi=${WeatherConfig.includeAqi ? 'yes' : 'no'}';
+      url = '${WeatherConfig.weatherApiBaseUrl}/forecast.json?key=$apiKey&q=${position.latitude},${position.longitude}&days=${WeatherConfig.forecastDays}&aqi=${WeatherConfig.includeAqi ? 'yes' : 'no'}';
     } else {
       throw ArgumentError('Either city or position must be provided.');
     }
@@ -122,31 +134,49 @@ class WeatherService {
   }
 
   Future<List<SearchResult>> searchCities(String query) async {
-    if (WeatherConfig.weatherApiKey.isEmpty) {
-      throw ConfigurationException('WEATHER_API_KEY is not set. Please provide it using --dart-define.');
-    }
-
     if (query.isEmpty) {
       return [];
     }
 
-    final response = await http.get(Uri.parse(
-        '${WeatherConfig.weatherApiBaseUrl}/search.json?key=${WeatherConfig.weatherApiKey}&q=$query')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((e) => SearchResult.fromJson(e)).toList();
-    } else {
-      throw WeatherApiException(
-        provider: 'WeatherAPI.com',
-        message: 'Failed to search for cities',
-        statusCode: response.statusCode,
-      );
+    final apiKeys = WeatherConfig.weatherApiKeys;
+    if (apiKeys.isEmpty) {
+      throw ConfigurationException('No weather API keys are set.');
     }
+
+    for (var i = 0; i < apiKeys.length; i++) {
+      try {
+        final apiKey = apiKeys[i];
+        _logger.d('Attempting to search cities with API key #${i + 1}');
+        final response = await http.get(Uri.parse(
+            '${WeatherConfig.weatherApiBaseUrl}/search.json?key=$apiKey&q=$query')).timeout(Duration(seconds: WeatherConfig.apiTimeoutSeconds));
+
+        if (response.statusCode == 200) {
+          final List<dynamic> data = jsonDecode(response.body);
+          return data.map((e) => SearchResult.fromJson(e)).toList();
+        } else {
+          throw WeatherApiException(
+            provider: 'WeatherAPI.com',
+            message: 'Failed to search for cities',
+            statusCode: response.statusCode,
+          );
+        }
+      } catch (e) {
+        _logger.w('City search with API key #${i + 1} failed.', error: e);
+        if (e is WeatherApiException && (e.statusCode == 401 || e.statusCode == 403 || e.statusCode == 429)) {
+          // Auth or rate limit error, try next key
+          if (i < apiKeys.length - 1) {
+            _logger.i('Switching to next API key for city search.');
+            continue;
+          }
+        }
+        rethrow;
+      }
+    }
+    throw Exception('All API keys failed for city search.');
   }
 
-  Future<Weather> _fetchWithRetry(
-    Future<Weather> Function() fetchFunction, {
+  Future<T> _fetchWithRetry<T>(
+    Future<T> Function() fetchFunction, {
     int maxRetries = 3,
     Duration retryDelay = const Duration(seconds: 2),
   }) async {
