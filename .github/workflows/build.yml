@@ -63,7 +63,7 @@ jobs:
         run: |
           flutter build apk --release \
             --dart-define=WEATHER_API_KEY=${{ secrets.WEATHER_API_1 }} \
-            --dart-define=OPEN_WEATHER_API=${{ secrets.OPEN_WEATHER_API }}
+            --dart-define=WEATHER_API_2=${{ secrets.WEATHER_API_2 }}
         working-directory: ./ 
 
       - name: 📦 Prepare Release Artifacts
