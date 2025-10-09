@@ -27,7 +27,6 @@ class CurrentWeather extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.black.withOpacity(0.2),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -38,10 +37,10 @@ class CurrentWeather extends StatelessWidget {
           children: [
             Text(
               weather.locationName,
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -54,17 +53,17 @@ class CurrentWeather extends StatelessWidget {
                       isFahrenheit
                           ? '${weather.temperatureF.round()}°F'
                           : '${weather.temperature.round()}°C',
-                      style: const TextStyle(
-                        fontSize: 80, // Slightly smaller
-                        fontWeight: FontWeight.w200,
-                      ),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                            fontSize: 80,
+                            fontWeight: FontWeight.w200,
+                          ),
                     ),
                     Text(
                       weather.condition,
-                      style: const TextStyle(
-                        fontSize: 20, // Slightly smaller
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ],
                 ),
@@ -81,31 +80,31 @@ class CurrentWeather extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            const Divider(color: Colors.white24),
+            Divider(color: Theme.of(context).dividerColor),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.thermostat, color: Colors.white70, size: 20),
+                Icon(Icons.thermostat, color: Theme.of(context).iconTheme.color, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Feels like ${isFahrenheit ? weather.feelsLikeF.round() : weather.feelsLike.round()}°',
-                  style: const TextStyle(fontSize: 16),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               _getFeelsLikeExplanation(),
-              style: const TextStyle(fontSize: 14, color: Colors.white70),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.update, color: Colors.white70, size: 20),
+                Icon(Icons.update, color: Theme.of(context).iconTheme.color, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Last updated: ${weather.last_updated}',
-                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14),
                 ),
               ],
             ),

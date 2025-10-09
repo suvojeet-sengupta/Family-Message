@@ -10,7 +10,6 @@ class TenDayForecast extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.grey[900],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -19,9 +18,9 @@ class TenDayForecast extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               '10-day forecast',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -37,9 +36,9 @@ class TenDayForecast extends StatelessWidget {
                       children: [
                         Text(
                           DateFormat('E').format(DateTime.parse(day.date)),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        Text(DateFormat('MM/dd').format(DateTime.parse(day.date))),
+                        Text(DateFormat('MM/dd').format(DateTime.parse(day.date)), style: Theme.of(context).textTheme.bodyMedium),
                         const SizedBox(height: 8),
                         (day.iconUrl.startsWith('https://cdn.weatherapi.com')
                             ? Image.network(
@@ -52,7 +51,7 @@ class TenDayForecast extends StatelessWidget {
                                 width: 40,
                               )),
                         const SizedBox(height: 8),
-                        Text('${day.maxTemp.round()}° / ${day.minTemp.round()}°'),
+                        Text('${day.maxTemp.round()}° / ${day.minTemp.round()}°', style: Theme.of(context).textTheme.bodyLarge),
                       ],
                     ),
                   );

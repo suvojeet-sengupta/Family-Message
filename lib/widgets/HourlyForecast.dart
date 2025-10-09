@@ -25,7 +25,6 @@ class HourlyForecastWidget extends StatelessWidget {
         );
       },
       child: Card(
-        color: Colors.black.withOpacity(0.2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -34,13 +33,12 @@ class HourlyForecastWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'HOURLY FORECAST',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 16),
               SizedBox(
@@ -72,7 +70,7 @@ class HourlyForecastWidget extends StatelessWidget {
       width: 80,
       margin: const EdgeInsets.symmetric(horizontal: 8.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(40),
       ),
       child: Padding(
@@ -82,10 +80,9 @@ class HourlyForecastWidget extends StatelessWidget {
           children: [
             Text(
               time,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
+                  ),
             ),
             const SizedBox(height: 8),
             (iconUrl.startsWith('https://cdn.weatherapi.com')
@@ -101,11 +98,10 @@ class HourlyForecastWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               temperature,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ],
         ),

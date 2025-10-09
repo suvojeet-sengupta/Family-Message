@@ -17,7 +17,6 @@ class WeatherCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
-      color: Colors.grey[900],
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -38,26 +37,24 @@ class WeatherCard extends StatelessWidget {
                   children: [
                     Text(
                       weather.locationName,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       weather.condition,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontSize: 16,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${weather.dailyForecast.first.maxTemp.round()}° ${weather.dailyForecast.first.minTemp.round()}°',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontSize: 16,
+                          ),
                     ),
                   ],
                 ),
@@ -80,10 +77,10 @@ class WeatherCard extends StatelessWidget {
                     isFahrenheit
                         ? '${weather.temperatureF.round()}°'
                         : '${weather.temperature.round()}°',
-                    style: const TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w300,
-                    ),
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w300,
+                        ),
                   ),
                 ],
               ),
