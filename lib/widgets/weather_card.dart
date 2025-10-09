@@ -80,6 +80,7 @@ class WeatherCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           fontSize: 48,
                           fontWeight: FontWeight.w300,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                   ),
                 ],

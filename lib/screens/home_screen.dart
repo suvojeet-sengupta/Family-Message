@@ -82,8 +82,8 @@ class HomeScreen extends StatelessWidget {
             Stack(
               alignment: Alignment.center,
               children: [
-                Icon(Icons.cloud_outlined, size: 120, color: Colors.white.withOpacity(0.1)),
-                Icon(Icons.search, size: 60, color: Colors.white.withOpacity(0.8)),
+                Icon(Icons.cloud_outlined, size: 120, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1)),
+                Icon(Icons.search, size: 60, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)),
               ],
             ),
             const SizedBox(height: 24),
@@ -92,9 +92,9 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Search for a city to add it to your list.',
-              style: TextStyle(fontSize: 16, color: Colors.white70),
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -112,7 +112,8 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.search),
               label: const Text('Search City'),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black, backgroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
