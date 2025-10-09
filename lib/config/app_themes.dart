@@ -18,7 +18,7 @@ class AppThemes {
       onError: Colors.white,
     ),
     cardTheme: const CardThemeData(
-      color: Colors.grey[900],
+      color: Color(0xFF212121),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -69,7 +69,7 @@ class AppThemes {
       onError: Colors.white,
     ),
     cardTheme: const CardThemeData(
-      color: Colors.grey[100], // Lighter card background
+      color: Color(0xFFF5F5F5), // Lighter card background
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
