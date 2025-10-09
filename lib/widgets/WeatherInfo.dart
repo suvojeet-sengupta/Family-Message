@@ -74,15 +74,15 @@ class WeatherInfo extends StatelessWidget {
                   },
                   child: _buildInfoItem(Icons.water_drop, 'Humidity', '${weather.humidity}%'),
                 ),
-                // InkWell(
-                //   onTap: () {
-                //     // Navigator.push(
-                //     //   context,
-                //     //   _createFadeRoute(UvIndexDetailScreen(uvIndex: weather.uvIndex)),
-                //     // );
-                //   },
-                //   child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${weather.uvIndex.round()}'),
-                // ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      _createFadeRoute(UvIndexDetailScreen(uvIndex: weather.uvIndex)),
+                    );
+                  },
+                  child: _buildInfoItem(Icons.wb_sunny, 'UV Index', '${weather.uvIndex.round()}'),
+                ),
               ],
             ),
           ],

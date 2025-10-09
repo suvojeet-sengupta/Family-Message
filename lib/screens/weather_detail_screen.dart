@@ -40,6 +40,7 @@ class WeatherDetailScreen extends StatelessWidget {
       windDir: 'N/A',
       windDegree: 0,
       humidity: 0,
+      uvIndex: 0,
       airQuality: AirQuality(usEpaIndex: 0),
       pressure: 0,
       hourlyForecast: [],

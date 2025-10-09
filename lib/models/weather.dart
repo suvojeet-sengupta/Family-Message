@@ -16,6 +16,7 @@ class Weather {
   final String windDir;
   final int windDegree;
   final int humidity;
+  final double uvIndex;
   final AirQuality? airQuality;
   final double? pressure;
   final List<HourlyForecast> hourlyForecast;
@@ -40,6 +41,7 @@ class Weather {
     required this.windDir,
     required this.windDegree,
     required this.humidity,
+    required this.uvIndex,
     this.airQuality,
     this.pressure,
     required this.hourlyForecast,
@@ -66,6 +68,7 @@ class Weather {
       windDir: json['current']?['wind_dir'] ?? '',
       windDegree: json['current']?['wind_degree'] ?? 0,
       humidity: json['current']?['humidity'] ?? 0,
+      uvIndex: (json['current']?['uv'] ?? 0.0).toDouble(),
       airQuality: json['current']?['air_quality'] != null
           ? AirQuality.fromJson(json['current']['air_quality'])
           : null,
@@ -100,6 +103,7 @@ class Weather {
       'windDir': windDir,
       'windDegree': windDegree,
       'humidity': humidity,
+      'uvIndex': uvIndex,
       'airQuality': airQuality != null ? jsonEncode(airQuality!.toDatabaseMap()) : null,
       'pressure': pressure,
       'hourlyForecast': jsonEncode(hourlyForecast.map((e) => e.toDatabaseMap()).toList()),
@@ -128,6 +132,7 @@ class Weather {
       windDir: map['windDir'] ?? '',
       windDegree: map['windDegree'] ?? 0,
       humidity: map['humidity'],
+      uvIndex: map['uvIndex'] ?? 0.0,
       airQuality: map['airQuality'] != null
           ? AirQuality.fromDatabaseMap(jsonDecode(map['airQuality']))
           : null,
