@@ -53,15 +53,6 @@ jobs:
       - name: 🔄 Get Dependencies
         run: flutter pub get
 
-      - name: 🎨 Generate Launcher Icons
-        run: flutter pub run flutter_launcher_icons:main
-
-      - name: 🔐 Commit Generated Launcher Icons
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore(icons): Generate Android launcher icons"
-          file_pattern: "android/app/src/main/res/mipmap-*"
-
       - name: 🔐 Commit pubspec.lock changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
