@@ -29,8 +29,11 @@ class AppThemes {
       foregroundColor: Colors.white,
     ),
     textTheme: const TextTheme(
+      displayLarge: TextStyle(color: Colors.white),
+      displaySmall: TextStyle(color: Colors.white),
       bodyLarge: TextStyle(color: Colors.white),
       bodyMedium: TextStyle(color: Colors.white70),
+      bodySmall: TextStyle(color: Colors.white70),
       titleLarge: TextStyle(color: Colors.white),
       titleMedium: TextStyle(color: Colors.white),
       titleSmall: TextStyle(color: Colors.white70),
@@ -80,8 +83,11 @@ class AppThemes {
       foregroundColor: Colors.black, // Darker app bar icons/text
     ),
     textTheme: const TextTheme(
+      displayLarge: TextStyle(color: Colors.black),
+      displaySmall: TextStyle(color: Colors.black),
       bodyLarge: TextStyle(color: Colors.black),
       bodyMedium: TextStyle(color: Colors.black87),
+      bodySmall: TextStyle(color: Colors.black87),
       titleLarge: TextStyle(color: Colors.black),
       titleMedium: TextStyle(color: Colors.black),
       titleSmall: TextStyle(color: Colors.black87),
