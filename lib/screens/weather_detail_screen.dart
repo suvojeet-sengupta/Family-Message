@@ -1,4 +1,4 @@
-import 'package:AuroraWeather/screens/home_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -100,16 +100,12 @@ class WeatherDetailScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
-              icon: const Icon(Icons.home),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
+                Navigator.pop(context);
               },
             ),
             title: Text(weatherToDisplay.locationName),
-            centerTitle: true,
             elevation: 0,
             backgroundColor: Colors.transparent,
           ),
