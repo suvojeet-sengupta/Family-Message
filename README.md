@@ -106,6 +106,3 @@ The app uses `provider` for state management, allowing for a clean separation of
 - **`intl`**: For date and number formatting.
 - **`logger`**: For logging.
 - **`connectivity_plus`**: To check for internet connectivity.
-
----
-This documentation provides a clear overview of the AuroraWeather application, its features, and its internal workings, making it easy for any developer to understand and contribute to the project.
