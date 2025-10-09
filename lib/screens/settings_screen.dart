@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 import '../services/settings_service.dart';
-import '../constants/detail_card_constants.dart'; // New import
-
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -88,40 +86,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
               ],
             ),
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Detail Card Customization',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Consumer<SettingsService>(
-            builder: (context, settingsService, child) {
-              final cards = settingsService.detailCardPreferences;
-              return Expanded(
-                child: ReorderableListView.builder(
-                  itemCount: cards.length,
-                  onReorder: (oldIndex, newIndex) {
-                    settingsService.reorderDetailCards(oldIndex, newIndex);
-                  },
-                  itemBuilder: (context, index) {
-                    final card = cards[index];
-                    final detailCard = defaultDetailCards.firstWhere((dc) => dc.id == card.cardTypeId);
-                    return SwitchListTile(
-                      key: ValueKey(card.cardTypeId),
-                      secondary: Icon(detailCard.icon),
-                      title: Text(detailCard.title),
-                      value: card.isVisible,
-                      onChanged: (value) {
-                        settingsService.toggleDetailCardVisibility(card.cardTypeId, value);
-                      },
-                    );
-                  },
-                ),
-              );
-            },
           ),
         ],
       ),

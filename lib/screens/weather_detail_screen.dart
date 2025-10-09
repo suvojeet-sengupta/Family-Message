@@ -21,6 +21,7 @@ import './details/uv_index_detail_screen.dart';
 
 
 import '../constants/detail_card_constants.dart'; // New import
+import 'package:reorderable_grid_view/reorderable_grid_view.dart'; // New import
 
 import './details/wind_detail_screen.dart';
 import './details/humidity_detail_screen.dart';
@@ -186,16 +187,20 @@ class WeatherDetailScreen extends StatelessWidget {
                 return const SizedBox.shrink(); // Or a message indicating no cards are visible
               }
 
-              return GridView.count(
+              return ReorderableGridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
+                onReorder: (oldIndex, newIndex) {
+                  settingsService.reorderDetailCards(oldIndex, newIndex);
+                },
                 children: visibleCards.map((card) {
                   switch (card.cardTypeId) {
                     case 'precipitation':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () {
                           if (weather.dailyForecast.isNotEmpty) {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => PrecipitationDetailScreen(precipitation: weather.dailyForecast.first.totalPrecipMm)));
@@ -211,6 +216,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'wind':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeedKph: weather.wind, windDegree: weather.windDegree, windDir: weather.windDir))),
                         child: WeatherDetailCard(
                           title: 'Wind',
@@ -222,6 +228,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'pressure':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PressureDetailScreen(pressure: weather.pressure?.toDouble() ?? 0.0))),
                         child: WeatherDetailCard(
                           title: 'Pressure',
@@ -233,6 +240,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'air_quality':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AirQualityDetailScreen(airQuality: weather.airQuality))),
                         child: WeatherDetailCard(
                           title: 'Air Quality',
@@ -244,6 +252,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'humidity':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HumidityDetailScreen(humidity: weather.humidity))),
                         child: WeatherDetailCard(
                           title: 'Humidity',
@@ -255,6 +264,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'uv_index':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UvIndexDetailScreen(uvIndex: weather.uvIndex))),
                         child: WeatherDetailCard(
                           title: 'UV Index',
@@ -266,6 +276,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'sunrise_sunset':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () {
                           if (weather.dailyForecast.isNotEmpty) {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => SunriseSunsetDetailScreen(date: weather.dailyForecast.first.date, sunrise: weather.dailyForecast.first.sunrise, sunset: weather.dailyForecast.first.sunset)));
@@ -284,6 +295,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'visibility':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VisibilityDetailScreen(visKm: weather.vis_km, visMiles: weather.vis_miles))),
                         child: WeatherDetailCard(
                           title: 'Visibility',
@@ -295,6 +307,7 @@ class WeatherDetailScreen extends StatelessWidget {
                       );
                     case 'dew_point':
                       return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DewPointDetailScreen(dewPoint: isFahrenheit ? weather.dewpoint_f : weather.dewpoint_c, isFahrenheit: isFahrenheit))),
                         child: WeatherDetailCard(
                           title: 'Dew Point',
