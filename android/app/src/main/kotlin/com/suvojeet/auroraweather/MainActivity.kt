@@ -1,4 +1,4 @@
-package com.example.family_message
+package com.suvojeet.auroraweather
 
 import io.flutter.embedding.android.FlutterActivity
 
