@@ -28,26 +28,26 @@ class WindDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCurrentWindSpeed(beaufort),
+            _buildCurrentWindSpeed(context, beaufort),
             const SizedBox(height: 24),
-            _buildWindDirection(),
+            _buildWindDirection(context),
             const SizedBox(height: 24),
-            _buildBeaufortInfo(),
+            _buildBeaufortInfo(context),
             const SizedBox(height: 24),
-            _buildBeaufortScale(),
+            _buildBeaufortScale(context),
           ],
         ).animate().fade(duration: 300.ms),
       ),
     );
   }
 
-  Widget _buildWindDirection() {
+  Widget _buildWindDirection(BuildContext context) {
     return Center(
       child: Column(
         children: [
-          const Text(
+          Text(
             'Wind Direction',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -56,10 +56,10 @@ class WindDetailScreen extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                const Icon(Icons.compass_calibration_outlined, size: 200, color: Colors.grey),
+                Icon(Icons.compass_calibration_outlined, size: 200, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                 Transform.rotate(
                   angle: (windDegree * math.pi / 180) * -1, // Rotate clockwise
-                  child: const Icon(Icons.arrow_upward_rounded, size: 150, color: Colors.blue),
+                  child: Icon(Icons.arrow_upward_rounded, size: 150, color: Theme.of(context).colorScheme.primary),
                 ),
               ],
             ),
@@ -67,35 +67,35 @@ class WindDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             '$windDir ($windDegree°)',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCurrentWindSpeed(Map<String, dynamic> beaufort) {
+  Widget _buildCurrentWindSpeed(BuildContext context, Map<String, dynamic> beaufort) {
     return Center(
       child: Column(
         children: [
-          const Text(
+          Text(
             'Current Wind Speed',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
             '${windSpeedKph.round()} km/h',
-            style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w200),
+            style: Theme.of(context).textTheme.displayMedium,
           ),
           const SizedBox(height: 8),
           Text(
             'Beaufort Force ${beaufort['force']}',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
             '${beaufort['description']}',
-            style: const TextStyle(fontSize: 18),
+            style: Theme.of(context).textTheme.titleLarge,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -104,7 +104,7 @@ class WindDetailScreen extends StatelessWidget {
             child: Text(
               '${beaufort['effects']}',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
         ],
@@ -112,50 +112,50 @@ class WindDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBeaufortInfo() {
-    return const Column(
+  Widget _buildBeaufortInfo(BuildContext context) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'The Beaufort Scale',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           'The Beaufort scale is an empirical measure that relates wind speed to observed conditions at sea or on land.',
-          style: TextStyle(fontSize: 16),
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ],
     );
   }
 
-  Widget _buildBeaufortScale() {
+  Widget _buildBeaufortScale(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Beaufort Scale Reference',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 16),
-        _buildScaleItem(0, 'Calm', '0-1 mph'),
-        _buildScaleItem(1, 'Light Air', '1-3 mph'),
-        _buildScaleItem(2, 'Light Breeze', '4-7 mph'),
-        _buildScaleItem(3, 'Gentle Breeze', '8-12 mph'),
-        _buildScaleItem(4, 'Moderate Breeze', '13-18 mph'),
-        _buildScaleItem(5, 'Fresh Breeze', '19-24 mph'),
-        _buildScaleItem(6, 'Strong Breeze', '25-31 mph'),
-        _buildScaleItem(7, 'Near Gale', '32-38 mph'),
-        _buildScaleItem(8, 'Gale', '39-46 mph'),
-        _buildScaleItem(9, 'Strong Gale', '47-54 mph'),
-        _buildScaleItem(10, 'Storm', '55-63 mph'),
-        _buildScaleItem(11, 'Violent Storm', '64-75 mph'),
-        _buildScaleItem(12, 'Hurricane', '75+ mph'),
+        _buildScaleItem(context, 0, 'Calm', '0-1 mph'),
+        _buildScaleItem(context, 1, 'Light Air', '1-3 mph'),
+        _buildScaleItem(context, 2, 'Light Breeze', '4-7 mph'),
+        _buildScaleItem(context, 3, 'Gentle Breeze', '8-12 mph'),
+        _buildScaleItem(context, 4, 'Moderate Breeze', '13-18 mph'),
+        _buildScaleItem(context, 5, 'Fresh Breeze', '19-24 mph'),
+        _buildScaleItem(context, 6, 'Strong Breeze', '25-31 mph'),
+        _buildScaleItem(context, 7, 'Near Gale', '32-38 mph'),
+        _buildScaleItem(context, 8, 'Gale', '39-46 mph'),
+        _buildScaleItem(context, 9, 'Strong Gale', '47-54 mph'),
+        _buildScaleItem(context, 10, 'Storm', '55-63 mph'),
+        _buildScaleItem(context, 11, 'Violent Storm', '64-75 mph'),
+        _buildScaleItem(context, 12, 'Hurricane', '75+ mph'),
       ],
     );
   }
 
-  Widget _buildScaleItem(int force, String description, String speed) {
+  Widget _buildScaleItem(BuildContext context, int force, String description, String speed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -164,13 +164,13 @@ class WindDetailScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.blue,
+              color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 force.toString(),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -181,10 +181,10 @@ class WindDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   description,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
-                Text(speed),
+                Text(speed, style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),

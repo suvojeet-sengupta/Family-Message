@@ -17,7 +17,6 @@ class PrecipitationDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
-              color: Colors.grey[900],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -26,11 +25,11 @@ class PrecipitationDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Total precipitation', style: TextStyle(color: Colors.white70)),
+                    Text('Total precipitation', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
                       '${precipitation.toStringAsFixed(1)} mm',
-                      style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.displayLarge,
                     ),
                   ],
                 ),

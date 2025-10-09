@@ -18,7 +18,6 @@ class AirQualityDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
-              color: Colors.grey[900],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -27,26 +26,26 @@ class AirQualityDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('US EPA Air Quality Index (AQI)', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                    Text('US EPA Air Quality Index (AQI)', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
                       airQuality?.usEpaIndex.round().toString() ?? 'N/A',
-                      style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.displayLarge,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _getAqiSubtitle(airQuality?.usEpaIndex),
-                      style: TextStyle(fontSize: 24, color: _getAqiColor(airQuality?.usEpaIndex), fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 24, color: _getAqiColor(context, airQuality?.usEpaIndex), fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    const Divider(color: Colors.white24),
+                    const Divider(),
                     const SizedBox(height: 16),
                     Text(
                       _getAqiAdvice(airQuality?.usEpaIndex),
-                      style: const TextStyle(fontSize: 16, height: 1.5),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
                     ),
                   ],
-                ), 
+                ),
               ),
             ),
           ],
@@ -65,8 +64,8 @@ class AirQualityDetailScreen extends StatelessWidget {
     return 'Hazardous';
   }
 
-  Color _getAqiColor(num? aqi) {
-    if (aqi == null) return Colors.white;
+  Color _getAqiColor(BuildContext context, num? aqi) {
+    if (aqi == null) return Theme.of(context).colorScheme.onSurface;
     if (aqi <= 50) return Colors.green;
     if (aqi <= 100) return Colors.yellow;
     if (aqi <= 150) return Colors.orange;

@@ -56,7 +56,6 @@ class UvIndexDetailScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Card(
-          color: Colors.grey[900],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -66,11 +65,11 @@ class UvIndexDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Current UV Index', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                Text('Current UV Index', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Text(
                   uvIndex.toStringAsFixed(1),
-                  style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.displayLarge,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -78,14 +77,14 @@ class UvIndexDetailScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 24, color: _getUvIndexColor(), fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                const Divider(color: Colors.white24),
+                const Divider(),
                 const SizedBox(height: 16),
                 Text(
                   _getUvIndexAdvice(),
-                  style: const TextStyle(fontSize: 16, height: 1.5),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
                 ),
               ],
-            ), 
+            ),
           ),
         ),
       ),
