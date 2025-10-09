@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/weather_model.dart';
+import '../config/weather_config.dart'; // New import
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -82,9 +83,9 @@ class DatabaseHelper {
       final weatherData = maps.first;
       final timestamp = weatherData['timestamp'] as int;
       final now = DateTime.now().millisecondsSinceEpoch;
-      final oneHourInMillis = 60 * 60 * 1000; // 1 hour
+      final cacheDurationInMillis = WeatherConfig.cacheExpiryMinutes * 60 * 1000; // 5 minutes
 
-      if ((now - timestamp) < oneHourInMillis) {
+      if ((now - timestamp) < cacheDurationInMillis) {
         // Data is fresh, return it
         return Weather.fromDatabaseMap(weatherData);
       }

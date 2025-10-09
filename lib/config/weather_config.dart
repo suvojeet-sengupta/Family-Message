@@ -2,7 +2,7 @@
 import '../services/weather_exceptions.dart';
 
 class WeatherConfig {
-  static const int cacheExpiryHours = 1;
+  static const int cacheExpiryMinutes = 5;
   static const int apiTimeoutSeconds = 10;
   static const int forecastDays = 10;
   static const bool includeAqi = true;
