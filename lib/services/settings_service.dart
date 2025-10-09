@@ -97,7 +97,7 @@ class SettingsService with ChangeNotifier {
   }
 
   void toggleDetailCardVisibility(String cardId, bool isVisible) {
-    final index = _detailCardPreferences.indexWhere((card) => card.cardType.id == cardId);
+    final index = _detailCardPreferences.indexWhere((card) => card.cardTypeId == cardId);
     if (index != -1) {
       _detailCardPreferences[index].isVisible = isVisible;
       _saveDetailCardPreferences();
