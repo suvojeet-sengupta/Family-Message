@@ -88,6 +88,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Detail Card Customization',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Consumer<SettingsService>(
+            builder: (context, settingsService, child) {
+              final cards = settingsService.detailCardPreferences;
+              return Expanded(
+                child: ReorderableListView.builder(
+                  itemCount: cards.length,
+                  onReorder: (oldIndex, newIndex) {
+                    settingsService.reorderDetailCards(oldIndex, newIndex);
+                  },
+                  itemBuilder: (context, index) {
+                    final card = cards[index];
+                    return SwitchListTile(
+                      key: ValueKey(card.cardType.id),
+                      secondary: Icon(card.cardType.icon),
+                      title: Text(card.cardType.title),
+                      value: card.isVisible,
+                      onChanged: (value) {
+                        settingsService.toggleDetailCardVisibility(card.cardType.id, value);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
