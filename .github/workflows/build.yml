@@ -68,17 +68,21 @@ jobs:
           commit_message: "chore(deps): Update pubspec.lock"
           file_pattern: "pubspec.lock"
 
-      - name: 💪 Build Signed Release APK
+      - name: 💪 Build Signed Release APK & AAB
         run: |
           flutter build apk --release \
             --dart-define=WEATHER_API_KEY=${{ secrets.WEATHER_API_1 }} \
             --dart-define=WEATHER_API_2=${{ secrets.WEATHER_API_2 }}
-        working-directory: ./ 
+          flutter build appbundle --release \
+            --dart-define=WEATHER_API_KEY=${{ secrets.WEATHER_API_1 }} \
+            --dart-define=WEATHER_API_2=${{ secrets.WEATHER_API_2 }}
+        working-directory: ./
 
       - name: 📦 Prepare Release Artifacts
         run: |
           mkdir -p release_artifacts
           mv build/app/outputs/flutter-apk/app-release.apk release_artifacts/AuroraWeather-${{ env.RELEASE_TAG }}-signed.apk
+          mv build/app/outputs/bundle/release/app-release.aab release_artifacts/AuroraWeather-${{ env.RELEASE_TAG }}-signed.aab
 
       - name: ⬆️ Upload Release Artifacts
         uses: actions/upload-artifact@v4
