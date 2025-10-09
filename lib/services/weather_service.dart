@@ -36,7 +36,7 @@ class WeatherService {
     }
 
     return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.best);
   }
 
   Future<Weather> fetchWeather() async {
