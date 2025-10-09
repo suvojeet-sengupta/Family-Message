@@ -45,7 +45,6 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Card(
-          color: Colors.grey[900],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -61,10 +60,10 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Sunrise', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                        Text('Sunrise', style: Theme.of(context).textTheme.titleMedium),
                         Text(
                           _formatTime(sunrise),
-                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                          style: Theme.of(context).textTheme.headlineSmall,
                         ),
                       ],
                     ),
@@ -78,26 +77,26 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Sunset', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                        Text('Sunset', style: Theme.of(context).textTheme.titleMedium),
                         Text(
                           _formatTime(sunset),
-                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                          style: Theme.of(context).textTheme.headlineSmall,
                         ),
                       ],
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                const Divider(color: Colors.white24),
+                const Divider(),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.hourglass_bottom, color: Colors.white70, size: 24),
+                    Icon(Icons.hourglass_bottom, color: Theme.of(context).colorScheme.onSurface, size: 24),
                     const SizedBox(width: 8),
                     Text(
                       'Daylight: ${_calculateDaylight(sunrise, sunset)}',
-                      style: const TextStyle(fontSize: 18, color: Colors.white),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ],
                 ),

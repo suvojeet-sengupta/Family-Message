@@ -17,7 +17,6 @@ class PressureDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
-              color: Colors.grey[900],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -26,11 +25,11 @@ class PressureDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Current pressure', style: TextStyle(color: Colors.white70)),
+                    Text('Current pressure', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
                       '${pressure.toStringAsFixed(1)} hPa',
-                      style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.displayLarge,
                     ),
                   ],
                 ),
