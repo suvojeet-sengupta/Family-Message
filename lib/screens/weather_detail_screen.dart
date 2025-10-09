@@ -70,12 +70,16 @@ class WeatherDetailScreen extends StatelessWidget {
     );
   }
 
-  String _formatTime(String time) {
-    if (time.isEmpty) {
+  String _formatTime(String date, String time) {
+    if (time.isEmpty || date.isEmpty) {
       return 'N/A';
     }
-    final dateTime = DateTime.parse(time);
-    return DateFormat('h:mm a').format(dateTime);
+    try {
+      final dateTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $time");
+      return DateFormat('h:mm a').format(dateTime);
+    } catch (e) {
+      return time;
+    }
   }
 
   @override
@@ -220,7 +224,7 @@ class WeatherDetailScreen extends StatelessWidget {
               InkWell(
                 onTap: () {
                   if (weather.dailyForecast.isNotEmpty) {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => SunriseSunsetDetailScreen(sunrise: weather.dailyForecast.first.sunrise, sunset: weather.dailyForecast.first.sunset)));
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => SunriseSunsetDetailScreen(date: weather.dailyForecast.first.date, sunrise: weather.dailyForecast.first.sunrise, sunset: weather.dailyForecast.first.sunset)));
                   }
                 },
                 child: WeatherDetailCard(
@@ -228,7 +232,7 @@ class WeatherDetailScreen extends StatelessWidget {
                   value: (weather.dailyForecast.isNotEmpty &&
                     weather.dailyForecast.first.sunrise.isNotEmpty &&
                     weather.dailyForecast.first.sunset.isNotEmpty
-                  ) ? '${_formatTime(weather.dailyForecast.first.sunrise)} / ${_formatTime(weather.dailyForecast.first.sunset)}' : 'N/A',
+                  ) ? '${_formatTime(weather.dailyForecast.first.date, weather.dailyForecast.first.sunrise)} / ${_formatTime(weather.dailyForecast.first.date, weather.dailyForecast.first.sunset)}' : 'N/A',
                   subtitle: 'Sunrise and sunset',
                   icon: Icons.brightness_6,
                   color: Colors.amber,

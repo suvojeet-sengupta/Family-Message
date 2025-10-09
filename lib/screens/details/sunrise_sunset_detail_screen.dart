@@ -2,29 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class SunriseSunsetDetailScreen extends StatelessWidget {
+  final String date;
   final String sunrise;
   final String sunset;
 
-  const SunriseSunsetDetailScreen({super.key, required this.sunrise, required this.sunset});
+  const SunriseSunsetDetailScreen({super.key, required this.date, required this.sunrise, required this.sunset});
 
   String _formatTime(String time) {
-    if (time.isEmpty) {
+    if (time.isEmpty || date.isEmpty) {
       return 'N/A';
     }
-    final dateTime = DateTime.parse(time);
-    return DateFormat('h:mm a').format(dateTime);
+    try {
+      final dateTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $time");
+      return DateFormat('h:mm a').format(dateTime);
+    } catch (e) {
+      return time;
+    }
   }
 
   String _calculateDaylight(String sunrise, String sunset) {
-    if (sunrise.isEmpty || sunset.isEmpty) {
+    if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {
       return 'N/A';
     }
-    final sunriseTime = DateTime.parse(sunrise);
-    final sunsetTime = DateTime.parse(sunset);
-    final duration = sunsetTime.difference(sunriseTime);
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes % 60;
-    return '$hours hours $minutes minutes';
+    try {
+      final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunrise");
+      final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunset");
+      final duration = sunsetTime.difference(sunriseTime);
+      final hours = duration.inHours;
+      final minutes = duration.inMinutes % 60;
+      return '$hours hours $minutes minutes';
+    } catch (e) {
+      return 'N/A';
+    }
   }
 
   @override
