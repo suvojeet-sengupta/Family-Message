@@ -87,11 +87,16 @@ class SettingsService with ChangeNotifier {
 
   // New methods for managing detail cards
   void reorderDetailCards(int oldIndex, int newIndex) {
+    // Adjust newIndex if moving item downwards
     if (newIndex > oldIndex) {
       newIndex -= 1;
     }
-    final card = _detailCardPreferences.removeAt(oldIndex);
-    _detailCardPreferences.insert(newIndex, card);
+
+    // Perform a direct swap
+    final temp = _detailCardPreferences[oldIndex];
+    _detailCardPreferences[oldIndex] = _detailCardPreferences[newIndex];
+    _detailCardPreferences[newIndex] = temp;
+
     _saveDetailCardPreferences();
     notifyListeners();
   }
