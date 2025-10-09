@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppThemes {
   static final ThemeData darkTheme = ThemeData.dark().copyWith(
@@ -27,6 +28,7 @@ class AppThemes {
       backgroundColor: Colors.transparent,
       elevation: 0,
       foregroundColor: Colors.white,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(color: Colors.white),
@@ -81,6 +83,7 @@ class AppThemes {
       backgroundColor: Colors.transparent,
       elevation: 0,
       foregroundColor: Colors.black, // Darker app bar icons/text
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
     ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(color: Colors.black),
