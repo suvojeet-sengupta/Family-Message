@@ -4,6 +4,7 @@ import 'dart:convert'; // For jsonEncode/jsonDecode
 
 import '../constants/app_constants.dart';
 import '../constants/detail_card_constants.dart'; // New import
+import 'package:flutter/material.dart'; // For ThemeMode
 
 // New class to hold card type and its visibility
 class CustomizableDetailCard {
@@ -27,7 +28,7 @@ class CustomizableDetailCard {
   }
 }
 
-import 'package:flutter/material.dart'; // For ThemeMode
+
 
 enum ThemePreference { system, light, dark }
 
