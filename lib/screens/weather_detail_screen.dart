@@ -193,7 +193,7 @@ class WeatherDetailScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: visibleCards.map((card) {
-                  switch (card.cardType.id) {
+                  switch (card.cardTypeId) {
                     case 'precipitation':
                       return InkWell(
                         onTap: () {

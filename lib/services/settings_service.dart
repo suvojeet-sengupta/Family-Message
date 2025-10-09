@@ -7,21 +7,21 @@ import '../constants/detail_card_constants.dart'; // New import
 
 // New class to hold card type and its visibility
 class CustomizableDetailCard {
-  final DetailCardType cardType;
+  final String cardTypeId; // Store only the ID
   bool isVisible;
 
-  CustomizableDetailCard({required this.cardType, this.isVisible = true});
+  CustomizableDetailCard({required this.cardTypeId, this.isVisible = true});
 
   Map<String, dynamic> toJson() {
     return {
-      'cardType': cardType.toJson(),
+      'cardTypeId': cardTypeId, // Store only the ID
       'isVisible': isVisible,
     };
   }
 
   factory CustomizableDetailCard.fromJson(Map<String, dynamic> json) {
     return CustomizableDetailCard(
-      cardType: DetailCardType.fromJson(json['cardType']),
+      cardTypeId: json['cardTypeId'], // Read only the ID
       isVisible: json['isVisible'],
     );
   }
@@ -46,20 +46,27 @@ class SettingsService with ChangeNotifier {
     final String? cardsJson = prefs.getString(detailCardPreferencesKey);
     if (cardsJson != null) {
       final List<dynamic> decoded = jsonDecode(cardsJson);
-      _detailCardPreferences = decoded.map((e) => CustomizableDetailCard.fromJson(e)).toList();
+      _detailCardPreferences = decoded.map((e) {
+        final loadedCard = CustomizableDetailCard.fromJson(e);
+        final defaultCard = defaultDetailCards.firstWhere(
+          (card) => card.id == loadedCard.cardTypeId,
+          orElse: () => throw Exception('Unknown card type ID: ${loadedCard.cardTypeId}'), // Should not happen if defaultDetailCards is consistent
+        );
+        return CustomizableDetailCard(cardTypeId: defaultCard.id, isVisible: loadedCard.isVisible);
+      }).toList();
 
       // Ensure all default cards are present, add new ones if any
       for (var defaultCard in defaultDetailCards) {
-        if (!_detailCardPreferences.any((card) => card.cardType.id == defaultCard.id)) {
-          _detailCardPreferences.add(CustomizableDetailCard(cardType: defaultCard));
+        if (!_detailCardPreferences.any((card) => card.cardTypeId == defaultCard.id)) {
+          _detailCardPreferences.add(CustomizableDetailCard(cardTypeId: defaultCard.id));
         }
       }
       // Remove any cards that are no longer in defaultDetailCards
-      _detailCardPreferences.retainWhere((card) => defaultDetailCards.any((defaultCard) => defaultCard.id == card.cardType.id));
+      _detailCardPreferences.retainWhere((card) => defaultDetailCards.any((defaultCard) => defaultCard.id == card.cardTypeId));
 
     } else {
       // If no preferences saved, use default order and visibility
-      _detailCardPreferences = defaultDetailCards.map((card) => CustomizableDetailCard(cardType: card)).toList();
+      _detailCardPreferences = defaultDetailCards.map((card) => CustomizableDetailCard(cardTypeId: card.id)).toList();
     }
 
     notifyListeners();

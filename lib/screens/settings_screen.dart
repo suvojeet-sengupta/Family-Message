@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 import '../services/settings_service.dart';
+import '../constants/detail_card_constants.dart'; // New import
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -107,13 +108,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                   itemBuilder: (context, index) {
                     final card = cards[index];
+                    final detailCard = defaultDetailCards.firstWhere((dc) => dc.id == card.cardTypeId);
                     return SwitchListTile(
-                      key: ValueKey(card.cardType.id),
-                      secondary: Icon(card.cardType.icon),
-                      title: Text(card.cardType.title),
+                      key: ValueKey(card.cardTypeId),
+                      secondary: Icon(detailCard.icon),
+                      title: Text(detailCard.title),
                       value: card.isVisible,
                       onChanged: (value) {
-                        settingsService.toggleDetailCardVisibility(card.cardType.id, value);
+                        settingsService.toggleDetailCardVisibility(card.cardTypeId, value);
                       },
                     );
                   },
