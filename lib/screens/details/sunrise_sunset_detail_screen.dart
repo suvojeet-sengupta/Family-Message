@@ -63,7 +63,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                         Text('Sunrise', style: Theme.of(context).textTheme.titleMedium),
                         Text(
                           _formatTime(sunrise),
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: Theme.of(context).textTheme.displaySmall,
                         ),
                       ],
                     ),
@@ -80,7 +80,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                         Text('Sunset', style: Theme.of(context).textTheme.titleMedium),
                         Text(
                           _formatTime(sunset),
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: Theme.of(context).textTheme.displaySmall,
                         ),
                       ],
                     ),
