@@ -20,7 +20,7 @@ class AppThemes {
     cardTheme: const CardThemeData(
       color: Color(0xFF212121),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
       ),
     ),
     appBarTheme: const AppBarTheme(
@@ -71,7 +71,7 @@ class AppThemes {
     cardTheme: const CardThemeData(
       color: Color(0xFFF5F5F5), // Lighter card background
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
       ),
     ),
     appBarTheme: const AppBarTheme(
