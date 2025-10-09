@@ -17,6 +17,7 @@ import './details/pressure_detail_screen.dart';
 import './details/sunrise_sunset_detail_screen.dart';
 import './details/visibility_detail_screen.dart';
 import './details/dew_point_detail_screen.dart';
+import './details/uv_index_detail_screen.dart';
 
 
 import './details/wind_detail_screen.dart';
@@ -148,6 +149,20 @@ class WeatherDetailScreen extends StatelessWidget {
     return 'Hazardous';
   }
 
+  String _getUvIndexDescription(double uvIndex) {
+    if (uvIndex <= 2) {
+      return 'Low';
+    } else if (uvIndex <= 5) {
+      return 'Moderate';
+    } else if (uvIndex <= 7) {
+      return 'High';
+    } else if (uvIndex <= 10) {
+      return 'Very High';
+    } else {
+      return 'Extreme';
+    }
+  }
+
   Widget _buildWeatherContent(BuildContext context, bool isFahrenheit, Weather weather, WeatherProvider weatherProvider) {
     return RefreshIndicator(
       onRefresh: () => this.weather == null ? weatherProvider.fetchCurrentLocationWeather(force: true) : weatherProvider.fetchWeatherForCity(weather.locationName, force: true),
@@ -220,6 +235,16 @@ class WeatherDetailScreen extends StatelessWidget {
                   subtitle: 'Current humidity',
                   icon: Icons.water,
                   color: Colors.teal,
+                ),
+              ),
+              InkWell(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UvIndexDetailScreen(uvIndex: weather.uvIndex))),
+                child: WeatherDetailCard(
+                  title: 'UV Index',
+                  value: weather.uvIndex.round().toString(),
+                  subtitle: _getUvIndexDescription(weather.uvIndex),
+                  icon: Icons.wb_sunny_outlined,
+                  color: Colors.orange,
                 ),
               ),
               InkWell(
