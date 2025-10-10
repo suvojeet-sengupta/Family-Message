@@ -15,7 +15,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   final WeatherService _weatherService = WeatherService();
   List<SearchResult> _suggestions = [];
   List<String> _recentSearches = [];
@@ -27,9 +27,9 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _loadRecentSearches();
-    _cityController.addListener(() {
+    _locationController.addListener(() {
       setState(() {
-        _isSearching = _cityController.text.isNotEmpty;
+        _isSearching = _locationController.text.isNotEmpty;
       });
     });
   }
@@ -37,7 +37,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     _debounce?.cancel();
-    _cityController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -72,11 +72,11 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  Future<void> _saveSearch(String city) async {
+  Future<void> _saveSearch(String location) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> recentSearches = prefs.getStringList(AppConstants.recentSearchesKey) ?? [];
-    if (!recentSearches.contains(city)) {
-      recentSearches.insert(0, city);
+    if (!recentSearches.contains(location)) {
+      recentSearches.insert(0, location);
       if (recentSearches.length > 5) {
         recentSearches.removeLast();
       }
@@ -88,17 +88,17 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search City'),
+        title: const Text('Search Location'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              controller: _cityController,
+              controller: _locationController,
               autofocus: true,
               decoration: InputDecoration(
-                labelText: 'Enter city name',
+                labelText: 'Enter a location',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -153,18 +153,18 @@ class _SearchScreenState extends State<SearchScreen> {
     return ListView.builder(
       itemCount: _recentSearches.length,
       itemBuilder: (context, index) {
-        final city = _recentSearches[index];
+        final location = _recentSearches[index];
         return Card(
           color: Colors.white.withOpacity(0.1),
           margin: const EdgeInsets.symmetric(vertical: 4),
           child: ListTile(
             leading: const Icon(Icons.history, color: Colors.white54),
-            title: Text(city),
+            title: Text(location),
             onTap: () {
-              Navigator.pop(context, city);
+              Navigator.pop(context, location);
             },
           ),
-        ).animate().fade(duration: 300.ms).slideY(delay: (100 * index).ms);
+        );
       },
     );
   }
