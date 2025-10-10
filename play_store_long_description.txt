@@ -1,0 +1,27 @@
+**Aurora Weather: Your Personal Weather Assistant**
+
+Experience weather like never before with Aurora Weather, the beautifully designed and feature-rich application that brings you accurate, real-time weather information and detailed forecasts for any location across the globe. With its intuitive interface and powerful customization options, staying ahead of the weather has never been easier or more enjoyable.
+
+**Key Features:**
+
+*   **Accurate Real-Time Data:** Get instant access to current temperature, "feels like" temperature, conditions, wind speed and direction, humidity, UV index, air quality, atmospheric pressure, visibility, and dew point.
+*   **Comprehensive Forecasts:** Plan your day and week with confidence. View detailed hourly forecasts for the next 24 hours and a comprehensive 10-day outlook, ensuring you're always prepared.
+*   **Global Location Search & Management:** Easily search for any city worldwide. Save your favorite locations for quick access, reorder them as you prefer, and remove them with a tap. Your recent searches are also conveniently stored.
+*   **In-Depth Weather Details:** Dive deeper into specific weather metrics with dedicated detail screens for:
+    *   Air Quality Index (AQI) with advice
+    *   Precipitation levels
+    *   Wind speed, direction, and Beaufort scale information
+    *   Atmospheric Pressure
+    *   Humidity levels with comfort advice
+    *   UV Index with protection recommendations
+    *   Sunrise & Sunset times with daylight duration
+    *   Visibility in kilometers and miles
+    *   Dew Point with comfort level analysis
+*   **Personalized Experience:**
+    *   **Units:** Seamlessly switch between Celsius and Fahrenheit.
+    *   **Themes:** Choose your preferred aesthetic with Light, Dark, or System-default theme options.
+    *   **Customizable Detail Cards:** Tailor your weather detail screen by reordering and toggling the visibility of various information cards (e.g., Wind, Humidity, UV Index) to see what matters most to you.
+*   **Stunning & Smooth Interface:** Enjoy a modern, clean design with fluid animations that make checking the weather a delightful experience.
+*   **Offline Access:** Weather data is intelligently cached, allowing you to view recent information even without an internet connection.
+
+Aurora Weather is more than just a weather app; it's your reliable partner for understanding and adapting to the world's ever-changing climate. Download now and experience the future of weather forecasting!
