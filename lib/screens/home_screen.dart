@@ -154,13 +154,26 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            ...savedCities.map((city) {
-              final weather = weatherData[city];
-              if (weather == null) {
-                return const ShimmerLoading();
-              }
-              return WeatherCard(weather: weather, isFahrenheit: isFahrenheit);
-            }).toList(),
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: savedCities.length,
+              onReorder: (oldIndex, newIndex) {
+                weatherProvider.reorderSavedCities(oldIndex, newIndex);
+              },
+              itemBuilder: (context, index) {
+                final city = savedCities[index];
+                final weather = weatherData[city];
+                if (weather == null) {
+                  return ShimmerLoading(key: ValueKey(city));
+                }
+                return WeatherCard(
+                  key: ValueKey(city),
+                  weather: weather,
+                  isFahrenheit: isFahrenheit,
+                );
+              },
+            ),
           ],
         ],
       ),

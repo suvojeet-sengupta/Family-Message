@@ -85,6 +85,17 @@ class WeatherProvider with ChangeNotifier {
     }
   }
 
+  Future<void> reorderSavedCities(int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+    final String item = _savedCities.removeAt(oldIndex);
+    _savedCities.insert(newIndex, item);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(AppConstants.recentSearchesKey, _savedCities);
+    notifyListeners();
+  }
+
   Future<void> refreshAll({bool force = false}) async {
     _isLoading = true;
     _error = null;
