@@ -63,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: SwitchListTile(
                 title: const Text('Use Fahrenheit'),
-                subtitle: const Text('Display temperatures in Fahrenheit instead of Celsius.'),
+                subtitle: Text('Display temperatures in Fahrenheit instead of Celsius.', style: Theme.of(context).textTheme.bodySmall),
                 value: settingsService.useFahrenheit,
                 onChanged: (value) {
                   settingsService.toggleUnit(value);
