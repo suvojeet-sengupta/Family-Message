@@ -117,33 +117,34 @@ class WeatherDetailScreen extends StatelessWidget {
                   );
                 },
               ),
-            title: Text(weatherToDisplay.locationName),
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-          ),
-          body: Column(
-            children: [
-              if (isLoading)
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  color: Colors.black.withOpacity(0.5),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      ),
-                      SizedBox(width: 16),
-                      Text('Fetching weather...'),
-                    ],
+              title: Text(weatherToDisplay.locationName),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
+            body: Column(
+              children: [
+                if (isLoading)
+                  Container(
+                    padding: const EdgeInsets.all(8.0),
+                    color: Colors.black.withOpacity(0.5),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        ),
+                        SizedBox(width: 16),
+                        Text('Fetching weather...'),
+                      ],
+                    ),
                   ),
+                Expanded(
+                  child: _buildWeatherContent(context, isFahrenheit, weatherToDisplay, weatherProvider),
                 ),
-              Expanded(
-                child: _buildWeatherContent(context, isFahrenheit, weatherToDisplay, weatherProvider),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
