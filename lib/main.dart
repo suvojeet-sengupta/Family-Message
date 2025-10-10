@@ -27,7 +27,7 @@ class AuroraWeather extends StatelessWidget {
     return Consumer<SettingsService>(
       builder: (context, settingsService, child) {
         return MaterialApp(
-          title: 'AuroraWeather',
+          title: 'Aurora Weather',
           theme: AppThemes.lightTheme, // Use light theme as default
           darkTheme: AppThemes.darkTheme, // Use dark theme
           themeMode: settingsService.themeMode, // Apply selected theme mode
