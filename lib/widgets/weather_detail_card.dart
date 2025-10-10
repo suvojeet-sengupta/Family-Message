@@ -35,9 +35,12 @@ class WeatherDetailCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 24, fontWeight: FontWeight.bold),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 8),
             Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),

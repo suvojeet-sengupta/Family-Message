@@ -51,7 +51,10 @@ class TenDayForecast extends StatelessWidget {
                                 width: 40,
                               )),
                         const SizedBox(height: 8),
-                        Text('${day.maxTemp.round()}° / ${day.minTemp.round()}°', style: Theme.of(context).textTheme.bodyLarge),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('${day.maxTemp.round()}° / ${day.minTemp.round()}°', style: Theme.of(context).textTheme.bodyLarge),
+                        ),
                       ],
                     ),
                   );

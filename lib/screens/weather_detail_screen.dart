@@ -176,6 +176,23 @@ class WeatherDetailScreen extends StatelessWidget {
   }
 
   Widget _buildWeatherContent(BuildContext context, bool isFahrenheit, Weather weather, WeatherProvider weatherProvider) {
+
+    String _calculateDaylight(String date, String sunrise, String sunset) {
+      if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {
+        return 'N/A';
+      }
+      try {
+        final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunrise");
+        final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunset");
+        final duration = sunsetTime.difference(sunriseTime);
+        final hours = duration.inHours;
+        final minutes = duration.inMinutes % 60;
+        return '$hours hr $minutes min';
+      } catch (e) {
+        return 'N/A';
+      }
+    }
+
     return RefreshIndicator(
       onRefresh: () => this.weather == null ? weatherProvider.fetchCurrentLocationWeather(force: false) : weatherProvider.fetchWeatherForCity(weather.locationName, force: false),
       child: ListView(
@@ -297,7 +314,7 @@ class WeatherDetailScreen extends StatelessWidget {
                             weather.dailyForecast.first.sunrise.isNotEmpty &&
                             weather.dailyForecast.first.sunset.isNotEmpty
                           ) ? '${_formatTime(weather.dailyForecast.first.date, weather.dailyForecast.first.sunrise)} / ${_formatTime(weather.dailyForecast.first.date, weather.dailyForecast.first.sunset)}' : 'N/A',
-                          subtitle: 'Sunrise and sunset',
+                          subtitle: 'Daylight: ${_calculateDaylight(weather.dailyForecast.first.date, weather.dailyForecast.first.sunrise, weather.dailyForecast.first.sunset)}',
                           icon: Icons.brightness_6,
                           color: Colors.amber,
                         ),
