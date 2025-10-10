@@ -102,10 +102,33 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await fetchCurrentLocationWeather(force: force);
+      final List<Future> futures = [];
+
+      // Add future for current location weather
+      futures.add(
+        _weatherService.fetchWeather(force: force).then((weather) {
+          _currentLocationWeather = weather;
+        }).catchError((e) {
+          // Handle error for this specific fetch if needed
+          print('Error fetching current location weather: $e');
+        })
+      );
+
+      // Add futures for all saved cities
       for (var city in _savedCities) {
-        await fetchWeatherForCity(city, force: force);
+        futures.add(
+          _weatherService.fetchWeatherByCity(city, force: force).then((weather) {
+            _weatherData[city] = weather;
+          }).catchError((e) {
+            // Handle error for this specific fetch if needed
+            print('Error fetching weather for $city: $e');
+          })
+        );
       }
+
+      // Wait for all futures to complete
+      await Future.wait(futures);
+
     } catch (e) {
       _error = e.toString();
     } finally {
