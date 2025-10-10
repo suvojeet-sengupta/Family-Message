@@ -75,7 +75,33 @@ class SettingsScreen extends StatelessWidget {
                         title: Text(city),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline),
-                          onPressed: () => weatherProvider.removeCity(city),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext dialogContext) {
+                                return AlertDialog(
+                                  title: const Text('Delete City?'),
+                                  content: Text('Are you sure you want to delete $city?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.of(dialogContext).pop(); // Dismiss the dialog
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('Delete'),
+                                      onPressed: () {
+                                        // Use the provider to remove the city
+                                        Provider.of<WeatherProvider>(context, listen: false).removeCity(city);
+                                        Navigator.of(dialogContext).pop(); // Dismiss the dialog
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
                     );
