@@ -168,7 +168,7 @@ class WeatherDetailScreen extends StatelessWidget {
 
   Widget _buildWeatherContent(BuildContext context, bool isFahrenheit, Weather weather, WeatherProvider weatherProvider) {
     return RefreshIndicator(
-      onRefresh: () => this.weather == null ? weatherProvider.fetchCurrentLocationWeather(force: true) : weatherProvider.fetchWeatherForCity(weather.locationName, force: true),
+      onRefresh: () => this.weather == null ? weatherProvider.fetchCurrentLocationWeather(force: false) : weatherProvider.fetchWeatherForCity(weather.locationName, force: false),
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [

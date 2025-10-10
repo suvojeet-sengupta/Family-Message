@@ -83,7 +83,7 @@ class DatabaseHelper {
       final weatherData = maps.first;
       final timestamp = weatherData['timestamp'] as int;
       final now = DateTime.now().millisecondsSinceEpoch;
-      final cacheDurationInMillis = WeatherConfig.cacheExpiryMinutes * 60 * 1000; // 5 minutes
+      final cacheDurationInMillis = WeatherConfig.cacheExpiryMinutes * 60 * 1000; // 15 minutes
 
       if ((now - timestamp) < cacheDurationInMillis) {
         // Data is fresh, return it

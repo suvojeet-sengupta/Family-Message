@@ -39,20 +39,21 @@ class WeatherService {
         desiredAccuracy: LocationAccuracy.best);
   }
 
-  Future<Weather> fetchWeather() async {
+  Future<Weather> fetchWeather({bool force = false}) async {
     final position = await getCurrentPosition();
-    return await _fetchWeatherData(position: position);
+    return await _fetchWeatherData(position: position, force: force);
   }
 
-  Future<Weather> fetchWeatherByCity(String city) async {
-    return await _fetchWeatherData(city: city);
+  Future<Weather> fetchWeatherByCity(String city, {bool force = false}) async {
+    return await _fetchWeatherData(city: city, force: force);
   }
 
   Future<Weather> fetchWeatherByPosition(Position position) async {
     return await _fetchWeatherData(position: position);
   }
 
-  Future<Weather> _fetchWeatherData({String? city, Position? position}) async {
+  Future<Weather> _fetchWeatherData(
+      {String? city, Position? position, bool force = false}) async {
     if (await _connectivity.checkConnectivity() == ConnectivityResult.none) {
       _logger.w('No internet connection. Returning cached data.');
       final cacheKey = city ?? (await _getCacheKeyFromPosition(position!));
@@ -60,14 +61,19 @@ class WeatherService {
       if (cachedWeather != null) {
         return cachedWeather;
       }
-      throw NoInternetException('No internet connection and no cached data available.');
+      throw NoInternetException(
+          'No internet connection and no cached data available.');
     }
 
-    final cacheKey = city != null ? CacheKey.fromCity(city, null).toString() : (await _getCacheKeyFromPosition(position!));
-    final cachedWeather = await _dbHelper.getWeather(cacheKey);
-    if (cachedWeather != null) {
-      _logger.d('Returning fresh cached weather for $cacheKey');
-      return cachedWeather;
+    final cacheKey = city != null
+        ? CacheKey.fromCity(city, null).toString()
+        : (await _getCacheKeyFromPosition(position!));
+    if (!force) {
+      final cachedWeather = await _dbHelper.getWeather(cacheKey);
+      if (cachedWeather != null) {
+        _logger.d('Returning fresh cached weather for $cacheKey');
+        return cachedWeather;
+      }
     }
 
     final apiKeys = WeatherConfig.weatherApiKeys;

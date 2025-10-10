@@ -55,7 +55,7 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _currentLocationWeather = await _weatherService.fetchWeather();
+      _currentLocationWeather = await _weatherService.fetchWeather(force: force);
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -70,7 +70,7 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final weather = await _weatherService.fetchWeatherByCity(city);
+      final weather = await _weatherService.fetchWeatherByCity(city, force: force);
       _weatherData[city] = weather;
       if (!_savedCities.contains(city)) {
         _savedCities.insert(0, city);
@@ -85,7 +85,7 @@ class WeatherProvider with ChangeNotifier {
     }
   }
 
-  Future<void> refreshAll({bool force = true}) async {
+  Future<void> refreshAll({bool force = false}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
