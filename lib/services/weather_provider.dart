@@ -55,7 +55,13 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _currentLocationWeather = await _weatherService.fetchWeather(force: force);
+      final newWeather = await _weatherService.fetchWeather(force: force);
+      _currentLocationWeather = newWeather;
+
+      // Sync with saved locations
+      if (_weatherData.containsKey(newWeather.locationName)) {
+        _weatherData[newWeather.locationName] = newWeather;
+      }
     } catch (e) {
       _error = e.toString();
     } finally {
