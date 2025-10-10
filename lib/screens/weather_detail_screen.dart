@@ -98,17 +98,25 @@ class WeatherDetailScreen extends StatelessWidget {
         final weatherToDisplay = weather ?? weatherProvider.currentLocationWeather ?? _createPlaceholderWeather(error: weatherProvider.error);
         final isLoading = weatherProvider.isLoading;
 
-        return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              },
-            ),
+        return WillPopScope(
+          onWillPop: () async {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+            return false;
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
+                },
+              ),
             title: Text(weatherToDisplay.locationName),
             elevation: 0,
             backgroundColor: Colors.transparent,
