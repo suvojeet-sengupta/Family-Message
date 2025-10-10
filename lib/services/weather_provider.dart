@@ -96,6 +96,18 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> removeCity(String city) async {
+    _savedCities.remove(city);
+    _weatherData.remove(city);
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(AppConstants.recentSearchesKey, _savedCities);
+    
+    await _dbHelper.deleteWeather(city);
+    
+    notifyListeners();
+  }
+
   Future<void> refreshAll({bool force = false}) async {
     _isLoading = true;
     _error = null;

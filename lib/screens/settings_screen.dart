@@ -1,53 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/app_constants.dart';
 import '../services/settings_service.dart';
+import '../services/weather_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  List<String> _savedCities = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedCities();
-  }
-
-  Future<void> _loadSavedCities() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _savedCities = prefs.getStringList(AppConstants.recentSearchesKey) ?? [];
-    });
-  }
-
-  Future<void> _deleteCity(String city) async {
-    final prefs = await SharedPreferences.getInstance();
-    _savedCities.remove(city);
-    await prefs.setStringList(AppConstants.recentSearchesKey, _savedCities);
-    setState(() {});
-  }
-
-  Future<void> _reorderCities(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-    final city = _savedCities.removeAt(oldIndex);
-    _savedCities.insert(newIndex, city);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(AppConstants.recentSearchesKey, _savedCities);
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
     final settingsService = Provider.of<SettingsService>(context);
+    final weatherProvider = Provider.of<WeatherProvider>(context);
+    final savedCities = weatherProvider.savedCities;
 
     return Scaffold(
       appBar: AppBar(
@@ -91,15 +54,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
           const Text('Saved Locations', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          _savedCities.isEmpty
+          savedCities.isEmpty
               ? const Center(child: Text('No saved locations.'))
               : ReorderableListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _savedCities.length,
-                  onReorder: _reorderCities,
+                  itemCount: savedCities.length,
+                  onReorder: (oldIndex, newIndex) {
+                    weatherProvider.reorderSavedCities(oldIndex, newIndex);
+                  },
                   itemBuilder: (context, index) {
-                    final city = _savedCities[index];
+                    final city = savedCities[index];
                     return Card(
                       key: ValueKey(city),
                       elevation: 2,
@@ -110,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         title: Text(city),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline),
-                          onPressed: () => _deleteCity(city),
+                          onPressed: () => weatherProvider.removeCity(city),
                         ),
                       ),
                     );
