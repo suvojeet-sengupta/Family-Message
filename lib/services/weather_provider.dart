@@ -22,6 +22,10 @@ class WeatherProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  void clearError() {
+    _error = null;
+  }
+
   WeatherProvider() {
     _loadSavedCities();
     fetchCurrentLocationWeather();

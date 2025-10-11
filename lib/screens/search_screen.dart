@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 import '../services/weather_service.dart';
+import '../services/weather_exceptions.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -61,8 +62,16 @@ class _SearchScreenState extends State<SearchScreen> {
             _suggestions = suggestions;
           });
         } catch (e) {
-          // Handle error, maybe show a snackbar
-          print('Error searching cities: $e');
+          if (!mounted) return;
+          String message = 'An error occurred during search.';
+          if (e is NoInternetException) {
+            message = 'No internet connection. Please try again.';
+          } else if (e is WeatherApiException) {
+            message = 'Could not complete search. Please try again later.';
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
         } finally {
           setState(() {
             _isLoading = false;

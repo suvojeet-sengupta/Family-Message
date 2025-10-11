@@ -156,6 +156,9 @@ class WeatherService {
   }
 
   Future<List<SearchResult>> searchCities(String query) async {
+    if (await _connectivity.checkConnectivity() == ConnectivityResult.none) {
+      throw NoInternetException('No internet connection for city search.');
+    }
     if (query.isEmpty) {
       return [];
     }

@@ -43,6 +43,26 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Consumer<WeatherProvider>(
         builder: (context, weatherProvider, child) {
+          final error = weatherProvider.error;
+          if (error != null) {
+            // Show a SnackBar if there's an error but we already have some data to display.
+            // The full-screen error is handled by _buildWeatherList.
+            if (weatherProvider.currentLocationWeather != null || weatherProvider.savedCities.isNotEmpty) {
+              weatherProvider.clearError();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(error),
+                    action: SnackBarAction(
+                      label: 'RETRY',
+                      onPressed: () => Provider.of<WeatherProvider>(context, listen: false).refreshAll(force: true),
+                    ),
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              });
+            }
+          }
           return _buildWeatherList(context, temperatureUnit, windSpeedUnit, pressureUnit, weatherProvider);
         },
       ),
