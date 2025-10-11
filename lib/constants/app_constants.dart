@@ -5,5 +5,4 @@ class AppConstants {
   static const String temperatureUnitKey = 'temperatureUnit';
   static const String windSpeedUnitKey = 'windSpeedUnit';
   static const String pressureUnitKey = 'pressureUnit';
-  static const String precipitationUnitKey = 'precipitationUnit';
 }

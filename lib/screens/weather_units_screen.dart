@@ -1,32 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 
-class WeatherUnitsScreen extends StatefulWidget {
+class WeatherUnitsScreen extends StatelessWidget {
   const WeatherUnitsScreen({super.key});
-
-  @override
-  State<WeatherUnitsScreen> createState() => _WeatherUnitsScreenState();
-}
-
-class _WeatherUnitsScreenState extends State<WeatherUnitsScreen> {
-  String? _expandedTile;
-
-  void _handleExpansion(String tile) {
-    setState(() {
-      if (_expandedTile == tile) {
-        _expandedTile = null;
-      } else {
-        _expandedTile = tile;
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     final settingsService = Provider.of<SettingsService>(context);
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -44,10 +25,9 @@ class _WeatherUnitsScreenState extends State<WeatherUnitsScreen> {
             onChanged: (value) {
               if (value != null) {
                 settingsService.setTemperatureUnit(value as TemperatureUnit);
+                Navigator.of(context).pop();
               }
             },
-            isExpanded: _expandedTile == 'temperature',
-            onExpansionChanged: () => _handleExpansion('temperature'),
           ),
           const SizedBox(height: 16),
           _buildUnitSelectionCard(
@@ -59,10 +39,9 @@ class _WeatherUnitsScreenState extends State<WeatherUnitsScreen> {
             onChanged: (value) {
               if (value != null) {
                 settingsService.setWindSpeedUnit(value as WindSpeedUnit);
+                Navigator.of(context).pop();
               }
             },
-            isExpanded: _expandedTile == 'wind',
-            onExpansionChanged: () => _handleExpansion('wind'),
           ),
           const SizedBox(height: 16),
           _buildUnitSelectionCard(
@@ -74,28 +53,53 @@ class _WeatherUnitsScreenState extends State<WeatherUnitsScreen> {
             onChanged: (value) {
               if (value != null) {
                 settingsService.setPressureUnit(value as PressureUnit);
+                Navigator.of(context).pop();
               }
             },
-            isExpanded: _expandedTile == 'pressure',
-            onExpansionChanged: () => _handleExpansion('pressure'),
-          ),
-          const SizedBox(height: 16),
-          _buildUnitSelectionCard(
-            context: context,
-            title: 'Precipitation',
-            currentValue: settingsService.precipitationUnit.toString().split('.').last,
-            options: PrecipitationUnit.values,
-            groupValue: settingsService.precipitationUnit,
-            onChanged: (value) {
-              if (value != null) {
-                settingsService.setPrecipitationUnit(value as PrecipitationUnit);
-              }
-            },
-            isExpanded: _expandedTile == 'precipitation',
-            onExpansionChanged: () => _handleExpansion('precipitation'),
           ),
         ],
       ),
+    );
+  }
+
+  void _showUnitSelectionDialog<T>({
+    required BuildContext context,
+    required String title,
+    required List<T> options,
+    required T groupValue,
+    required ValueChanged<T?> onChanged,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select $title'),
+          content: SizedBox(
+            width: double.minPositive,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: options.length,
+              itemBuilder: (BuildContext context, int index) {
+                final option = options[index];
+                return RadioListTile<T>(
+                  title: Text(option.toString().split('.').last),
+                  value: option,
+                  groupValue: groupValue,
+                  onChanged: onChanged,
+                );
+              },
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -106,44 +110,33 @@ class _WeatherUnitsScreenState extends State<WeatherUnitsScreen> {
     required List<T> options,
     required T groupValue,
     required ValueChanged<T?> onChanged,
-    required bool isExpanded,
-    required VoidCallback onExpansionChanged,
   }) {
     final theme = Theme.of(context);
     return Card(
-      elevation: isExpanded ? 4 : 2,
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Theme(
-          data: theme.copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            key: Key(title),
-            title: Text(title, style: theme.textTheme.titleLarge),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  currentValue,
-                  style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
-                ),
-                const SizedBox(width: 8),
-                Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
-              ],
+      child: ListTile(
+        title: Text(title, style: theme.textTheme.titleLarge),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              currentValue,
+              style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
             ),
-            onExpansionChanged: (_) => onExpansionChanged(),
-            initiallyExpanded: isExpanded,
-            children: options.map((option) {
-              return RadioListTile<T>(
-                title: Text(option.toString().split('.').last),
-                value: option,
-                groupValue: groupValue,
-                onChanged: onChanged,
-                activeColor: theme.colorScheme.primary,
-              );
-            }).toList(),
-          ),
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_drop_down),
+          ],
         ),
+        onTap: () {
+          _showUnitSelectionDialog(
+            context: context,
+            title: title,
+            options: options,
+            groupValue: groupValue,
+            onChanged: onChanged,
+          );
+        },
       ),
     );
   }
