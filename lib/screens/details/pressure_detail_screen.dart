@@ -54,12 +54,18 @@ class PressureDetailScreen extends StatelessWidget {
                   children: [
                     Text(
                       '${pressure.toStringAsFixed(1)}',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w300),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                            fontWeight: FontWeight.w300,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'hPa',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w400),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w400,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                     ),
                   ],
                 ),
