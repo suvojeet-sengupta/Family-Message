@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../services/settings_service.dart'; // Import SettingsService for TemperatureUnit
 
 class DewPointDetailScreen extends StatelessWidget {
   final double dewPoint;
-  final bool isFahrenheit;
+  final TemperatureUnit temperatureUnit;
 
-  const DewPointDetailScreen({super.key, required this.dewPoint, required this.isFahrenheit});
+  const DewPointDetailScreen({super.key, required this.dewPoint, required this.temperatureUnit});
+
+  double _celsiusToFahrenheit(double celsius) {
+    return (celsius * 9 / 5) + 32;
+  }
+
+  double _fahrenheitToCelsius(double fahrenheit) {
+    return (fahrenheit - 32) * 5 / 9;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final displayDewPoint = temperatureUnit == TemperatureUnit.fahrenheit
+        ? _celsiusToFahrenheit(dewPoint) // Assuming dewPoint is always passed in Celsius
+        : dewPoint;
+    final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dew Point'),
@@ -18,18 +32,18 @@ class DewPointDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCurrentDewPoint(),
+            _buildCurrentDewPoint(displayDewPoint, tempUnitSymbol),
             const SizedBox(height: 24),
             _buildDewPointInfo(),
             const SizedBox(height: 24),
-            _buildAdvice(),
+            _buildAdvice(displayDewPoint),
           ],
         ).animate().fade(duration: 300.ms),
       ),
     );
   }
 
-  Widget _buildCurrentDewPoint() {
+  Widget _buildCurrentDewPoint(double displayDewPoint, String tempUnitSymbol) {
     return Center(
       child: Column(
         children: [
@@ -39,7 +53,7 @@ class DewPointDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            isFahrenheit ? '${dewPoint.round()}°F' : '${dewPoint.round()}°C',
+            '${displayDewPoint.round()}$tempUnitSymbol',
             style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w200),
           ),
         ],
@@ -64,7 +78,7 @@ class DewPointDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAdvice() {
+  Widget _buildAdvice(double displayDewPoint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,7 +88,7 @@ class DewPointDetailScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          _getDewPointAdvice(dewPoint),
+          _getDewPointAdvice(displayDewPoint),
           style: const TextStyle(fontSize: 16),
         ),
       ],
@@ -82,7 +96,8 @@ class DewPointDetailScreen extends StatelessWidget {
   }
 
   String _getDewPointAdvice(double temp) {
-    final tempC = isFahrenheit ? (temp - 32) * 5 / 9 : temp;
+    // Convert to Celsius for advice logic, as the advice thresholds are likely based on Celsius.
+    final tempC = temperatureUnit == TemperatureUnit.fahrenheit ? _fahrenheitToCelsius(temp) : temp;
     if (tempC >= 24) {
       return 'Extremely uncomfortable and oppressive. It will feel very muggy.';
     } else if (tempC >= 21) {

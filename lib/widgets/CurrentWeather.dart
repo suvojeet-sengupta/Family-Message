@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../services/settings_service.dart';
+import '../services/settings_service.dart'; // Import SettingsService for TemperatureUnit
 
 class CurrentWeather extends StatelessWidget {
   final Weather weather;
+  final TemperatureUnit temperatureUnit;
 
-  const CurrentWeather({super.key, required this.weather});
+  const CurrentWeather({super.key, required this.weather, required this.temperatureUnit});
 
   double _celsiusToFahrenheit(double celsius) {
     return (celsius * 9 / 5) + 32;
@@ -28,9 +28,6 @@ class CurrentWeather extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settingsService = Provider.of<SettingsService>(context);
-    final temperatureUnit = settingsService.temperatureUnit;
-
     final currentTemp = temperatureUnit == TemperatureUnit.fahrenheit
         ? _celsiusToFahrenheit(weather.temperature)
         : weather.temperature;
