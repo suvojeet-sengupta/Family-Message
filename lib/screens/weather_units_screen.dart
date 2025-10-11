@@ -1,13 +1,32 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 
-class WeatherUnitsScreen extends StatelessWidget {
+class WeatherUnitsScreen extends StatefulWidget {
   const WeatherUnitsScreen({super.key});
+
+  @override
+  State<WeatherUnitsScreen> createState() => _WeatherUnitsScreenState();
+}
+
+class _WeatherUnitsScreenState extends State<WeatherUnitsScreen> {
+  String? _expandedTile;
+
+  void _handleExpansion(String tile) {
+    setState(() {
+      if (_expandedTile == tile) {
+        _expandedTile = null;
+      } else {
+        _expandedTile = tile;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final settingsService = Provider.of<SettingsService>(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -16,83 +35,114 @@ class WeatherUnitsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          const Text('Select your preferred units for weather display.', style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 24),
-          _buildUnitSelectionCard<TemperatureUnit>(
+          _buildUnitSelectionCard(
             context: context,
-            title: 'Temperature Unit',
-            currentUnit: settingsService.temperatureUnit,
-            units: TemperatureUnit.values,
-            onSelected: settingsService.setTemperatureUnit,
-            labels: {TemperatureUnit.celsius: 'Celsius', TemperatureUnit.fahrenheit: 'Fahrenheit'},
+            title: 'Temperature',
+            currentValue: settingsService.temperatureUnit.toString().split('.').last,
+            options: TemperatureUnit.values,
+            groupValue: settingsService.temperatureUnit,
+            onChanged: (value) {
+              if (value != null) {
+                settingsService.setTemperatureUnit(value as TemperatureUnit);
+              }
+            },
+            isExpanded: _expandedTile == 'temperature',
+            onExpansionChanged: () => _handleExpansion('temperature'),
           ),
           const SizedBox(height: 16),
-          _buildUnitSelectionCard<WindSpeedUnit>(
+          _buildUnitSelectionCard(
             context: context,
-            title: 'Wind Speed Unit',
-            currentUnit: settingsService.windSpeedUnit,
-            units: WindSpeedUnit.values,
-            onSelected: settingsService.setWindSpeedUnit,
-            labels: {WindSpeedUnit.kph: 'km/h', WindSpeedUnit.mph: 'mph', WindSpeedUnit.ms: 'm/s'},
+            title: 'Wind Speed',
+            currentValue: settingsService.windSpeedUnit.toString().split('.').last,
+            options: WindSpeedUnit.values,
+            groupValue: settingsService.windSpeedUnit,
+            onChanged: (value) {
+              if (value != null) {
+                settingsService.setWindSpeedUnit(value as WindSpeedUnit);
+              }
+            },
+            isExpanded: _expandedTile == 'wind',
+            onExpansionChanged: () => _handleExpansion('wind'),
           ),
           const SizedBox(height: 16),
-          _buildUnitSelectionCard<PressureUnit>(
+          _buildUnitSelectionCard(
             context: context,
-            title: 'Pressure Unit',
-            currentUnit: settingsService.pressureUnit,
-            units: PressureUnit.values,
-            onSelected: settingsService.setPressureUnit,
-            labels: {PressureUnit.hPa: 'hPa', PressureUnit.inHg: 'inHg', PressureUnit.mmHg: 'mmHg'},
+            title: 'Pressure',
+            currentValue: settingsService.pressureUnit.toString().split('.').last,
+            options: PressureUnit.values,
+            groupValue: settingsService.pressureUnit,
+            onChanged: (value) {
+              if (value != null) {
+                settingsService.setPressureUnit(value as PressureUnit);
+              }
+            },
+            isExpanded: _expandedTile == 'pressure',
+            onExpansionChanged: () => _handleExpansion('pressure'),
+          ),
+          const SizedBox(height: 16),
+          _buildUnitSelectionCard(
+            context: context,
+            title: 'Precipitation',
+            currentValue: settingsService.precipitationUnit.toString().split('.').last,
+            options: PrecipitationUnit.values,
+            groupValue: settingsService.precipitationUnit,
+            onChanged: (value) {
+              if (value != null) {
+                settingsService.setPrecipitationUnit(value as PrecipitationUnit);
+              }
+            },
+            isExpanded: _expandedTile == 'precipitation',
+            onExpansionChanged: () => _handleExpansion('precipitation'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUnitSelectionCard<T extends Enum>({
+  Widget _buildUnitSelectionCard<T>({
     required BuildContext context,
     required String title,
-    required T currentUnit,
-    required List<T> units,
-    required Function(T) onSelected,
-    required Map<T, String> labels,
+    required String currentValue,
+    required List<T> options,
+    required T groupValue,
+    required ValueChanged<T?> onChanged,
+    required bool isExpanded,
+    required VoidCallback onExpansionChanged,
   }) {
+    final theme = Theme.of(context);
     return Card(
-      elevation: 2,
+      elevation: isExpanded ? 4 : 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8.0,
-              children: units.map((unit) {
-                return ChoiceChip(
-                  label: Text(labels[unit]!),
-                  selected: currentUnit == unit,
-                  onSelected: (selected) {
-                    if (selected) {
-                      onSelected(unit);
-                    }
-                  },
-                  selectedColor: Theme.of(context).colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: currentUnit == unit
-                        ? Theme.of(context).colorScheme.onPrimaryContainer
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
-                  side: BorderSide(
-                    color: currentUnit == unit
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                  ),
-                );
-              }).toList(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Theme(
+          data: theme.copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            key: Key(title),
+            title: Text(title, style: theme.textTheme.titleLarge),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  currentValue,
+                  style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
+                ),
+                const SizedBox(width: 8),
+                Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
+              ],
             ),
-          ],
+            onExpansionChanged: (_) => onExpansionChanged(),
+            initiallyExpanded: isExpanded,
+            children: options.map((option) {
+              return RadioListTile<T>(
+                title: Text(option.toString().split('.').last),
+                value: option,
+                groupValue: groupValue,
+                onChanged: onChanged,
+                activeColor: theme.colorScheme.primary,
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
