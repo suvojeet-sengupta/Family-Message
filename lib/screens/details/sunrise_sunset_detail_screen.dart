@@ -56,83 +56,80 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              elevation: 4,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [Colors.orange.shade200, Colors.blue.shade200],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Daylight: ${_calculateDaylight(sunrise, sunset)}',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 150,
-                        child: CustomPaint(
-                          painter: SunPathPainter(sunPercentage),
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                top: 120,
-                                left: 0,
-                                right: 0,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _buildTimeInfo(context, Icons.wb_sunny, 'Sunrise', _formatTime(sunrise)),
-                                    _buildTimeInfo(context, Icons.brightness_3, 'Sunset', _formatTime(sunset)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 4,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primaryContainer,
+                  Theme.of(context).colorScheme.secondaryContainer,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
-          ],
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Daylight: ${_calculateDaylight(sunrise, sunset)}',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 150,
+                    child: CustomPaint(
+                      painter: SunPathPainter(
+                        sunPercentage: sunPercentage,
+                        pathColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                        sunColor: Colors.amber,
+                      ),
+                      size: Size.infinite,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildTimeInfo(context, Icons.wb_sunny, 'Sunrise', _formatTime(sunrise)),
+                      _buildTimeInfo(context, Icons.brightness_3, 'Sunset', _formatTime(sunset)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildTimeInfo(BuildContext context, IconData icon, String label, String time) {
+    final color = Theme.of(context).colorScheme.onPrimaryContainer;
     return Column(
       children: [
-        Icon(icon, color: Colors.white, size: 30),
+        Icon(icon, color: color, size: 30),
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color),
         ),
         Text(
           time,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
         ),
       ],
     );
@@ -141,13 +138,15 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
 
 class SunPathPainter extends CustomPainter {
   final double sunPercentage;
+  final Color pathColor;
+  final Color sunColor;
 
-  SunPathPainter(this.sunPercentage);
+  SunPathPainter({required this.sunPercentage, required this.pathColor, required this.sunColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = pathColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
@@ -156,15 +155,20 @@ class SunPathPainter extends CustomPainter {
     path.quadraticBezierTo(size.width / 2, -size.height * 0.2, size.width, size.height * 0.8);
     canvas.drawPath(path, paint);
 
-    final sunPaint = Paint()..color = Colors.yellow.shade600;
-    final sunX = size.width * sunPercentage;
-    final y = -0.008 * math.pow(sunX - size.width / 2, 2) + size.height * 0.8;
+    final sunPaint = Paint()..color = sunColor;
+    final t = sunPercentage;
+    final y0 = size.height * 0.8;
+    final y1 = -size.height * 0.2;
+    final y = math.pow(1 - t, 2) * y0 + 2 * (1 - t) * t * y1 + math.pow(t, 2) * y0;
+    final sunX = size.width * t;
 
     canvas.drawCircle(Offset(sunX, y), 12, sunPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant SunPathPainter oldDelegate) {
+    return oldDelegate.sunPercentage != sunPercentage ||
+        oldDelegate.pathColor != pathColor ||
+        oldDelegate.sunColor != sunColor;
   }
 }
