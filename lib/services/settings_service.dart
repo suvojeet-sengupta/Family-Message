@@ -10,6 +10,7 @@ import 'package:flutter/material.dart'; // For ThemeMode
 enum TemperatureUnit { celsius, fahrenheit }
 enum WindSpeedUnit { kph, mph, ms } // Kilometers per hour, Miles per hour, Meters per second
 enum PressureUnit { hPa, inHg, mmHg } // Hectopascals, Inches of Mercury, Millimeters of Mercury
+enum PrecipitationUnit { mm, inches }
 
 // New class to hold card type and its visibility
 class CustomizableDetailCard {
@@ -43,6 +44,7 @@ class SettingsService with ChangeNotifier {
   TemperatureUnit _temperatureUnit = TemperatureUnit.celsius;
   WindSpeedUnit _windSpeedUnit = WindSpeedUnit.kph;
   PressureUnit _pressureUnit = PressureUnit.hPa;
+  PrecipitationUnit _precipitationUnit = PrecipitationUnit.mm;
 
   List<CustomizableDetailCard> get detailCardPreferences => _detailCardPreferences;
   ThemePreference get themePreference => _themePreference; // New getter
@@ -51,6 +53,7 @@ class SettingsService with ChangeNotifier {
   TemperatureUnit get temperatureUnit => _temperatureUnit;
   WindSpeedUnit get windSpeedUnit => _windSpeedUnit;
   PressureUnit get pressureUnit => _pressureUnit;
+  PrecipitationUnit get precipitationUnit => _precipitationUnit;
 
   // Convert ThemePreference to ThemeMode for MaterialApp
   ThemeMode get themeMode {
@@ -105,6 +108,15 @@ class SettingsService with ChangeNotifier {
       _pressureUnit = PressureUnit.values.firstWhere(
         (e) => e.toString() == pressureUnitString,
         orElse: () => PressureUnit.hPa,
+      );
+    }
+
+    // Load precipitation unit
+    final String? precipitationUnitString = prefs.getString(AppConstants.precipitationUnitKey);
+    if (precipitationUnitString != null) {
+      _precipitationUnit = PrecipitationUnit.values.firstWhere(
+        (e) => e.toString() == precipitationUnitString,
+        orElse: () => PrecipitationUnit.mm,
       );
     }
 
@@ -170,6 +182,13 @@ class SettingsService with ChangeNotifier {
     _pressureUnit = unit;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConstants.pressureUnitKey, unit.toString());
+    notifyListeners();
+  }
+
+  Future<void> setPrecipitationUnit(PrecipitationUnit unit) async {
+    _precipitationUnit = unit;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.precipitationUnitKey, unit.toString());
     notifyListeners();
   }
 
