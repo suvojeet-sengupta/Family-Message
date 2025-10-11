@@ -25,6 +25,7 @@ import 'package:reorderable_grid_view/reorderable_grid_view.dart'; // New import
 
 import './details/wind_detail_screen.dart';
 import './details/humidity_detail_screen.dart';
+import '../widgets/error_display.dart';
 
 class WeatherDetailScreen extends StatelessWidget {
   final Weather? weather;
@@ -241,6 +242,18 @@ class WeatherDetailScreen extends StatelessWidget {
   }
 
   Widget _buildWeatherContent(BuildContext context, Weather weather, WeatherProvider weatherProvider, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit, String tempUnitSymbol, double windSpeedDisplay, String windSpeedSymbol, double pressureDisplay, String pressureSymbol, double dewPointDisplay) {
+    if (weatherProvider.error != null && weather.locationName.contains('Loading...')) {
+      return ErrorDisplay(
+        message: weatherProvider.error!,
+        onRetry: () {
+          if (this.weather == null) {
+            weatherProvider.fetchCurrentLocationWeather(force: true);
+          } else {
+            weatherProvider.fetchWeatherForCity(weather.locationName, force: true);
+          }
+        },
+      );
+    }
 
     String _calculateDaylight(String date, String sunrise, String sunset) {
       if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {

@@ -36,12 +36,24 @@ class WeatherService {
     }
 
     return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best);
+        desiredAccuracy: LocationAccuracy.best,
+        timeLimit: const Duration(seconds: 15));
   }
 
   Future<Weather> fetchWeather({bool force = false}) async {
-    final position = await getCurrentPosition();
-    return await _fetchWeatherData(position: position, force: force);
+    try {
+      final position = await getCurrentPosition();
+      return await _fetchWeatherData(position: position, force: force);
+    } on TimeoutException {
+      _logger.w('Getting location timed out.');
+      // Attempt to return cached data if location fails
+      final cachedWeather = await _dbHelper.getLatestWeather();
+      if (cachedWeather != null) {
+        _logger.i('Returning latest cached weather due to location timeout.');
+        return cachedWeather;
+      }
+      throw Exception('Could not determine location. Please check your GPS and try again.');
+    }
   }
 
   Future<Weather> fetchWeatherByCity(String city, {bool force = false}) async {
@@ -103,9 +115,13 @@ class WeatherService {
   }
 
   Future<String> _getCacheKeyFromPosition(Position position) async {
-    final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-    if (placemarks.isNotEmpty) {
-      return CacheKey.fromCity(placemarks.first.locality ?? placemarks.first.name ?? 'Unknown', placemarks.first.country).toString();
+    try {
+      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        return CacheKey.fromCity(placemarks.first.locality ?? placemarks.first.name ?? 'Unknown', placemarks.first.country).toString();
+      }
+    } catch (e) {
+      _logger.w('Geocoding failed, falling back to coordinates for cache key.', error: e);
     }
     return CacheKey.fromCoordinates(position.latitude, position.longitude).toString();
   }

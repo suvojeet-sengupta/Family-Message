@@ -4,6 +4,7 @@ import 'weather_service.dart';
 import 'database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
+import 'weather_exceptions.dart';
 
 class WeatherProvider with ChangeNotifier {
   final WeatherService _weatherService = WeatherService();
@@ -24,6 +25,22 @@ class WeatherProvider with ChangeNotifier {
   WeatherProvider() {
     _loadSavedCities();
     fetchCurrentLocationWeather();
+  }
+
+  String _getErrorMessage(Object e) {
+    if (e is LocationPermissionDeniedException) {
+      return 'Location permission denied. Please enable it in settings to see local weather.';
+    }
+    if (e is NoInternetException) {
+      return 'No internet connection. Please check your connection and try again.';
+    }
+    if (e is WeatherApiException) {
+      return 'Could not get weather data from the service. Please try again later.';
+    }
+    if (e.toString().contains('Could not determine location')) {
+      return 'Could not determine your location. Please check your GPS and try again.';
+    }
+    return 'An unexpected error occurred. Please try again.';
   }
 
   Future<void> _loadSavedCities() async {
@@ -63,7 +80,7 @@ class WeatherProvider with ChangeNotifier {
         _weatherData[newWeather.locationName] = newWeather;
       }
     } catch (e) {
-      _error = e.toString();
+      _error = _getErrorMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -84,7 +101,7 @@ class WeatherProvider with ChangeNotifier {
         prefs.setStringList(AppConstants.recentSearchesKey, _savedCities);
       }
     } catch (e) {
-      _error = e.toString();
+      _error = _getErrorMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -121,6 +138,7 @@ class WeatherProvider with ChangeNotifier {
 
     try {
       final List<Future> futures = [];
+      bool hasError = false;
 
       // Add future for current location weather
       futures.add(
@@ -129,6 +147,10 @@ class WeatherProvider with ChangeNotifier {
         }).catchError((e) {
           // Handle error for this specific fetch if needed
           print('Error fetching current location weather: $e');
+          if (!hasError) {
+            _error = _getErrorMessage(e);
+            hasError = true;
+          }
         })
       );
 
@@ -140,6 +162,10 @@ class WeatherProvider with ChangeNotifier {
           }).catchError((e) {
             // Handle error for this specific fetch if needed
             print('Error fetching weather for $city: $e');
+            if (!hasError) { // Only set the first error
+              _error = _getErrorMessage(e);
+              hasError = true;
+            }
           })
         );
       }
@@ -148,7 +174,7 @@ class WeatherProvider with ChangeNotifier {
       await Future.wait(futures);
 
     } catch (e) {
-      _error = e.toString();
+      if (_error == null) _error = _getErrorMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();
