@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/weather_model.dart';
+import '../services/settings_service.dart'; // Import SettingsService for TemperatureUnit
 
 class TenDayForecast extends StatelessWidget {
   final List<DailyForecast> dailyForecast;
+  final TemperatureUnit temperatureUnit;
 
-  const TenDayForecast({super.key, required this.dailyForecast});
+  const TenDayForecast({super.key, required this.dailyForecast, required this.temperatureUnit});
+
+  double _celsiusToFahrenheit(double celsius) {
+    return (celsius * 9 / 5) + 32;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -30,6 +38,13 @@ class TenDayForecast extends StatelessWidget {
                 itemCount: dailyForecast.length,
                 itemBuilder: (context, index) {
                   final day = dailyForecast[index];
+                  final displayMaxTemp = temperatureUnit == TemperatureUnit.fahrenheit
+                      ? _celsiusToFahrenheit(day.maxTemp)
+                      : day.maxTemp;
+                  final displayMinTemp = temperatureUnit == TemperatureUnit.fahrenheit
+                      ? _celsiusToFahrenheit(day.minTemp)
+                      : day.minTemp;
+
                   return Padding(
                     padding: const EdgeInsets.only(right: 16.0),
                     child: Column(
@@ -53,7 +68,7 @@ class TenDayForecast extends StatelessWidget {
                         const SizedBox(height: 8),
                         FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text('${day.maxTemp.round()}° / ${day.minTemp.round()}°', style: Theme.of(context).textTheme.bodyLarge),
+                          child: Text('${displayMaxTemp.round()}$tempUnitSymbol / ${displayMinTemp.round()}$tempUnitSymbol', style: Theme.of(context).textTheme.bodyLarge),
                         ),
                       ],
                     ),

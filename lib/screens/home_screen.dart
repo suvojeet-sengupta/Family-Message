@@ -10,6 +10,9 @@ import './settings_screen.dart';
 import '../widgets/shimmer_loading.dart';
 import './search_screen.dart';
 import '../widgets/weather_card.dart';
+import '../screens/details/feels_like_detail_screen.dart';
+import '../screens/details/wind_detail_screen.dart';
+import '../screens/details/pressure_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -17,7 +20,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsService = Provider.of<SettingsService>(context);
-    final isFahrenheit = settingsService.useFahrenheit;
+    final temperatureUnit = settingsService.temperatureUnit;
+    final windSpeedUnit = settingsService.windSpeedUnit;
+    final pressureUnit = settingsService.pressureUnit;
 
     return Scaffold(
       appBar: AppBar(
@@ -37,7 +42,7 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Consumer<WeatherProvider>(
         builder: (context, weatherProvider, child) {
-          return _buildWeatherList(context, isFahrenheit, weatherProvider);
+          return _buildWeatherList(context, temperatureUnit, windSpeedUnit, pressureUnit, weatherProvider);
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -55,7 +60,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWeatherList(BuildContext context, bool isFahrenheit, WeatherProvider weatherProvider) {
+  Widget _buildWeatherList(BuildContext context, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit, WeatherProvider weatherProvider) {
     final savedCities = weatherProvider.savedCities;
     final currentLocationWeather = weatherProvider.currentLocationWeather;
     final weatherData = weatherProvider.weatherData;
@@ -141,7 +146,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            WeatherCard(weather: currentLocationWeather, isFahrenheit: isFahrenheit),
+            WeatherCard(weather: currentLocationWeather, temperatureUnit: temperatureUnit),
           ],
           if (currentLocationWeather != null && savedCities.isNotEmpty)
             const SizedBox(height: 24),
@@ -170,13 +175,35 @@ class HomeScreen extends StatelessWidget {
                 return WeatherCard(
                   key: ValueKey(city),
                   weather: weather,
-                  isFahrenheit: isFahrenheit,
+                  temperatureUnit: temperatureUnit,
                 );
               },
             ),
           ],
         ],
       ),
+    );
+  }
+
+  // Helper to build weather cards for current location and saved cities
+  Widget _buildWeatherCard(BuildContext context, Weather weather, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit) {
+    return WeatherCard(
+      weather: weather,
+      temperatureUnit: temperatureUnit,
+      onTap: () {
+        // Navigate to detail screen based on weather parameter
+        // Example for FeelsLikeDetailScreen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FeelsLikeDetailScreen(
+              feelsLike: weather.feelsLike,
+              temperatureUnit: temperatureUnit,
+            ),
+          ),
+        );
+      },
+      // Add more detail screen navigations here as needed
     );
   }
 }

@@ -83,17 +83,12 @@ class SettingsService with ChangeNotifier {
 
     // Load temperature unit
     final String? tempUnitString = prefs.getString(AppConstants.temperatureUnitKey);
-    if (tempUnitString != null) {
-      _temperatureUnit = TemperatureUnit.values.firstWhere(
-        (e) => e.toString() == tempUnitString,
-        orElse: () => TemperatureUnit.celsius,
-      );
-    } else {
-      // Backward compatibility for old isFahrenheitKey setting
-      _temperatureUnit = (prefs.getBool(AppConstants.isFahrenheitKey) ?? false)
-          ? TemperatureUnit.fahrenheit
-          : TemperatureUnit.celsius;
-    }
+    _temperatureUnit = tempUnitString != null
+        ? TemperatureUnit.values.firstWhere(
+            (e) => e.toString() == tempUnitString,
+            orElse: () => TemperatureUnit.celsius,
+          )
+        : TemperatureUnit.celsius; // Default to Celsius if no preference is saved
 
     // Load wind speed unit
     final String? windUnitString = prefs.getString(AppConstants.windSpeedUnitKey);
@@ -161,8 +156,6 @@ class SettingsService with ChangeNotifier {
     _temperatureUnit = unit;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConstants.temperatureUnitKey, unit.toString());
-    // Remove old key for backward compatibility
-    await prefs.remove(AppConstants.isFahrenheitKey);
     notifyListeners();
   }
 

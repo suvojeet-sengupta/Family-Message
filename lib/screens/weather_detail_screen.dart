@@ -1,4 +1,3 @@
-
 import 'package:AuroraWeather/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -88,15 +87,81 @@ class WeatherDetailScreen extends StatelessWidget {
     }
   }
 
+  double _celsiusToFahrenheit(double celsius) {
+    return (celsius * 9 / 5) + 32;
+  }
+
+  double _kphToMph(double kph) {
+    return kph * 0.621371;
+  }
+
+  double _kphToMs(double kph) {
+    return kph * 1000 / 3600;
+  }
+
+  double _hPaToInHg(double hPa) {
+    return hPa * 0.02953;
+  }
+
+  double _hPaToMmHg(double hPa) {
+    return hPa * 0.750062;
+  }
+
   @override
   Widget build(BuildContext context) {
     final settingsService = Provider.of<SettingsService>(context);
-    final isFahrenheit = settingsService.useFahrenheit;
+    final temperatureUnit = settingsService.temperatureUnit;
+    final windSpeedUnit = settingsService.windSpeedUnit;
+    final pressureUnit = settingsService.pressureUnit;
 
     return Consumer<WeatherProvider>(
       builder: (context, weatherProvider, child) {
         final weatherToDisplay = weather ?? weatherProvider.currentLocationWeather ?? _createPlaceholderWeather(error: weatherProvider.error);
         final isLoading = weatherProvider.isLoading;
+
+        // Temperature conversion for display
+        final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+        final dewPointDisplay = temperatureUnit == TemperatureUnit.fahrenheit
+            ? _celsiusToFahrenheit(weatherToDisplay.dewpoint_c)
+            : weatherToDisplay.dewpoint_c;
+
+        // Wind speed conversion for display
+        double windSpeedDisplay;
+        String windSpeedSymbol;
+        switch (windSpeedUnit) {
+          case WindSpeedUnit.mph:
+            windSpeedDisplay = _kphToMph(weatherToDisplay.wind);
+            windSpeedSymbol = 'mph';
+            break;
+          case WindSpeedUnit.ms:
+            windSpeedDisplay = _kphToMs(weatherToDisplay.wind);
+            windSpeedSymbol = 'm/s';
+            break;
+          case WindSpeedUnit.kph:
+          default:
+            windSpeedDisplay = weatherToDisplay.wind;
+            windSpeedSymbol = 'km/h';
+            break;
+        }
+
+        // Pressure conversion for display
+        double pressureDisplay;
+        String pressureSymbol;
+        switch (pressureUnit) {
+          case PressureUnit.inHg:
+            pressureDisplay = _hPaToInHg(weatherToDisplay.pressure?.toDouble() ?? 0.0);
+            pressureSymbol = 'inHg';
+            break;
+          case PressureUnit.mmHg:
+            pressureDisplay = _hPaToMmHg(weatherToDisplay.pressure?.toDouble() ?? 0.0);
+            pressureSymbol = 'mmHg';
+            break;
+          case PressureUnit.hPa:
+          default:
+            pressureDisplay = weatherToDisplay.pressure?.toDouble() ?? 0.0;
+            pressureSymbol = 'hPa';
+            break;
+        }
 
         return WillPopScope(
           onWillPop: () async {
@@ -141,7 +206,7 @@ class WeatherDetailScreen extends StatelessWidget {
                     ),
                   ),
                 Expanded(
-                  child: _buildWeatherContent(context, isFahrenheit, weatherToDisplay, weatherProvider),
+                  child: _buildWeatherContent(context, weatherToDisplay, weatherProvider, temperatureUnit, windSpeedUnit, pressureUnit, tempUnitSymbol, windSpeedDisplay, windSpeedSymbol, pressureDisplay, pressureSymbol, dewPointDisplay),
                 ),
               ],
             ),
@@ -175,7 +240,7 @@ class WeatherDetailScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildWeatherContent(BuildContext context, bool isFahrenheit, Weather weather, WeatherProvider weatherProvider) {
+  Widget _buildWeatherContent(BuildContext context, Weather weather, WeatherProvider weatherProvider, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit, String tempUnitSymbol, double windSpeedDisplay, String windSpeedSymbol, double pressureDisplay, String pressureSymbol, double dewPointDisplay) {
 
     String _calculateDaylight(String date, String sunrise, String sunset) {
       if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {
@@ -198,10 +263,10 @@ class WeatherDetailScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          CurrentWeather(weather: weather, isFahrenheit: isFahrenheit),
+          CurrentWeather(weather: weather, temperatureUnit: temperatureUnit),
           const SizedBox(height: 24),
           if (weather.dailyForecast.isNotEmpty)
-            TenDayForecast(dailyForecast: weather.dailyForecast),
+            TenDayForecast(dailyForecast: weather.dailyForecast, temperatureUnit: temperatureUnit),
           const SizedBox(height: 24),
           Consumer<SettingsService>(
             builder: (context, settingsService, child) {
@@ -243,10 +308,10 @@ class WeatherDetailScreen extends StatelessWidget {
                     case 'wind':
                       return InkWell(
                         key: ValueKey(card.cardTypeId), // Unique key for reordering
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeedKph: weather.wind, windDegree: weather.windDegree, windDir: weather.windDir))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeed: weather.wind, windDegree: weather.windDegree, windDir: weather.windDir, windSpeedUnit: windSpeedUnit))),
                         child: WeatherDetailCard(
                           title: 'Wind',
-                          value: '${weather.wind.round()} kph',
+                          value: '${windSpeedDisplay.round()} $windSpeedSymbol',
                           subtitle: weather.windDir.isNotEmpty ? 'From ${weather.windDir}' : 'N/A',
                           icon: Icons.air,
                           color: Colors.green,
@@ -255,11 +320,11 @@ class WeatherDetailScreen extends StatelessWidget {
                     case 'pressure':
                       return InkWell(
                         key: ValueKey(card.cardTypeId), // Unique key for reordering
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PressureDetailScreen(pressure: weather.pressure?.toDouble() ?? 0.0))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PressureDetailScreen(pressure: weather.pressure?.toDouble() ?? 0.0, pressureUnit: pressureUnit))),
                         child: WeatherDetailCard(
                           title: 'Pressure',
-                          value: '${weather.pressure?.round() ?? 'N/A'} hPa',
-                          subtitle: 'hPa',
+                          value: '${pressureDisplay.round()} $pressureSymbol',
+                          subtitle: pressureSymbol,
                           icon: Icons.compress,
                           color: Colors.red,
                         ),
@@ -334,10 +399,10 @@ class WeatherDetailScreen extends StatelessWidget {
                     case 'dew_point':
                       return InkWell(
                         key: ValueKey(card.cardTypeId), // Unique key for reordering
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DewPointDetailScreen(dewPoint: isFahrenheit ? weather.dewpoint_f : weather.dewpoint_c, isFahrenheit: isFahrenheit))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DewPointDetailScreen(dewPoint: weather.dewpoint_c, temperatureUnit: temperatureUnit))),
                         child: WeatherDetailCard(
                           title: 'Dew Point',
-                          value: isFahrenheit ? '${weather.dewpoint_f.round()}°' : '${weather.dewpoint_c.round()}°',
+                          value: '${dewPointDisplay.round()}$tempUnitSymbol',
                           subtitle: 'Comfort level',
                           icon: Icons.thermostat_auto,
                           color: Colors.lightBlue,

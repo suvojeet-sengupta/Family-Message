@@ -2,15 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/weather_model.dart';
 import '../screens/weather_detail_screen.dart';
+import '../services/settings_service.dart'; // Import SettingsService for TemperatureUnit
 
 class WeatherCard extends StatelessWidget {
   final Weather weather;
-  final bool isFahrenheit;
+  final TemperatureUnit temperatureUnit;
+  final VoidCallback? onTap;
 
-  const WeatherCard({super.key, required this.weather, this.isFahrenheit = false});
+  const WeatherCard({super.key, required this.weather, required this.temperatureUnit, this.onTap});
+
+  double _celsiusToFahrenheit(double celsius) {
+    return (celsius * 9 / 5) + 32;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+
+    final currentTemp = temperatureUnit == TemperatureUnit.fahrenheit
+        ? _celsiusToFahrenheit(weather.temperature)
+        : weather.temperature;
+
+    final maxTemp = temperatureUnit == TemperatureUnit.fahrenheit
+        ? _celsiusToFahrenheit(weather.dailyForecast.first.maxTemp)
+        : weather.dailyForecast.first.maxTemp;
+
+    final minTemp = temperatureUnit == TemperatureUnit.fahrenheit
+        ? _celsiusToFahrenheit(weather.dailyForecast.first.minTemp)
+        : weather.dailyForecast.first.minTemp;
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(
@@ -18,14 +38,15 @@ class WeatherCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WeatherDetailScreen(weather: weather),
-            ),
-          );
-        },
+        onTap: onTap ??
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WeatherDetailScreen(weather: weather),
+                ),
+              );
+            },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -51,7 +72,7 @@ class WeatherCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${weather.dailyForecast.first.maxTemp.round()}° ${weather.dailyForecast.first.minTemp.round()}°',
+                      '${maxTemp.round()}$tempUnitSymbol ${minTemp.round()}$tempUnitSymbol',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontSize: 16,
                           ),
@@ -74,9 +95,7 @@ class WeatherCard extends StatelessWidget {
                         )),
                   const SizedBox(width: 8),
                   Text(
-                    isFahrenheit
-                        ? '${weather.temperatureF.round()}°'
-                        : '${weather.temperature.round()}°',
+                    '${currentTemp.round()}$tempUnitSymbol',
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           fontSize: 48,
                           fontWeight: FontWeight.w300,
