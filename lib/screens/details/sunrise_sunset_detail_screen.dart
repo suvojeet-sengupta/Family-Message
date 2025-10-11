@@ -157,7 +157,10 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   solarNoon,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w300),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w300,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
