@@ -4,14 +4,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/settings_service.dart'; // Import SettingsService for WindSpeedUnit
 
 class WindDetailScreen extends StatelessWidget {
-  final double windSpeed;
+  final double windSpeedKphRaw;
   final int windDegree;
   final String windDir;
   final WindSpeedUnit windSpeedUnit;
 
   const WindDetailScreen({
     super.key,
-    required this.windSpeed,
+    required this.windSpeedKphRaw,
     required this.windDegree,
     required this.windDir,
     required this.windSpeedUnit,
@@ -33,20 +33,20 @@ class WindDetailScreen extends StatelessWidget {
 
     switch (windSpeedUnit) {
       case WindSpeedUnit.mph:
-        displayWindSpeed = windSpeed;
+        displayWindSpeed = _kphToMph(windSpeedKphRaw);
         displayWindSpeedSymbol = 'mph';
-        windSpeedMphForBeaufort = windSpeed;
+        windSpeedMphForBeaufort = displayWindSpeed;
         break;
       case WindSpeedUnit.ms:
-        displayWindSpeed = windSpeed;
+        displayWindSpeed = _kphToMs(windSpeedKphRaw);
         displayWindSpeedSymbol = 'm/s';
-        windSpeedMphForBeaufort = _kphToMph(windSpeed * 3.6); // Convert m/s to kph, then kph to mph
+        windSpeedMphForBeaufort = _kphToMph(windSpeedKphRaw); // Beaufort scale is based on MPH, so convert raw KPH to MPH
         break;
       case WindSpeedUnit.kph:
       default:
-        displayWindSpeed = windSpeed;
+        displayWindSpeed = windSpeedKphRaw;
         displayWindSpeedSymbol = 'km/h';
-        windSpeedMphForBeaufort = _kphToMph(windSpeed);
+        windSpeedMphForBeaufort = _kphToMph(windSpeedKphRaw);
         break;
     }
 

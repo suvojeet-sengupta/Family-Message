@@ -97,7 +97,7 @@ class WeatherInfo extends StatelessWidget {
                     Navigator.push(
                       context,
                       _createFadeRoute(WindDetailScreen(
-                        windSpeed: windSpeed,
+                        windSpeedKphRaw: weather.wind,
                         windSpeedUnit: windSpeedUnit,
                       )),
                     );

@@ -308,7 +308,7 @@ class WeatherDetailScreen extends StatelessWidget {
                     case 'wind':
                       return InkWell(
                         key: ValueKey(card.cardTypeId), // Unique key for reordering
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeed: weather.wind, windDegree: weather.windDegree, windDir: weather.windDir, windSpeedUnit: windSpeedUnit))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindDetailScreen(windSpeedKphRaw: weather.wind, windDegree: weather.windDegree, windDir: weather.windDir, windSpeedUnit: windSpeedUnit))),
                         child: WeatherDetailCard(
                           title: 'Wind',
                           value: '${windSpeedDisplay.round()} $windSpeedSymbol',
