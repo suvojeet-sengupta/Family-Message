@@ -15,68 +15,101 @@ class HumidityDetailScreen extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildCurrentHumidity(),
+            _buildCurrentHumidity(context),
             const SizedBox(height: 24),
-            _buildHumidityInfo(),
+            _buildHumidityInfo(context),
             const SizedBox(height: 24),
-            _buildAdvice(),
+            _buildAdvice(context),
           ],
         ).animate().fade(duration: 300.ms),
       ),
     );
   }
 
-  Widget _buildCurrentHumidity() {
-    return Center(
-      child: Column(
-        children: [
-          const Text(
-            'Current Humidity',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$humidity%',
-            style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w200),
-          ),
-        ],
+  Widget _buildCurrentHumidity(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            Text(
+              'Current Humidity',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.water_drop_outlined, size: 60, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 16),
+                Text(
+                  '$humidity%',
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHumidityInfo() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'What is Relative Humidity?',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+  Widget _buildHumidityInfo(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'What is Relative Humidity?',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Relative humidity is a measure of the amount of water vapor present in the air, expressed as a percentage of the maximum amount of water vapor the air can hold at a specific temperature.',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
         ),
-        SizedBox(height: 8),
-        Text(
-          'Relative humidity is a measure of the amount of water vapor present in the air, expressed as a percentage of the maximum amount of water vapor the air can hold at a specific temperature.',
-          style: TextStyle(fontSize: 16),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildAdvice() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Comfort & Health Advice',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+  Widget _buildAdvice(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Comfort & Health Advice',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _getHumidityAdvice(humidity),
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          _getHumidityAdvice(humidity),
-          style: const TextStyle(fontSize: 16),
-        ),
-      ],
+      ),
     );
   }
 
