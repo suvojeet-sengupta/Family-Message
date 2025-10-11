@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../services/settings_service.dart';
 
 class CurrentWeather extends StatelessWidget {
   final Weather weather;
-  final bool isFahrenheit;
 
-  const CurrentWeather({super.key, required this.weather, this.isFahrenheit = false});
+  const CurrentWeather({super.key, required this.weather});
 
-  String _getFeelsLikeExplanation() {
-    final temp = isFahrenheit ? weather.temperatureF : weather.temperature;
-    final feelsLike = isFahrenheit ? weather.feelsLikeF : weather.feelsLike;
+  double _celsiusToFahrenheit(double celsius) {
+    return (celsius * 9 / 5) + 32;
+  }
 
+  String _getFeelsLikeExplanation(double temp, double feelsLike, TemperatureUnit unit) {
     if ((feelsLike - temp).abs() < 2) {
       return 'Similar to the actual temperature.';
     }
@@ -26,6 +28,17 @@ class CurrentWeather extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = Provider.of<SettingsService>(context);
+    final temperatureUnit = settingsService.temperatureUnit;
+
+    final currentTemp = temperatureUnit == TemperatureUnit.fahrenheit
+        ? _celsiusToFahrenheit(weather.temperature)
+        : weather.temperature;
+    final feelsLikeTemp = temperatureUnit == TemperatureUnit.fahrenheit
+        ? _celsiusToFahrenheit(weather.feelsLike)
+        : weather.feelsLike;
+    final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+
     return Card(
       color: Theme.of(context).cardTheme.color,
       shape: RoundedRectangleBorder(
@@ -51,9 +64,7 @@ class CurrentWeather extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isFahrenheit
-                          ? '${weather.temperatureF.round()}°F'
-                          : '${weather.temperature.round()}°C',
+                      '${currentTemp.round()}$tempUnitSymbol',
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
                             fontSize: 80,
                             fontWeight: FontWeight.w200,
@@ -88,14 +99,14 @@ class CurrentWeather extends StatelessWidget {
                 Icon(Icons.thermostat, color: Theme.of(context).iconTheme.color, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'Feels like ${isFahrenheit ? weather.feelsLikeF.round() : weather.feelsLike.round()}°',
+                  'Feels like ${feelsLikeTemp.round()}$tempUnitSymbol',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              _getFeelsLikeExplanation(),
+              _getFeelsLikeExplanation(currentTemp, feelsLikeTemp, temperatureUnit),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14),
             ),
             const SizedBox(height: 8),

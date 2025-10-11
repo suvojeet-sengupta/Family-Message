@@ -6,6 +6,11 @@ import '../constants/app_constants.dart';
 import '../constants/detail_card_constants.dart'; // New import
 import 'package:flutter/material.dart'; // For ThemeMode
 
+// Enums for unit preferences
+enum TemperatureUnit { celsius, fahrenheit }
+enum WindSpeedUnit { kph, mph, ms } // Kilometers per hour, Miles per hour, Meters per second
+enum PressureUnit { hPa, inHg, mmHg } // Hectopascals, Inches of Mercury, Millimeters of Mercury
+
 // New class to hold card type and its visibility
 class CustomizableDetailCard {
   final String cardTypeId; // Store only the ID
@@ -28,18 +33,24 @@ class CustomizableDetailCard {
   }
 }
 
-
-
 enum ThemePreference { system, light, dark }
 
 class SettingsService with ChangeNotifier {
-  bool _useFahrenheit = false;
   List<CustomizableDetailCard> _detailCardPreferences = [];
   ThemePreference _themePreference = ThemePreference.system; // New field
 
-  bool get useFahrenheit => _useFahrenheit;
+  // New unit preference fields
+  TemperatureUnit _temperatureUnit = TemperatureUnit.celsius;
+  WindSpeedUnit _windSpeedUnit = WindSpeedUnit.kph;
+  PressureUnit _pressureUnit = PressureUnit.hPa;
+
   List<CustomizableDetailCard> get detailCardPreferences => _detailCardPreferences;
   ThemePreference get themePreference => _themePreference; // New getter
+
+  // New unit preference getters
+  TemperatureUnit get temperatureUnit => _temperatureUnit;
+  WindSpeedUnit get windSpeedUnit => _windSpeedUnit;
+  PressureUnit get pressureUnit => _pressureUnit;
 
   // Convert ThemePreference to ThemeMode for MaterialApp
   ThemeMode get themeMode {
@@ -60,7 +71,6 @@ class SettingsService with ChangeNotifier {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    _useFahrenheit = prefs.getBool(AppConstants.isFahrenheitKey) ?? false;
 
     // Load theme preference
     final String? themeString = prefs.getString(AppConstants.themePreference);
@@ -68,6 +78,38 @@ class SettingsService with ChangeNotifier {
       _themePreference = ThemePreference.values.firstWhere(
         (e) => e.toString() == themeString,
         orElse: () => ThemePreference.system,
+      );
+    }
+
+    // Load temperature unit
+    final String? tempUnitString = prefs.getString(AppConstants.temperatureUnitKey);
+    if (tempUnitString != null) {
+      _temperatureUnit = TemperatureUnit.values.firstWhere(
+        (e) => e.toString() == tempUnitString,
+        orElse: () => TemperatureUnit.celsius,
+      );
+    } else {
+      // Backward compatibility for old isFahrenheitKey setting
+      _temperatureUnit = (prefs.getBool(AppConstants.isFahrenheitKey) ?? false)
+          ? TemperatureUnit.fahrenheit
+          : TemperatureUnit.celsius;
+    }
+
+    // Load wind speed unit
+    final String? windUnitString = prefs.getString(AppConstants.windSpeedUnitKey);
+    if (windUnitString != null) {
+      _windSpeedUnit = WindSpeedUnit.values.firstWhere(
+        (e) => e.toString() == windUnitString,
+        orElse: () => WindSpeedUnit.kph,
+      );
+    }
+
+    // Load pressure unit
+    final String? pressureUnitString = prefs.getString(AppConstants.pressureUnitKey);
+    if (pressureUnitString != null) {
+      _pressureUnit = PressureUnit.values.firstWhere(
+        (e) => e.toString() == pressureUnitString,
+        orElse: () => PressureUnit.hPa,
       );
     }
 
@@ -107,17 +149,34 @@ class SettingsService with ChangeNotifier {
     await prefs.setString(detailCardPreferencesKey, encoded);
   }
 
-  Future<void> toggleUnit(bool value) async {
-    _useFahrenheit = value;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppConstants.isFahrenheitKey, value);
-    notifyListeners();
-  }
-
   Future<void> setThemePreference(ThemePreference preference) async {
     _themePreference = preference;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConstants.themePreference, preference.toString());
+    notifyListeners();
+  }
+
+  // New setters for unit preferences
+  Future<void> setTemperatureUnit(TemperatureUnit unit) async {
+    _temperatureUnit = unit;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.temperatureUnitKey, unit.toString());
+    // Remove old key for backward compatibility
+    await prefs.remove(AppConstants.isFahrenheitKey);
+    notifyListeners();
+  }
+
+  Future<void> setWindSpeedUnit(WindSpeedUnit unit) async {
+    _windSpeedUnit = unit;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.windSpeedUnitKey, unit.toString());
+    notifyListeners();
+  }
+
+  Future<void> setPressureUnit(PressureUnit unit) async {
+    _pressureUnit = unit;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.pressureUnitKey, unit.toString());
     notifyListeners();
   }
 

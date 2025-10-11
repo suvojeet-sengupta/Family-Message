@@ -1,23 +1,56 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../services/settings_service.dart'; // Import SettingsService for WindSpeedUnit
 
 class WindDetailScreen extends StatelessWidget {
-  final double windSpeedKph;
+  final double windSpeed;
   final int windDegree;
   final String windDir;
+  final WindSpeedUnit windSpeedUnit;
 
   const WindDetailScreen({
     super.key,
-    required this.windSpeedKph,
+    required this.windSpeed,
     required this.windDegree,
     required this.windDir,
+    required this.windSpeedUnit,
   });
+
+  double _kphToMph(double kph) {
+    return kph * 0.621371;
+  }
+
+  double _kphToMs(double kph) {
+    return kph * 1000 / 3600;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final windSpeedMph = windSpeedKph * 0.621371;
-    final beaufort = _getBeaufort(windSpeedMph);
+    double displayWindSpeed;
+    String displayWindSpeedSymbol;
+    double windSpeedMphForBeaufort;
+
+    switch (windSpeedUnit) {
+      case WindSpeedUnit.mph:
+        displayWindSpeed = windSpeed;
+        displayWindSpeedSymbol = 'mph';
+        windSpeedMphForBeaufort = windSpeed;
+        break;
+      case WindSpeedUnit.ms:
+        displayWindSpeed = windSpeed;
+        displayWindSpeedSymbol = 'm/s';
+        windSpeedMphForBeaufort = _kphToMph(windSpeed * 3.6); // Convert m/s to kph, then kph to mph
+        break;
+      case WindSpeedUnit.kph:
+      default:
+        displayWindSpeed = windSpeed;
+        displayWindSpeedSymbol = 'km/h';
+        windSpeedMphForBeaufort = _kphToMph(windSpeed);
+        break;
+    }
+
+    final beaufort = _getBeaufort(windSpeedMphForBeaufort);
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +61,7 @@ class WindDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCurrentWindSpeed(beaufort),
+            _buildCurrentWindSpeed(displayWindSpeed, displayWindSpeedSymbol, beaufort),
             const SizedBox(height: 24),
             _buildWindDirection(),
             const SizedBox(height: 24),
@@ -74,7 +107,7 @@ class WindDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrentWindSpeed(Map<String, dynamic> beaufort) {
+  Widget _buildCurrentWindSpeed(double displayWindSpeed, String displayWindSpeedSymbol, Map<String, dynamic> beaufort) {
     return Center(
       child: Column(
         children: [
@@ -84,7 +117,7 @@ class WindDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${windSpeedKph.round()} km/h',
+            '${displayWindSpeed.round()} $displayWindSpeedSymbol',
             style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w200),
           ),
           const SizedBox(height: 8),

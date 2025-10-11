@@ -1,13 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../services/settings_service.dart'; // Import SettingsService for PressureUnit
 
 class PressureDetailScreen extends StatelessWidget {
   final double pressure;
+  final PressureUnit pressureUnit;
 
-  const PressureDetailScreen({super.key, required this.pressure});
+  const PressureDetailScreen({super.key, required this.pressure, required this.pressureUnit});
+
+  double _hPaToInHg(double hPa) {
+    return hPa * 0.02953;
+  }
+
+  double _hPaToMmHg(double hPa) {
+    return hPa * 0.750062;
+  }
 
   @override
   Widget build(BuildContext context) {
+    double displayPressure;
+    String displayPressureSymbol;
+
+    switch (pressureUnit) {
+      case PressureUnit.inHg:
+        displayPressure = _hPaToInHg(pressure);
+        displayPressureSymbol = 'inHg';
+        break;
+      case PressureUnit.mmHg:
+        displayPressure = _hPaToMmHg(pressure);
+        displayPressureSymbol = 'mmHg';
+        break;
+      case PressureUnit.hPa:
+      default:
+        displayPressure = pressure;
+        displayPressureSymbol = 'hPa';
+        break;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pressure'),
@@ -17,18 +46,18 @@ class PressureDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildCurrentPressure(context),
+            _buildCurrentPressure(context, displayPressure, displayPressureSymbol),
             const SizedBox(height: 24),
             _buildPressureInfo(context),
             const SizedBox(height: 24),
-            _buildAdvice(context),
+            _buildAdvice(context, displayPressure),
           ],
         ).animate().fade(duration: 300.ms),
       ),
     );
   }
 
-  Widget _buildCurrentPressure(BuildContext context) {
+  Widget _buildCurrentPressure(BuildContext context, double displayPressure, String displayPressureSymbol) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -53,7 +82,7 @@ class PressureDetailScreen extends StatelessWidget {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      '${pressure.toStringAsFixed(1)}',
+                      '${displayPressure.toStringAsFixed(1)}',
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
                             fontWeight: FontWeight.w300,
                             color: Theme.of(context).colorScheme.onSurface,
@@ -61,7 +90,7 @@ class PressureDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'hPa',
+                      displayPressureSymbol,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w400,
                             color: Theme.of(context).colorScheme.onSurface,
@@ -103,7 +132,7 @@ class PressureDetailScreen extends StatelessWidget {
     );
   }
 
-    Widget _buildAdvice(BuildContext context) {
+    Widget _buildAdvice(BuildContext context, double displayPressure) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -120,7 +149,7 @@ class PressureDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              _getPressureAdvice(pressure),
+              _getPressureAdvice(displayPressure),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
@@ -130,9 +159,24 @@ class PressureDetailScreen extends StatelessWidget {
   }
 
   String _getPressureAdvice(double pressure) {
-    if (pressure > 1020) {
+    // Convert to hPa for advice logic, as the advice thresholds are likely based on hPa.
+    double pressureHPa;
+    switch (pressureUnit) {
+      case PressureUnit.inHg:
+        pressureHPa = pressure / 0.02953;
+        break;
+      case PressureUnit.mmHg:
+        pressureHPa = pressure / 0.750062;
+        break;
+      case PressureUnit.hPa:
+      default:
+        pressureHPa = pressure;
+        break;
+    }
+
+    if (pressureHPa > 1020) {
       return 'High pressure is currently dominant. Expect stable conditions with clear skies and light winds. A good day for outdoor activities.';
-    } else if (pressure < 1000) {
+    } else if (pressureHPa < 1000) {
       return 'Low pressure is influencing the weather. This often brings unsettled conditions like clouds, rain, or wind. Be prepared for changing weather.';
     } else {
       return 'The atmospheric pressure is in a neutral range. Weather conditions are likely to be stable, but keep an eye on the forecast for any changes.';

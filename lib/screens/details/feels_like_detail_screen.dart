@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../services/settings_service.dart'; // Import SettingsService for TemperatureUnit
 
 class FeelsLikeDetailScreen extends StatelessWidget {
   final double feelsLike;
-  final bool isFahrenheit;
+  final TemperatureUnit temperatureUnit;
 
-  const FeelsLikeDetailScreen({super.key, required this.feelsLike, required this.isFahrenheit});
+  const FeelsLikeDetailScreen({super.key, required this.feelsLike, required this.temperatureUnit});
+
+  double _fahrenheitToCelsius(double fahrenheit) {
+    return (fahrenheit - 32) * 5 / 9;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final displayFeelsLike = temperatureUnit == TemperatureUnit.fahrenheit
+        ? feelsLike
+        : _fahrenheitToCelsius(feelsLike); // Assuming feelsLike is always passed in Fahrenheit from WeatherInfo
+    final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Feels Like'),
@@ -18,18 +28,18 @@ class FeelsLikeDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCurrentFeelsLike(),
+            _buildCurrentFeelsLike(displayFeelsLike, tempUnitSymbol),
             const SizedBox(height: 24),
             _buildFeelsLikeInfo(),
             const SizedBox(height: 24),
-            _buildAdvice(),
+            _buildAdvice(displayFeelsLike),
           ],
         ).animate().fade(duration: 300.ms),
       ),
     );
   }
 
-  Widget _buildCurrentFeelsLike() {
+  Widget _buildCurrentFeelsLike(double displayFeelsLike, String tempUnitSymbol) {
     return Center(
       child: Column(
         children: [
@@ -39,7 +49,7 @@ class FeelsLikeDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            isFahrenheit ? '${feelsLike.round()}°F' : '${feelsLike.round()}°C',
+            '${displayFeelsLike.round()}$tempUnitSymbol',
             style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w200),
           ),
         ],
@@ -64,7 +74,7 @@ class FeelsLikeDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAdvice() {
+  Widget _buildAdvice(double displayFeelsLike) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,7 +84,7 @@ class FeelsLikeDetailScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          _getFeelsLikeAdvice(feelsLike),
+          _getFeelsLikeAdvice(displayFeelsLike),
           style: const TextStyle(fontSize: 16),
         ),
       ],
@@ -82,7 +92,9 @@ class FeelsLikeDetailScreen extends StatelessWidget {
   }
 
   String _getFeelsLikeAdvice(double temp) {
-    final tempC = isFahrenheit ? (temp - 32) * 5 / 9 : temp;
+    // Convert to Celsius for advice logic, as the advice thresholds are likely based on Celsius.
+    final tempC = temperatureUnit == TemperatureUnit.fahrenheit ? _fahrenheitToCelsius(temp) : temp;
+
     if (tempC > 30) {
       return 'It feels very hot. Stay hydrated, seek shade, and avoid strenuous activity during the hottest parts of the day.';
     } else if (tempC > 20) {

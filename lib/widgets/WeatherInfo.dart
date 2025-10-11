@@ -2,16 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-// import '../screens/uv_index_detail_screen.dart'; // Commented out: uvIndex missing from model and screen not provided.
 import '../screens/details/feels_like_detail_screen.dart';
 import '../screens/details/wind_detail_screen.dart';
 import '../screens/details/humidity_detail_screen.dart';
+import '../screens/details/uv_index_detail_screen.dart';
 import '../services/settings_service.dart';
 
 class WeatherInfo extends StatelessWidget {
   final Weather weather;
 
   const WeatherInfo({super.key, required this.weather});
+
+  double _celsiusToFahrenheit(double celsius) {
+    return (celsius * 9 / 5) + 32;
+  }
+
+  double _kphToMph(double kph) {
+    return kph * 0.621371;
+  }
+
+  double _kphToMs(double kph) {
+    return kph * 1000 / 3600;
+  }
 
   Route _createFadeRoute(Widget page) {
     return PageRouteBuilder(
@@ -27,7 +39,34 @@ class WeatherInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFahrenheit = Provider.of<SettingsService>(context).useFahrenheit;
+    final settingsService = Provider.of<SettingsService>(context);
+    final temperatureUnit = settingsService.temperatureUnit;
+    final windSpeedUnit = settingsService.windSpeedUnit;
+
+    // Temperature conversion
+    final feelsLikeTemp = temperatureUnit == TemperatureUnit.fahrenheit
+        ? _celsiusToFahrenheit(weather.feelsLike)
+        : weather.feelsLike;
+    final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+
+    // Wind speed conversion
+    double windSpeed;
+    String windSpeedSymbol;
+    switch (windSpeedUnit) {
+      case WindSpeedUnit.mph:
+        windSpeed = _kphToMph(weather.wind);
+        windSpeedSymbol = 'mph';
+        break;
+      case WindSpeedUnit.ms:
+        windSpeed = _kphToMs(weather.wind);
+        windSpeedSymbol = 'm/s';
+        break;
+      case WindSpeedUnit.kph:
+      default:
+        windSpeed = weather.wind;
+        windSpeedSymbol = 'km/h';
+        break;
+    }
 
     return Card(
       color: Colors.black.withOpacity(0.2),
@@ -45,19 +84,25 @@ class WeatherInfo extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(FeelsLikeDetailScreen(feelsLike: isFahrenheit ? weather.feelsLikeF : weather.feelsLike, isFahrenheit: isFahrenheit)),
+                      _createFadeRoute(FeelsLikeDetailScreen(
+                        feelsLike: feelsLikeTemp,
+                        temperatureUnit: temperatureUnit,
+                      )),
                     );
                   },
-                  child: _buildInfoItem(Icons.thermostat, 'Feels Like', isFahrenheit ? '${weather.feelsLikeF.round()}°F' : '${weather.feelsLike.round()}°C'),
+                  child: _buildInfoItem(Icons.thermostat, 'Feels Like', '${feelsLikeTemp.round()}$tempUnitSymbol'),
                 ),
                 InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
-                      _createFadeRoute(WindDetailScreen(windSpeedKph: weather.wind)),
+                      _createFadeRoute(WindDetailScreen(
+                        windSpeed: windSpeed,
+                        windSpeedUnit: windSpeedUnit,
+                      )),
                     );
                   },
-                  child: _buildInfoItem(Icons.air, 'Wind', '${weather.wind.round()} km/h'),
+                  child: _buildInfoItem(Icons.air, 'Wind', '${windSpeed.round()} $windSpeedSymbol'),
                 ),
               ],
             ),
