@@ -37,6 +37,21 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
     }
   }
 
+  String _calculateSolarNoon(String sunrise, String sunset) {
+    if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {
+      return 'N/A';
+    }
+    try {
+      final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunrise");
+      final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunset");
+      final noonMillis = (sunriseTime.millisecondsSinceEpoch + sunsetTime.millisecondsSinceEpoch) ~/ 2;
+      final noonTime = DateTime.fromMillisecondsSinceEpoch(noonMillis);
+      return DateFormat('h:mm a').format(noonTime);
+    } catch (e) {
+      return 'N/A';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
@@ -56,59 +71,125 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primaryContainer,
-                  Theme.of(context).colorScheme.secondaryContainer,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        child: Column(
+          children: [
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Daylight: ${_calculateDaylight(sunrise, sunset)}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
+              elevation: 4,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primaryContainer,
+                      Theme.of(context).colorScheme.secondaryContainer,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    height: 150,
-                    child: CustomPaint(
-                      painter: SunPathPainter(
-                        sunPercentage: sunPercentage,
-                        pathColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                        sunColor: Colors.amber,
-                      ),
-                      size: Size.infinite,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildTimeInfo(context, Icons.wb_sunny, 'Sunrise', _formatTime(sunrise)),
-                      _buildTimeInfo(context, Icons.brightness_3, 'Sunset', _formatTime(sunset)),
+                      Text(
+                        'Daylight: ${_calculateDaylight(sunrise, sunset)}',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 150,
+                        child: CustomPaint(
+                          painter: SunPathPainter(
+                            sunPercentage: sunPercentage,
+                            pathColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            sunColor: Colors.amber,
+                          ),
+                          size: Size.infinite,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildTimeInfo(context, Icons.wb_sunny, 'Sunrise', _formatTime(sunrise)),
+                          _buildTimeInfo(context, Icons.brightness_3, 'Sunset', _formatTime(sunset)),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+            const SizedBox(height: 24),
+            _buildSolarNoonCard(context),
+            const SizedBox(height: 16),
+            _buildDaylightInfoCard(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSolarNoonCard(BuildContext context) {
+    final solarNoon = _calculateSolarNoon(sunrise, sunset);
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Solar Noon',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.flare, color: Colors.orange),
+                const SizedBox(width: 12),
+                Text(
+                  solarNoon,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Solar noon is the moment when the Sun passes a location\'s meridian and reaches its highest position in the sky for that day.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDaylightInfoCard(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'About Daylight',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Daylight is the period of time each day between sunrise and sunset. The duration of daylight varies with the time of year and the latitude of the location.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
         ),
       ),
     );
