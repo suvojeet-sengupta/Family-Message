@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 import '../services/weather_provider.dart';
-import './weather_units_screen.dart'; // Import the new screen
+import './weather_units_screen.dart';
 import './about_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -10,149 +10,161 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settingsService = Provider.of<SettingsService>(context);
     final weatherProvider = Provider.of<WeatherProvider>(context);
-    final savedCities = weatherProvider.savedCities;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         children: [
-          // Weather Units Navigation
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              leading: const Icon(Icons.straighten),
-              title: const Text('Weather Units'),
-              subtitle: const Text('Change temperature, wind speed, and pressure units'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WeatherUnitsScreen()),
-                );
-              },
-            ),
+          _buildSectionCard(
+            context,
+            'General',
+            [
+              _buildNavigationTile(context, 'Weather Units', 'Temperature, wind, pressure', Icons.straighten, () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const WeatherUnitsScreen()));
+              }),
+              const Divider(height: 1, indent: 16, endIndent: 16),
+              _buildNavigationTile(context, 'About', 'App info and credits', Icons.info_outline, () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutScreen()));
+              }),
+            ],
           ),
           const SizedBox(height: 24),
-          const Divider(),
-          const SizedBox(height: 24),
-
-          // Theme Preferences Section
-          const Text('Theme', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          Consumer<SettingsService>(
-            builder: (context, settingsService, child) {
-              return SegmentedButton<ThemePreference>(
-                segments: const <ButtonSegment<ThemePreference>>[
-                  ButtonSegment<ThemePreference>(
-                    value: ThemePreference.light,
-                    label: Text('Light'),
-                    icon: Icon(Icons.wb_sunny),
-                  ),
-                  ButtonSegment<ThemePreference>(
-                    value: ThemePreference.dark,
-                    label: Text('Dark'),
-                    icon: Icon(Icons.nightlight_round),
-                  ),
-                  ButtonSegment<ThemePreference>(
-                    value: ThemePreference.system,
-                    label: Text('System'),
-                    icon: Icon(Icons.settings_system_daydream),
-                  ),
-                ],
-                selected: <ThemePreference>{settingsService.themePreference},
-                onSelectionChanged: (Set<ThemePreference> newSelection) {
-                  settingsService.setThemePreference(newSelection.first);
-                },
-              );
-            },
+          _buildSectionCard(
+            context,
+            'Theme',
+            [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Consumer<SettingsService>(
+                  builder: (context, settingsService, child) {
+                    return SegmentedButton<ThemePreference>(
+                      segments: const <ButtonSegment<ThemePreference>>[
+                        ButtonSegment<ThemePreference>(
+                          value: ThemePreference.light,
+                          label: Text('Light'),
+                          icon: Icon(Icons.wb_sunny),
+                        ),
+                        ButtonSegment<ThemePreference>(
+                          value: ThemePreference.dark,
+                          label: Text('Dark'),
+                          icon: Icon(Icons.nightlight_round),
+                        ),
+                        ButtonSegment<ThemePreference>(
+                          value: ThemePreference.system,
+                          label: Text('System'),
+                          icon: Icon(Icons.settings_system_daydream),
+                        ),
+                      ],
+                      selected: <ThemePreference>{settingsService.themePreference},
+                      onSelectionChanged: (Set<ThemePreference> newSelection) {
+                        settingsService.setThemePreference(newSelection.first);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
-          const Divider(),
-          const SizedBox(height: 16),
-          const Text('Saved Locations', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          savedCities.isEmpty
-              ? const Center(child: Text('No saved locations.'))
-              : ReorderableListView.builder(
+          _buildSectionCard(
+            context,
+            'Saved Locations',
+            [
+              if (weatherProvider.savedCities.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(child: Text('No saved locations.')),
+                )
+              else
+                ReorderableListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: savedCities.length,
+                  itemCount: weatherProvider.savedCities.length,
                   onReorder: (oldIndex, newIndex) {
                     weatherProvider.reorderSavedCities(oldIndex, newIndex);
                   },
                   itemBuilder: (context, index) {
-                    final city = savedCities[index];
-                    return Card(
+                    final city = weatherProvider.savedCities[index];
+                    return ListTile(
                       key: ValueKey(city),
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        leading: const Icon(Icons.drag_handle),
-                        title: Text(city),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext dialogContext) {
-                                return AlertDialog(
-                                  title: const Text('Delete City?'),
-                                  content: Text('Are you sure you want to delete $city?'),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      child: const Text('Cancel'),
-                                      onPressed: () {
-                                        Navigator.of(dialogContext).pop(); // Dismiss the dialog
-                                      },
-                                    ),
-                                    TextButton(
-                                      child: const Text('Delete'),
-                                      onPressed: () {
-                                        // Use the provider to remove the city
-                                        Provider.of<WeatherProvider>(context, listen: false).removeCity(city);
-                                        Navigator.of(dialogContext).pop(); // Dismiss the dialog
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        ),
+                      leading: const Icon(Icons.drag_handle),
+                      title: Text(city),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _showDeleteConfirmation(context, city, weatherProvider),
                       ),
                     );
                   },
                 ),
-          const SizedBox(height: 24),
-          const Divider(),
-          const SizedBox(height: 24),
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('About'),
-              subtitle: const Text('App information and credits'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AboutScreen()),
-                );
-              },
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 
+  Widget _buildSectionCard(BuildContext context, String title, List<Widget> children) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          ...children,
+        ],
+      ),
+    );
+  }
 
+  Widget _buildNavigationTile(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, String city, WeatherProvider weatherProvider) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete City?'),
+          content: Text('Are you sure you want to delete $city?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                weatherProvider.removeCity(city);
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
