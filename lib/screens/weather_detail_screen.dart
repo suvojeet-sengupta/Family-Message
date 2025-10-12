@@ -256,20 +256,20 @@ class WeatherDetailScreen extends StatelessWidget {
           children: [
             Column(
               children: [
-                Text('High', style: Theme.of(context).textTheme.labelLarge),
-                Text('${highTemp.round()}$tempUnitSymbol', style: Theme.of(context).textTheme.titleLarge),
+                Text('High', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
+                Text('${highTemp.round()}$tempUnitSymbol', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
               ],
             ),
             Column(
               children: [
-                Text('Low', style: Theme.of(context).textTheme.labelLarge),
-                Text('${lowTemp.round()}$tempUnitSymbol', style: Theme.of(context).textTheme.titleLarge),
+                Text('Low', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
+                Text('${lowTemp.round()}$tempUnitSymbol', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
               ],
             ),
             Column(
               children: [
-                Text('Condition', style: Theme.of(context).textTheme.labelLarge),
-                Text(forecast.condition, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,),
+                Text('Condition', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
+                Text(forecast.condition, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface), textAlign: TextAlign.center,),
               ],
             )
           ],
