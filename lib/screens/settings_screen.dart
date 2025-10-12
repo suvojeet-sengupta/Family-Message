@@ -47,13 +47,28 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Consumer<SettingsService>(
             builder: (context, settingsService, child) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildThemeChoice(context, settingsService, ThemePreference.light, 'Light', Icons.wb_sunny),
-                  _buildThemeChoice(context, settingsService, ThemePreference.dark, 'Dark', Icons.nightlight_round),
-                  _buildThemeChoice(context, settingsService, ThemePreference.system, 'System', Icons.settings_system_daydream),
+              return SegmentedButton<ThemePreference>(
+                segments: const <ButtonSegment<ThemePreference>>[
+                  ButtonSegment<ThemePreference>(
+                    value: ThemePreference.light,
+                    label: Text('Light'),
+                    icon: Icon(Icons.wb_sunny),
+                  ),
+                  ButtonSegment<ThemePreference>(
+                    value: ThemePreference.dark,
+                    label: Text('Dark'),
+                    icon: Icon(Icons.nightlight_round),
+                  ),
+                  ButtonSegment<ThemePreference>(
+                    value: ThemePreference.system,
+                    label: Text('System'),
+                    icon: Icon(Icons.settings_system_daydream),
+                  ),
                 ],
+                selected: <ThemePreference>{settingsService.themePreference},
+                onSelectionChanged: (Set<ThemePreference> newSelection) {
+                  settingsService.setThemePreference(newSelection.first);
+                },
               );
             },
           ),
@@ -139,31 +154,5 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeChoice(BuildContext context, SettingsService settingsService, ThemePreference preference, String label, IconData icon) {
-    final isSelected = settingsService.themePreference == preference;
-    final colorScheme = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: () => settingsService.setThemePreference(preference),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 120,
-            decoration: BoxDecoration(
-              color: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected ? colorScheme.primary : colorScheme.outline,
-                width: isSelected ? 2 : 1,
-              ),
-            ),
-            child: Icon(icon, size: 40, color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface),
-          ),
-          const SizedBox(height: 8),
-          Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: isSelected ? colorScheme.primary : colorScheme.onSurface)),
-        ],
-      ),
-    );
-  }
 }
