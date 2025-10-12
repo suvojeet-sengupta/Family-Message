@@ -36,7 +36,13 @@ class _AboutScreenState extends State<AboutScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Image.asset('assets/logo_foreground.png', height: 120),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Image.asset('assets/logo_background.png', height: 120),
+                  Image.asset('assets/logo_foreground.png', height: 120),
+                ],
+              ),
               const SizedBox(height: 24),
               Text(
                 'Aurora Weather',
