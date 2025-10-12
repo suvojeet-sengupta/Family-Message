@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 import '../services/weather_provider.dart';
 import './weather_units_screen.dart'; // Import the new screen
+import './about_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -114,6 +115,25 @@ class SettingsScreen extends StatelessWidget {
                     );
                   },
                 ),
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 24),
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('About'),
+              subtitle: const Text('App information and credits'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutScreen()),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
