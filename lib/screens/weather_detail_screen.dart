@@ -241,6 +241,43 @@ class WeatherDetailScreen extends StatelessWidget {
     }
   }
 
+  Widget _buildHighLowForecast(BuildContext context, DailyForecast forecast, TemperatureUnit temperatureUnit) {
+    final highTemp = temperatureUnit == TemperatureUnit.fahrenheit ? forecast.maxTempF : forecast.maxTemp;
+    final lowTemp = temperatureUnit == TemperatureUnit.fahrenheit ? forecast.minTempF : forecast.minTemp;
+    final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Column(
+              children: [
+                Text('High', style: Theme.of(context).textTheme.labelLarge),
+                Text('${highTemp.round()}$tempUnitSymbol', style: Theme.of(context).textTheme.titleLarge),
+              ],
+            ),
+            Column(
+              children: [
+                Text('Low', style: Theme.of(context).textTheme.labelLarge),
+                Text('${lowTemp.round()}$tempUnitSymbol', style: Theme.of(context).textTheme.titleLarge),
+              ],
+            ),
+            Column(
+              children: [
+                Text('Condition', style: Theme.of(context).textTheme.labelLarge),
+                Text(forecast.condition, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center,),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildWeatherContent(BuildContext context, Weather weather, WeatherProvider weatherProvider, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit, String tempUnitSymbol, double windSpeedDisplay, String windSpeedSymbol, double pressureDisplay, String pressureSymbol, double dewPointDisplay) {
     if (weatherProvider.error != null && weather.locationName.contains('Loading...')) {
       return ErrorDisplay(
@@ -277,6 +314,9 @@ class WeatherDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         children: [
           CurrentWeather(weather: weather, temperatureUnit: temperatureUnit),
+          const SizedBox(height: 16),
+          if (weather.dailyForecast.isNotEmpty)
+            _buildHighLowForecast(context, weather.dailyForecast.first, temperatureUnit),
           const SizedBox(height: 24),
           if (weather.dailyForecast.isNotEmpty)
             TenDayForecast(dailyForecast: weather.dailyForecast, temperatureUnit: temperatureUnit),
