@@ -83,7 +83,7 @@ class WeatherUnitsScreen extends StatelessWidget {
           Text(
             labels[currentUnit]!,
             style: TextStyle(
-                fontSize: 16, color: Theme.of(context).colorScheme.secondary),
+                fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
           ),
           const SizedBox(width: 8),
           const Icon(Icons.arrow_forward_ios, size: 16),
