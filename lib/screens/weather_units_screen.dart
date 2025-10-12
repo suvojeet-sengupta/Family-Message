@@ -16,85 +16,131 @@ class WeatherUnitsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          const Text('Select your preferred units for weather display.', style: TextStyle(fontSize: 16)),
+          const Text(
+            'Select your preferred units for weather display.',
+            style: TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 24),
-          _buildUnitSelectionCard<TemperatureUnit>(
+          _buildUnitSelectionRow<TemperatureUnit>(
             context: context,
             title: 'Temperature Unit',
+            icon: Icons.thermostat,
             currentUnit: settingsService.temperatureUnit,
             units: TemperatureUnit.values,
             onSelected: settingsService.setTemperatureUnit,
-            labels: {TemperatureUnit.celsius: 'Celsius', TemperatureUnit.fahrenheit: 'Fahrenheit'},
+            labels: {
+              TemperatureUnit.celsius: 'Celsius',
+              TemperatureUnit.fahrenheit: 'Fahrenheit'
+            },
           ),
-          const SizedBox(height: 16),
-          _buildUnitSelectionCard<WindSpeedUnit>(
+          const Divider(),
+          _buildUnitSelectionRow<WindSpeedUnit>(
             context: context,
             title: 'Wind Speed Unit',
+            icon: Icons.air,
             currentUnit: settingsService.windSpeedUnit,
             units: WindSpeedUnit.values,
             onSelected: settingsService.setWindSpeedUnit,
-            labels: {WindSpeedUnit.kph: 'km/h', WindSpeedUnit.mph: 'mph', WindSpeedUnit.ms: 'm/s'},
+            labels: {
+              WindSpeedUnit.kph: 'km/h',
+              WindSpeedUnit.mph: 'mph',
+              WindSpeedUnit.ms: 'm/s'
+            },
           ),
-          const SizedBox(height: 16),
-          _buildUnitSelectionCard<PressureUnit>(
+          const Divider(),
+          _buildUnitSelectionRow<PressureUnit>(
             context: context,
             title: 'Pressure Unit',
+            icon: Icons.speed,
             currentUnit: settingsService.pressureUnit,
             units: PressureUnit.values,
             onSelected: settingsService.setPressureUnit,
-            labels: {PressureUnit.hPa: 'hPa', PressureUnit.inHg: 'inHg', PressureUnit.mmHg: 'mmHg'},
+            labels: {
+              PressureUnit.hPa: 'hPa',
+              PressureUnit.inHg: 'inHg',
+              PressureUnit.mmHg: 'mmHg'
+            },
           ),
+          const Divider(),
         ],
       ),
     );
   }
 
-  Widget _buildUnitSelectionCard<T extends Enum>({
+  Widget _buildUnitSelectionRow<T extends Enum>({
     required BuildContext context,
     required String title,
+    required IconData icon,
     required T currentUnit,
     required List<T> units,
     required Function(T) onSelected,
     required Map<T, String> labels,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8.0,
-              children: units.map((unit) {
-                return ChoiceChip(
-                  label: Text(labels[unit]!),
-                  selected: currentUnit == unit,
-                  onSelected: (selected) {
-                    if (selected) {
-                      onSelected(unit);
+    return ListTile(
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      title: Text(title, style: const TextStyle(fontSize: 16)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            labels[currentUnit]!,
+            style: TextStyle(
+                fontSize: 16, color: Theme.of(context).colorScheme.secondary),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward_ios, size: 16),
+        ],
+      ),
+      onTap: () => _showUnitSelectionDialog(
+          context, title, units, currentUnit, onSelected, labels),
+    );
+  }
+
+  void _showUnitSelectionDialog<T extends Enum>(
+    BuildContext context,
+    String title,
+    List<T> units,
+    T currentUnit,
+    Function(T) onSelected,
+    Map<T, String> labels,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select $title'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: units.length,
+              itemBuilder: (BuildContext context, int index) {
+                final unit = units[index];
+                return RadioListTile<T>(
+                  title: Text(labels[unit]!),
+                  value: unit,
+                  groupValue: currentUnit,
+                  onChanged: (T? value) {
+                    if (value != null) {
+                      onSelected(value);
+                      Navigator.of(context).pop();
                     }
                   },
-                  selectedColor: Theme.of(context).colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: currentUnit == unit
-                        ? Theme.of(context).colorScheme.onPrimaryContainer
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
-                  side: BorderSide(
-                    color: currentUnit == unit
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                  ),
                 );
-              }).toList(),
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
