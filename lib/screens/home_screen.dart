@@ -161,8 +161,8 @@ class HomeScreen extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: () => weatherProvider.refreshAll(),
-      color: Colors.amber,
-      backgroundColor: Colors.grey[900],
+      color: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [

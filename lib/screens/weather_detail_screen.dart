@@ -310,6 +310,8 @@ class WeatherDetailScreen extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: () => this.weather == null ? weatherProvider.fetchCurrentLocationWeather(force: false) : weatherProvider.fetchWeatherForCity(weather.locationName, force: false),
+      color: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
