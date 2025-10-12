@@ -132,33 +132,36 @@ class SettingsScreen extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => settingsService.setThemePreference(preference),
-      child: Container(
-        width: 80,
-        height: 100,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? colorScheme.primary : Colors.transparent,
-            width: 2,
+      child: Opacity(
+        opacity: isSelected ? 1.0 : 0.6,
+        child: Container(
+          width: 80,
+          height: 100,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? colorScheme.primary : Colors.transparent,
+              width: 3,
+            ),
+            gradient: const LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.blue,
+                Colors.pinkAccent,
+                Colors.white,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
-          gradient: const LinearGradient(
-            colors: [
-              Colors.lightBlueAccent,
-              Colors.blue,
-              Colors.pinkAccent,
-              Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32, color: Colors.white),
+              const SizedBox(height: 8),
+              Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32, color: Colors.white),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
         ),
       ),
     );
