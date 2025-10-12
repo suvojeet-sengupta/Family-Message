@@ -241,7 +241,7 @@ class WeatherDetailScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildHighLowForecast(BuildContext context, DailyForecast forecast, TemperatureUnit temperatureUnit) {
+  Widget _buildHighLowForecast(BuildContext context, DailyForecast forecast, TemperatureUnit temperatureUnit, String currentCondition) {
     final highTemp = temperatureUnit == TemperatureUnit.fahrenheit ? forecast.maxTempF : forecast.maxTemp;
     final lowTemp = temperatureUnit == TemperatureUnit.fahrenheit ? forecast.minTempF : forecast.minTemp;
     final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
@@ -269,7 +269,7 @@ class WeatherDetailScreen extends StatelessWidget {
             Column(
               children: [
                 Text('Condition', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
-                Text(forecast.condition, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface), textAlign: TextAlign.center,),
+                Text(currentCondition, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface), textAlign: TextAlign.center,),
               ],
             )
           ],
@@ -318,7 +318,7 @@ class WeatherDetailScreen extends StatelessWidget {
           CurrentWeather(weather: weather, temperatureUnit: temperatureUnit),
           const SizedBox(height: 16),
           if (weather.dailyForecast.isNotEmpty)
-            _buildHighLowForecast(context, weather.dailyForecast.first, temperatureUnit),
+            _buildHighLowForecast(context, weather.dailyForecast.first, temperatureUnit, weather.condition),
           const SizedBox(height: 24),
           if (weather.dailyForecast.isNotEmpty)
             TenDayForecast(dailyForecast: weather.dailyForecast, temperatureUnit: temperatureUnit),
