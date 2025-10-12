@@ -201,10 +201,47 @@ class HomeScreen extends StatelessWidget {
                 if (weather == null) {
                   return ShimmerLoading(key: ValueKey(city));
                 }
-                return WeatherCard(
+                return Dismissible(
                   key: ValueKey(city),
-                  weather: weather,
-                  temperatureUnit: temperatureUnit,
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (direction) {
+                    Provider.of<WeatherProvider>(context, listen: false).removeCity(city);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('$city removed')),
+                    );
+                  },
+                  confirmDismiss: (direction) async {
+                    return await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Confirm"),
+                          content: const Text("Are you sure you wish to delete this item?"),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text("CANCEL"),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("DELETE"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  child: WeatherCard(
+                    weather: weather,
+                    temperatureUnit: temperatureUnit,
+                    showDragHandle: true,
+                  ),
                 );
               },
             ),

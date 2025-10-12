@@ -8,8 +8,15 @@ class WeatherCard extends StatelessWidget {
   final Weather weather;
   final TemperatureUnit temperatureUnit;
   final VoidCallback? onTap;
+  final bool showDragHandle;
 
-  const WeatherCard({super.key, required this.weather, required this.temperatureUnit, this.onTap});
+  const WeatherCard({
+    super.key,
+    required this.weather,
+    required this.temperatureUnit,
+    this.onTap,
+    this.showDragHandle = false,
+  });
 
   double _celsiusToFahrenheit(double celsius) {
     return (celsius * 9 / 5) + 32;
@@ -52,6 +59,11 @@ class WeatherCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              if (showDragHandle)
+                const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: Icon(Icons.drag_handle),
+                ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
