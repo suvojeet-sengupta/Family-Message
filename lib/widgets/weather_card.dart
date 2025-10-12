@@ -41,7 +41,7 @@ class WeatherCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
