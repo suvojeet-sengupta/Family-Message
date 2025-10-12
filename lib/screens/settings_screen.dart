@@ -41,28 +41,13 @@ class SettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Consumer<SettingsService>(
                   builder: (context, settingsService, child) {
-                    return SegmentedButton<ThemePreference>(
-                      segments: const <ButtonSegment<ThemePreference>>[
-                        ButtonSegment<ThemePreference>(
-                          value: ThemePreference.light,
-                          label: Text('Light'),
-                          icon: Icon(Icons.wb_sunny),
-                        ),
-                        ButtonSegment<ThemePreference>(
-                          value: ThemePreference.dark,
-                          label: Text('Dark'),
-                          icon: Icon(Icons.nightlight_round),
-                        ),
-                        ButtonSegment<ThemePreference>(
-                          value: ThemePreference.system,
-                          label: Text('System'),
-                          icon: Icon(Icons.settings_system_daydream),
-                        ),
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildThemeChoiceButton(context, settingsService, ThemePreference.light, 'Light', Icons.wb_sunny),
+                        _buildThemeChoiceButton(context, settingsService, ThemePreference.dark, 'Dark', Icons.nightlight_round),
+                        _buildThemeChoiceButton(context, settingsService, ThemePreference.system, 'System', Icons.settings_system_daydream),
                       ],
-                      selected: <ThemePreference>{settingsService.themePreference},
-                      onSelectionChanged: (Set<ThemePreference> newSelection) {
-                        settingsService.setThemePreference(newSelection.first);
-                      },
                     );
                   },
                 ),
@@ -138,6 +123,44 @@ class SettingsScreen extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
+    );
+  }
+
+  Widget _buildThemeChoiceButton(BuildContext context, SettingsService settingsService, ThemePreference preference, String label, IconData icon) {
+    final isSelected = settingsService.themePreference == preference;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: () => settingsService.setThemePreference(preference),
+      child: Container(
+        width: 80,
+        height: 100,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? colorScheme.primary : Colors.transparent,
+            width: 2,
+          ),
+          gradient: const LinearGradient(
+            colors: [
+              Colors.lightBlueAccent,
+              Colors.blue,
+              Colors.pinkAccent,
+              Colors.white,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32, color: Colors.white),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
     );
   }
 
