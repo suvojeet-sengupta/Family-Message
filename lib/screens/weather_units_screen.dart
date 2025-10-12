@@ -34,7 +34,6 @@ class WeatherUnitsScreen extends StatelessWidget {
               TemperatureUnit.fahrenheit: 'Fahrenheit'
             },
           ),
-          const Divider(),
           _buildUnitSelectionRow<WindSpeedUnit>(
             context: context,
             title: 'Wind Speed Unit',
@@ -48,7 +47,6 @@ class WeatherUnitsScreen extends StatelessWidget {
               WindSpeedUnit.ms: 'm/s'
             },
           ),
-          const Divider(),
           _buildUnitSelectionRow<PressureUnit>(
             context: context,
             title: 'Pressure Unit',
@@ -62,7 +60,6 @@ class WeatherUnitsScreen extends StatelessWidget {
               PressureUnit.mmHg: 'mmHg'
             },
           ),
-          const Divider(),
         ],
       ),
     );
