@@ -25,56 +25,11 @@ import 'package:reorderable_grid_view/reorderable_grid_view.dart'; // New import
 
 import './details/wind_detail_screen.dart';
 import './details/humidity_detail_screen.dart';
-import '../widgets/error_display.dart';
+import 'package:AuroraWeather/widgets/friendly_error_display.dart';
 
 class WeatherDetailScreen extends StatelessWidget {
   final Weather? weather;
   const WeatherDetailScreen({super.key, this.weather});
-
-  Weather _createPlaceholderWeather({String? error}) {
-    return Weather(
-      locationName: error ?? 'Loading...',
-      temperature: 0,
-      temperatureF: 0,
-      condition: 'N/A',
-      conditionCode: 0,
-      iconUrl: '',
-      feelsLike: 0,
-      feelsLikeF: 0,
-      wind: 0,
-      windDir: 'N/A',
-      windDegree: 0,
-      humidity: 0,
-      uvIndex: 0,
-      airQuality: AirQuality(usEpaIndex: 0),
-      pressure: 0,
-      hourlyForecast: [],
-      dailyForecast: [
-        DailyForecast(
-          date: '',
-          maxTemp: 0,
-          maxTempF: 0,
-          minTemp: 0,
-          minTempF: 0,
-          iconUrl: '',
-          condition: 'N/A',
-          hourlyForecast: [],
-          totalPrecipMm: 0,
-          avgHumidity: 0,
-          maxWindKph: 0,
-          sunrise: '',
-          sunset: '',
-          moonPhase: '',
-        )
-      ],
-      timestamp: 0,
-      vis_km: 0,
-      vis_miles: 0,
-      dewpoint_c: 0,
-      dewpoint_f: 0,
-      last_updated: '',
-    );
-  }
 
   String _formatTime(String date, String time) {
     if (time.isEmpty || date.isEmpty) {
@@ -117,8 +72,34 @@ class WeatherDetailScreen extends StatelessWidget {
 
     return Consumer<WeatherProvider>(
       builder: (context, weatherProvider, child) {
-        final weatherToDisplay = weather ?? weatherProvider.currentLocationWeather ?? _createPlaceholderWeather(error: weatherProvider.error);
+        final weatherToDisplay = weather ?? weatherProvider.currentLocationWeather;
         final isLoading = weatherProvider.isLoading;
+        final error = weatherProvider.error;
+
+        if (error != null && weatherToDisplay == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Error'),
+            ),
+            body: FriendlyErrorDisplay(
+              message: error,
+              onRetry: () {
+                if (weather == null) {
+                  weatherProvider.fetchCurrentLocationWeather(force: true);
+                } else {
+                  weatherProvider.fetchWeatherForCity(weather!.locationName, force: true);
+                }
+              },
+            ),
+          );
+        }
+
+        if (weatherToDisplay == null) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
         // Temperature conversion for display
         final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
@@ -279,19 +260,6 @@ class WeatherDetailScreen extends StatelessWidget {
   }
 
   Widget _buildWeatherContent(BuildContext context, Weather weather, WeatherProvider weatherProvider, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit, String tempUnitSymbol, double windSpeedDisplay, String windSpeedSymbol, double pressureDisplay, String pressureSymbol, double dewPointDisplay) {
-    if (weatherProvider.error != null && weather.locationName.contains('Loading...')) {
-      return ErrorDisplay(
-        message: weatherProvider.error!,
-        onRetry: () {
-          if (this.weather == null) {
-            weatherProvider.fetchCurrentLocationWeather(force: true);
-          } else {
-            weatherProvider.fetchWeatherForCity(weather.locationName, force: true);
-          }
-        },
-      );
-    }
-
     String _calculateDaylight(String date, String sunrise, String sunset) {
       if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {
         return 'N/A';

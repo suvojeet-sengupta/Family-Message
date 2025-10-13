@@ -10,7 +10,7 @@ import './settings_screen.dart';
 import '../widgets/shimmer_loading.dart';
 import './search_screen.dart';
 import '../widgets/weather_card.dart';
-import '../widgets/error_display.dart';
+import '../widgets/friendly_error_display.dart';
 import '../screens/details/feels_like_detail_screen.dart';
 import '../screens/details/wind_detail_screen.dart';
 import '../screens/details/pressure_detail_screen.dart';
@@ -89,7 +89,7 @@ class HomeScreen extends StatelessWidget {
     final error = weatherProvider.error;
 
     if (error != null && currentLocationWeather == null && savedCities.isEmpty) {
-      return ErrorDisplay(
+      return FriendlyErrorDisplay(
         message: error,
         onRetry: () => weatherProvider.fetchCurrentLocationWeather(force: true),
       );
