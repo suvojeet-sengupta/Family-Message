@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:weather/models/weather_model.dart';
+import 'package:AuroraWeather/models/weather_model.dart';
 
 class ShareableWeatherWidget extends StatelessWidget {
   final Weather weather;
