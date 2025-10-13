@@ -93,6 +93,14 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  Future<void> _clearRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(AppConstants.recentSearchesKey);
+    setState(() {
+      _recentSearches = [];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,12 +121,22 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.1),
-                suffixIcon: _isLoading
-                    ? const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                suffixIcon: _locationController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _locationController.clear();
+                          setState(() {
+                            _suggestions = [];
+                          });
+                        },
                       )
-                    : null,
+                    : _isLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
               ),
               onChanged: _onSearchChanged,
             ).animate().fade(duration: 300.ms).slideX(),
@@ -133,6 +151,11 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSuggestionsList() {
+    if (_suggestions.isEmpty && !_isLoading) {
+      return const Center(
+        child: Text('No results found', style: TextStyle(color: Colors.white54)),
+      );
+    }
     return ListView.builder(
       itemCount: _suggestions.length,
       itemBuilder: (context, index) {
@@ -159,22 +182,42 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Text('No recent searches', style: TextStyle(color: Colors.white54)),
       );
     }
-    return ListView.builder(
-      itemCount: _recentSearches.length,
-      itemBuilder: (context, index) {
-        final location = _recentSearches[index];
-        return Card(
-          color: Colors.white.withOpacity(0.1),
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          child: ListTile(
-            leading: const Icon(Icons.history, color: Colors.white54),
-            title: Text(location),
-            onTap: () {
-              Navigator.pop(context, location);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Recent Searches', style: TextStyle(color: Colors.white54, fontSize: 16)),
+              TextButton(
+                onPressed: _clearRecentSearches,
+                child: const Text('Clear', style: TextStyle(color: Colors.white70)),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _recentSearches.length,
+            itemBuilder: (context, index) {
+              final location = _recentSearches[index];
+              return Card(
+                color: Colors.white.withOpacity(0.1),
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                child: ListTile(
+                  leading: const Icon(Icons.history, color: Colors.white54),
+                  title: Text(location),
+                  onTap: () {
+                    Navigator.pop(context, location);
+                  },
+                ),
+              );
             },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
