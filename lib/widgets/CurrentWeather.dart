@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/weather_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/settings_service.dart'; // Import SettingsService for TemperatureUnit
@@ -24,6 +25,15 @@ class CurrentWeather extends StatelessWidget {
       return 'Feels warmer due to humidity.';
     }
     return '';
+  }
+
+  String _formatLastUpdated(String lastUpdated) {
+    try {
+      final dateTime = DateTime.parse(lastUpdated);
+      return DateFormat.jm().format(dateTime); // Format to 12-hour format with AM/PM
+    } catch (e) {
+      return lastUpdated; // Return original string if parsing fails
+    }
   }
 
   @override
@@ -112,8 +122,8 @@ class CurrentWeather extends StatelessWidget {
                 Icon(Icons.update, color: Theme.of(context).iconTheme.color, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'Last updated: ${weather.last_updated}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14),
+                  'Last updated: ${_formatLastUpdated(weather.last_updated)}',
+                  style: Theme.of(re.compile(r'context').search(string).group(0)).textTheme.bodySmall?.copyWith(fontSize: 14),
                 ),
               ],
             ),
