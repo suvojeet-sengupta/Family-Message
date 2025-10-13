@@ -1,7 +1,15 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:AuroraWeather/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+
 import '../models/daily_forecast.dart';
 import '../models/air_quality.dart';
 import '../services/settings_service.dart';
@@ -10,6 +18,7 @@ import '../widgets/CurrentWeather.dart';
 import '../models/weather_model.dart';
 import '../widgets/ten_day_forecast.dart';
 import '../widgets/weather_detail_card.dart';
+import '../widgets/shareable_weather_widget.dart';
 
 import './details/air_quality_detail_screen.dart';
 import './details/precipitation_detail_screen.dart';
@@ -19,7 +28,6 @@ import './details/visibility_detail_screen.dart';
 import './details/dew_point_detail_screen.dart';
 import './details/uv_index_detail_screen.dart';
 
-
 import '../constants/detail_card_constants.dart'; // New import
 import 'package:reorderable_grid_view/reorderable_grid_view.dart'; // New import
 
@@ -27,9 +35,229 @@ import './details/wind_detail_screen.dart';
 import './details/humidity_detail_screen.dart';
 import 'package:AuroraWeather/widgets/friendly_error_display.dart';
 
-class WeatherDetailScreen extends StatelessWidget {
+class WeatherDetailScreen extends StatefulWidget {
   final Weather? weather;
   const WeatherDetailScreen({super.key, this.weather});
+
+  @override
+  State<WeatherDetailScreen> createState() => _WeatherDetailScreenState();
+}
+
+class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
+  final ScreenshotController screenshotController = ScreenshotController();
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
+
+  Future<void> _shareWeatherDetails(Weather weatherToShare) async {
+    RenderRepaintBoundary? boundary = _repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    if (boundary == null) {
+      // Fallback to screenshotController if boundary is null
+      final imageFile = await screenshotController.captureAndSave(
+        (await getTemporaryDirectory()).path,
+        fileName: "aurora_weather_share.png",
+      );
+      if (imageFile != null) {
+        await Share.shareXFiles([XFile(imageFile)], text: 'Check out the weather in ${weatherToShare.locationName} with Aurora Weather!');
+      }
+      return;
+    }
+
+    ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+    ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (byteData != null) {
+      final directory = await getTemporaryDirectory();
+      final imagePath = '${directory.path}/aurora_weather_share.png';
+      final file = File(imagePath);
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      await Share.shareXFiles([XFile(imagePath)], text: 'Check out the weather in ${weatherToShare.locationName} with Aurora Weather!');
+    }
+  }
+
+  String _formatTime(String date, String time) {
+    if (time.isEmpty || date.isEmpty) {
+      return 'N/A';
+    }
+    try {
+      final dateTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $time");
+      return DateFormat('h:mm a').format(dateTime);
+    } catch (e) {
+      return time;
+    }
+  }
+
+  double _celsiusToFahrenheit(double celsius) {
+    return (celsius * 9 / 5) + 32;
+  }
+
+  double _kphToMph(double kph) {
+    return kph * 0.621371;
+  }
+
+  double _kphToMs(double kph) {
+    return kph * 1000 / 3600;
+  }
+
+  double _hPaToInHg(double hPa) {
+    return hPa * 0.02953;
+  }
+
+  double _hPaToMmHg(double hPa) {
+    return hPa * 0.750062;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settingsService = Provider.of<SettingsService>(context);
+    final temperatureUnit = settingsService.temperatureUnit;
+    final windSpeedUnit = settingsService.windSpeedUnit;
+    final pressureUnit = settingsService.pressureUnit;
+
+    return Consumer<WeatherProvider>(
+      builder: (context, weatherProvider, child) {
+        final weatherToDisplay = widget.weather ?? weatherProvider.currentLocationWeather;
+        final isLoading = weatherProvider.isLoading;
+        final error = weatherProvider.error;
+
+        if (error != null && weatherToDisplay == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Error'),
+            ),
+            body: FriendlyErrorDisplay(
+              message: error,
+              onRetry: () {
+                if (widget.weather == null) {
+                  weatherProvider.fetchCurrentLocationWeather(force: true);
+                } else {
+                  weatherProvider.fetchWeatherForCity(widget.weather!.locationName, force: true);
+                }
+              },
+            ),
+          );
+        }
+
+        if (weatherToDisplay == null) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Temperature conversion for display
+        final tempUnitSymbol = temperatureUnit == TemperatureUnit.fahrenheit ? '°F' : '°C';
+        final dewPointDisplay = temperatureUnit == TemperatureUnit.fahrenheit
+            ? _celsiusToFahrenheit(weatherToDisplay.dewpoint_c)
+            : weatherToDisplay.dewpoint_c;
+
+        // Wind speed conversion for display
+        double windSpeedDisplay;
+        String windSpeedSymbol;
+        switch (windSpeedUnit) {
+          case WindSpeedUnit.mph:
+            windSpeedDisplay = _kphToMph(weatherToDisplay.wind);
+            windSpeedSymbol = 'mph';
+            break;
+          case WindSpeedUnit.ms:
+            windSpeedDisplay = _kphToMs(weatherToDisplay.wind);
+            windSpeedSymbol = 'm/s';
+            break;
+          case WindSpeedUnit.kph:
+          default:
+            windSpeedDisplay = weatherToDisplay.wind;
+            windSpeedSymbol = 'km/h';
+            break;
+        }
+
+        // Pressure conversion for display
+        double pressureDisplay;
+        String pressureSymbol;
+        switch (pressureUnit) {
+          case PressureUnit.inHg:
+            pressureDisplay = _hPaToInHg(weatherToDisplay.pressure?.toDouble() ?? 0.0);
+            pressureSymbol = 'inHg';
+            break;
+          case PressureUnit.mmHg:
+            pressureDisplay = _hPaToMmHg(weatherToDisplay.pressure?.toDouble() ?? 0.0);
+            pressureSymbol = 'mmHg';
+            break;
+          case PressureUnit.hPa:
+          default:
+            pressureDisplay = weatherToDisplay.pressure?.toDouble() ?? 0.0;
+            pressureSymbol = 'hPa';
+            break;
+        }
+
+        return WillPopScope(
+          onWillPop: () async {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+            return false;
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
+                },
+              ),
+              title: Text(weatherToDisplay.locationName),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.share),
+                  onPressed: () => _shareWeatherDetails(weatherToDisplay),
+                ),
+              ],
+            ),
+            body: Stack(
+              children: [
+                Column(
+                  children: [
+                    if (isLoading)
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        color: Colors.black.withOpacity(0.5),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            ),
+                            SizedBox(width: 16),
+                            Text('Fetching weather...'),
+                          ],
+                        ),
+                      ),
+                    Expanded(
+                      child: _buildWeatherContent(context, weatherToDisplay, weatherProvider, temperatureUnit, windSpeedUnit, pressureUnit, tempUnitSymbol, windSpeedDisplay, windSpeedSymbol, pressureDisplay, pressureSymbol, dewPointDisplay),
+                    ),
+                  ],
+                ),
+                // Hidden widget for screenshot
+                Positioned(
+                  left: -10000, // Position off-screen
+                  top: -10000,
+                  child: RepaintBoundary(
+                    key: _repaintBoundaryKey,
+                    child: ShareableWeatherWidget(weather: weatherToDisplay),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 
   String _formatTime(String date, String time) {
     if (time.isEmpty || date.isEmpty) {
