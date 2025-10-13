@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ErrorDisplay extends StatelessWidget {
   final String message;
@@ -12,6 +13,8 @@ class ErrorDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLocationError = message.contains('Location permission denied');
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,6 +44,14 @@ class ErrorDisplay extends StatelessWidget {
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
             ),
+            if (isLocationError) ...[
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => openAppSettings(),
+                icon: const Icon(Icons.settings),
+                label: const Text('Go to Settings'),
+              ),
+            ],
           ],
         ),
       ),
