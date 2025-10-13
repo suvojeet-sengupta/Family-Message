@@ -123,7 +123,7 @@ class CurrentWeather extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Last updated: ${_formatLastUpdated(weather.last_updated)}',
-                  style: Theme.of(re.compile(r'context').search(string).group(0)).textTheme.bodySmall?.copyWith(fontSize: 14),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14),
                 ),
               ],
             ),
