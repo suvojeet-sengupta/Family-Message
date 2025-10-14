@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart'; // Import for date formatting
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/weather_model.dart';
@@ -9,6 +10,8 @@ class WeatherCard extends StatelessWidget {
   final TemperatureUnit temperatureUnit;
   final VoidCallback? onTap;
   final bool showDragHandle;
+  final bool isOffline; // New: Indicates if data is from offline cache
+  final DateTime lastUpdated; // New: Timestamp of when data was last updated
 
   const WeatherCard({
     super.key,
@@ -16,6 +19,8 @@ class WeatherCard extends StatelessWidget {
     required this.temperatureUnit,
     this.onTap,
     this.showDragHandle = false,
+    this.isOffline = false, // Default to false
+    required this.lastUpdated, // Make it required for now, can be optional later
   });
 
   double _celsiusToFahrenheit(double celsius) {
@@ -81,6 +86,31 @@ class WeatherCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontSize: 16,
                           ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        if (isOffline)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.orange,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Offline',
+                              style: TextStyle(color: Colors.white, fontSize: 12),
+                            ),
+                          ),
+                        if (isOffline) const SizedBox(width: 8),
+                        Text(
+                          'Updated: ${DateFormat('MMM d, HH:mm').format(lastUpdated)}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(

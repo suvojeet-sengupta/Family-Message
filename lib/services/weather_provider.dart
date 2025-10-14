@@ -15,12 +15,14 @@ class WeatherProvider with ChangeNotifier {
   List<String> _savedCities = [];
   bool _isLoading = false;
   String? _error;
+  bool _isOffline = false; // New: Flag to indicate offline mode
 
   Weather? get currentLocationWeather => _currentLocationWeather;
   Map<String, Weather> get weatherData => _weatherData;
   List<String> get savedCities => _savedCities;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get isOffline => _isOffline; // New: Getter for offline status
 
   void clearError() {
     _error = null;
@@ -33,17 +35,22 @@ class WeatherProvider with ChangeNotifier {
 
   String _getErrorMessage(Object e) {
     if (e is LocationPermissionDeniedException) {
+      _isOffline = false; // Ensure offline flag is false if it's a permission error
       return 'Location permission denied. Please enable it in settings to see local weather.';
     }
     if (e is NoInternetException) {
+      _isOffline = true; // Set offline flag to true
       return 'No internet connection. Please check your connection and try again.';
     }
     if (e is WeatherApiException) {
+      _isOffline = false; // Ensure offline flag is false if it's an API error
       return 'Could not get weather data from the service. Please try again later.';
     }
     if (e.toString().contains('Could not determine location')) {
+      _isOffline = false; // Ensure offline flag is false if it's a location error
       return 'Could not determine your location. Please check your GPS and try again.';
     }
+    _isOffline = false; // Default to false for other unexpected errors
     return 'An unexpected error occurred. Please try again.';
   }
 
@@ -73,6 +80,7 @@ class WeatherProvider with ChangeNotifier {
   Future<void> fetchCurrentLocationWeather({bool force = false}) async {
     _isLoading = true;
     _error = null;
+    _isOffline = false; // Reset offline flag
     notifyListeners();
 
     try {
@@ -94,6 +102,7 @@ class WeatherProvider with ChangeNotifier {
   Future<void> fetchWeatherForCity(String city, {bool force = false}) async {
     _isLoading = true;
     _error = null;
+    _isOffline = false; // Reset offline flag
     notifyListeners();
 
     try {
@@ -138,6 +147,7 @@ class WeatherProvider with ChangeNotifier {
   Future<void> refreshAll({bool force = false}) async {
     _isLoading = true;
     _error = null;
+    _isOffline = false; // Reset offline flag
     notifyListeners();
 
     try {

@@ -175,7 +175,12 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            WeatherCard(weather: currentLocationWeather, temperatureUnit: temperatureUnit),
+            WeatherCard(
+              weather: currentLocationWeather,
+              temperatureUnit: temperatureUnit,
+              isOffline: weatherProvider.isOffline,
+              lastUpdated: DateTime.fromMillisecondsSinceEpoch(currentLocationWeather.timestamp),
+            ),
           ],
           if (currentLocationWeather != null && savedCities.isNotEmpty)
             const SizedBox(height: 24),
@@ -241,6 +246,8 @@ class HomeScreen extends StatelessWidget {
                     weather: weather,
                     temperatureUnit: temperatureUnit,
                     showDragHandle: true,
+                    isOffline: weatherProvider.isOffline,
+                    lastUpdated: DateTime.fromMillisecondsSinceEpoch(weather.timestamp),
                   ),
                 );
               },
@@ -252,10 +259,12 @@ class HomeScreen extends StatelessWidget {
   }
 
   // Helper to build weather cards for current location and saved cities
-  Widget _buildWeatherCard(BuildContext context, Weather weather, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit) {
+  Widget _buildWeatherCard(BuildContext context, Weather weather, TemperatureUnit temperatureUnit, WindSpeedUnit windSpeedUnit, PressureUnit pressureUnit, bool isOffline) {
     return WeatherCard(
       weather: weather,
       temperatureUnit: temperatureUnit,
+      isOffline: isOffline,
+      lastUpdated: DateTime.fromMillisecondsSinceEpoch(weather.timestamp),
       onTap: () {
         // Navigate to detail screen based on weather parameter
         // Example for FeelsLikeDetailScreen
