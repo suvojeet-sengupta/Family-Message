@@ -104,7 +104,7 @@ class WeatherCard extends StatelessWidget {
                           ),
                         if (isOffline) const SizedBox(width: 8),
                         Text(
-                          'Updated: ${DateFormat('MMM d, HH:mm').format(lastUpdated)}',
+                          'Updated: ${DateFormat('MMM d, h:mm a').format(lastUpdated)}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
