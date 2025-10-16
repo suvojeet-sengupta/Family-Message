@@ -16,6 +16,7 @@ class DailyForecast {
   final String sunrise;
   final String sunset;
   final String moonPhase;  // Bonus!
+  final double uv;
 
   DailyForecast({
     required this.date,
@@ -32,6 +33,7 @@ class DailyForecast {
     required this.sunrise,
     required this.sunset,
     required this.moonPhase,
+    required this.uv,
   });
 
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
@@ -52,6 +54,7 @@ class DailyForecast {
       sunrise: json['astro']?['sunrise'] ?? '', // ✅ FIXED
       sunset: json['astro']?['sunset'] ?? '',   // ✅ FIXED
       moonPhase: json['astro']?['moon_phase'] ?? '',
+      uv: (json['day']?['uv'] ?? 0.0).toDouble(),
     );
   }
 
@@ -71,6 +74,7 @@ class DailyForecast {
       'sunrise': sunrise,
       'sunset': sunset,
       'moonPhase': moonPhase,
+      'uv': uv,
     };
   }
 
@@ -92,6 +96,7 @@ class DailyForecast {
       sunrise: map['sunrise'],
       sunset: map['sunset'],
       moonPhase: map['moonPhase'] ?? '',
+      uv: map['uv'] ?? 0.0,
     );
   }
 }

@@ -442,7 +442,7 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                     case 'uv_index':
                       return InkWell(
                         key: ValueKey(card.cardTypeId), // Unique key for reordering
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UvIndexDetailScreen(uvIndex: weather.uvIndex))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UvIndexDetailScreen(weather: weatherToDisplay))),
                         child: WeatherDetailCard(
                           title: 'UV Index',
                           value: weather.uvIndex.round().toString(),

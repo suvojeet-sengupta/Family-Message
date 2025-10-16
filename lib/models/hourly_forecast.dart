@@ -5,12 +5,14 @@ class HourlyForecast {
   final double temperature;
   final double temperatureF;
   final String iconUrl;
+  final double uv;
 
   HourlyForecast({
     required this.time,
     required this.temperature,
     required this.temperatureF,
     required this.iconUrl,
+    required this.uv,
   });
 
   factory HourlyForecast.fromJson(Map<String, dynamic> json) {
@@ -19,6 +21,7 @@ class HourlyForecast {
       temperature: (json['temp_c'] ?? 0.0).toDouble(),
       temperatureF: (json['temp_f'] ?? 0.0).toDouble(),
       iconUrl: 'https:${json['condition']?['icon'] ?? ''}',
+      uv: (json['uv'] ?? 0.0).toDouble(),
     );
   }
 
@@ -28,6 +31,7 @@ class HourlyForecast {
       'temperature': temperature,
       'temperatureF': temperatureF,
       'iconUrl': iconUrl,
+      'uv': uv,
     };
   }
 
@@ -37,6 +41,7 @@ class HourlyForecast {
       temperature: map['temperature'],
       temperatureF: map['temperatureF'],
       iconUrl: map['iconUrl'],
+      uv: map['uv'] ?? 0.0,
     );
   }
 }
