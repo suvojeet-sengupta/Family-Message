@@ -28,8 +28,12 @@ class AuroraWeather extends StatelessWidget {
       builder: (context, settingsService, child) {
         return MaterialApp(
           title: 'Aurora Weather',
-          theme: AppThemes.lightTheme, // Use light theme as default
-          darkTheme: AppThemes.darkTheme, // Use dark theme
+          theme: AppThemes.lightTheme.copyWith(
+            useMaterial3: true,
+          ),
+          darkTheme: AppThemes.darkTheme.copyWith(
+            useMaterial3: true,
+          ),
           themeMode: settingsService.themeMode, // Apply selected theme mode
           home: const WeatherDetailScreen(),
           debugShowCheckedModeBanner: false,
