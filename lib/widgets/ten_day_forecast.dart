@@ -27,7 +27,7 @@ class TenDayForecast extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '10-day forecast',
+              '${dailyForecast.length}-day forecast',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
