@@ -44,12 +44,38 @@ class AirQualityDetailScreen extends StatelessWidget {
                       _getAqiAdvice(airQuality?.usEpaIndex),
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
                     ),
+                    if (airQuality != null) ...[
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                      Text('Pollutant Levels', style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      _buildPollutantRow(context, 'Carbon Monoxide (CO)', airQuality!.carbonMonoxide),
+                      _buildPollutantRow(context, 'Ozone (O3)', airQuality!.ozone),
+                      _buildPollutantRow(context, 'Nitrogen Dioxide (NO2)', airQuality!.nitrogenDioxide),
+                      _buildPollutantRow(context, 'Sulphur Dioxide (SO2)', airQuality!.sulphurDioxide),
+                      _buildPollutantRow(context, 'PM2.5', airQuality!.pm2_5),
+                      _buildPollutantRow(context, 'PM10', airQuality!.pm10),
+                    ],
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPollutantRow(BuildContext context, String label, num? value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.bodyLarge),
+          Text(value != null ? value.toStringAsFixed(2) : 'N/A', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }

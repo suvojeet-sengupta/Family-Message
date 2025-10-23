@@ -28,6 +28,9 @@ import './details/sunrise_sunset_detail_screen.dart';
 import './details/visibility_detail_screen.dart';
 import './details/dew_point_detail_screen.dart';
 import './details/uv_index_detail_screen.dart';
+import './details/moon_phase_detail_screen.dart';
+import './details/hourly_precipitation_detail_screen.dart';
+import './details/wind_gust_detail_screen.dart';
 
 import '../constants/detail_card_constants.dart'; // New import
 import 'package:reorderable_grid_view/reorderable_grid_view.dart'; // New import
@@ -492,6 +495,46 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                           subtitle: 'Comfort level',
                           icon: Icons.thermostat_auto,
                           color: Colors.lightBlue,
+                        ),
+                      );
+                    case 'moon_phase':
+                      return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
+                        onTap: () {
+                          if (weather.dailyForecast.isNotEmpty) {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => MoonPhaseDetailScreen(moonPhase: weather.dailyForecast.first.moonPhase)));
+                          }
+                        },
+                        child: WeatherDetailCard(
+                          title: 'Moon Phase',
+                          value: weather.dailyForecast.isNotEmpty ? weather.dailyForecast.first.moonPhase : 'N/A',
+                          subtitle: 'Current phase',
+                          icon: Icons.brightness_2,
+                          color: Colors.indigo,
+                        ),
+                      );
+                    case 'hourly_precipitation_chance':
+                      return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HourlyPrecipitationDetailScreen(hourlyForecast: weather.hourlyForecast))),
+                        child: WeatherDetailCard(
+                          title: 'Hourly Rain Chance',
+                          value: '${weather.hourlyForecast.isNotEmpty ? weather.hourlyForecast.first.chanceOfRain : 0}%',
+                          subtitle: 'Next hour',
+                          icon: Icons.umbrella,
+                          color: Colors.blueGrey,
+                        ),
+                      );
+                    case 'wind_gusts':
+                      return InkWell(
+                        key: ValueKey(card.cardTypeId), // Unique key for reordering
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindGustDetailScreen(hourlyForecast: weather.hourlyForecast, windSpeedUnit: windSpeedUnit))),
+                        child: WeatherDetailCard(
+                          title: 'Wind Gusts',
+                          value: '${weather.hourlyForecast.isNotEmpty ? (windSpeedUnit == WindSpeedUnit.mph ? _kphToMph(weather.hourlyForecast.first.windGustKph).round() : (windSpeedUnit == WindSpeedUnit.ms ? _kphToMs(weather.hourlyForecast.first.windGustKph).round() : weather.hourlyForecast.first.windGustKph.round())) : 0} $windSpeedSymbol',
+                          subtitle: 'Next hour',
+                          icon: Icons.wind_power,
+                          color: Colors.brown,
                         ),
                       );
                     default:

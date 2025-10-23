@@ -70,7 +70,7 @@ class Weather {
       humidity: json['current']?['humidity'] ?? 0,
       uvIndex: (json['current']?['uv'] ?? 0.0).toDouble(),
       airQuality: json['current']?['air_quality'] != null
-          ? AirQuality.fromJson(json['current']['air_quality'])
+          ? AirQuality.fromJson(json['current'] as Map<String, dynamic>)
           : null,
       pressure: (json['current']?['pressure_mb'] ?? 0.0).toDouble(),
       hourlyForecast: ((json['forecast']?['forecastday']?[0]?['hour'] ?? []) as List)

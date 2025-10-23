@@ -38,6 +38,9 @@ final List<DetailCardType> defaultDetailCards = [
   const DetailCardType(id: 'sunrise_sunset', title: 'Sunrise & Sunset', icon: Icons.brightness_6),
   const DetailCardType(id: 'visibility', title: 'Visibility', icon: Icons.visibility),
   const DetailCardType(id: 'dew_point', title: 'Dew Point', icon: Icons.thermostat_auto),
+  const DetailCardType(id: 'moon_phase', title: 'Moon Phase', icon: Icons.brightness_2),
+  const DetailCardType(id: 'hourly_precipitation_chance', title: 'Hourly Rain Chance', icon: Icons.umbrella),
+  const DetailCardType(id: 'wind_gusts', title: 'Wind Gusts', icon: Icons.wind_power),
 ];
 
 // SharedPreferences key for storing card preferences
