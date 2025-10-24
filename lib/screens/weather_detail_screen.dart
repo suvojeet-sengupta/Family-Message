@@ -519,7 +519,7 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HourlyPrecipitationDetailScreen(hourlyForecast: weather.hourlyForecast))),
                         child: WeatherDetailCard(
                           title: 'Hourly Rain Chance',
-                          value: '${weather.hourlyForecast.isNotEmpty ? weather.hourlyForecast.first.chanceOfRain : 0}%',
+                          value: '${weather.hourlyForecast.isNotEmpty ? (weather.hourlyForecast.first.chanceOfRain?.toString() ?? 'N/A') : 'N/A'}%',
                           subtitle: 'Next hour',
                           icon: Icons.umbrella,
                           color: Colors.blueGrey,
@@ -531,7 +531,9 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WindGustDetailScreen(hourlyForecast: weather.hourlyForecast, windSpeedUnit: windSpeedUnit))),
                         child: WeatherDetailCard(
                           title: 'Wind Gusts',
-                          value: '${weather.hourlyForecast.isNotEmpty ? (windSpeedUnit == WindSpeedUnit.mph ? _kphToMph(weather.hourlyForecast.first.windGustKph).round() : (windSpeedUnit == WindSpeedUnit.ms ? _kphToMs(weather.hourlyForecast.first.windGustKph).round() : weather.hourlyForecast.first.windGustKph.round())) : 0} $windSpeedSymbol',
+                          value: weather.hourlyForecast.isNotEmpty && weather.hourlyForecast.first.windGustKph != null
+                              ? '${(windSpeedUnit == WindSpeedUnit.mph ? _kphToMph(weather.hourlyForecast.first.windGustKph!).round() : (windSpeedUnit == WindSpeedUnit.ms ? _kphToMs(weather.hourlyForecast.first.windGustKph!).round() : weather.hourlyForecast.first.windGustKph!.round()))} $windSpeedSymbol'
+                              : 'N/A',
                           subtitle: 'Next hour',
                           icon: Icons.wind_power,
                           color: Colors.brown,
