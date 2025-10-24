@@ -30,7 +30,7 @@ class HourlyForecast {
       uv: (json['uv'] ?? 0.0).toDouble(),
       chanceOfRain: json['chance_of_rain'],
       chanceOfSnow: json['chance_of_snow'],
-      windGustKph: (json['wind_gust_kph'] as num?)?.toDouble(),
+      windGustKph: (json['gust_kph'] as num?)?.toDouble(),
     );
   }
 
