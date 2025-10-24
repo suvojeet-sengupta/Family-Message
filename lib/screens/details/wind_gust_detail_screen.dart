@@ -43,19 +43,23 @@ class WindGustDetailScreen extends StatelessWidget {
         itemCount: hourlyForecast.length,
         itemBuilder: (context, index) {
           final forecast = hourlyForecast[index];
-          double displayWindGust;
+          double? displayWindGust;
 
-          switch (windSpeedUnit) {
-            case WindSpeedUnit.mph:
-              displayWindGust = _kphToMph(forecast.windGustKph);
-              break;
-            case WindSpeedUnit.ms:
-              displayWindGust = _kphToMs(forecast.windGustKph);
-              break;
-            case WindSpeedUnit.kph:
-            default:
-              displayWindGust = forecast.windGustKph;
-              break;
+          if (forecast.windGustKph == null) {
+            displayWindGust = null;
+          } else {
+            switch (windSpeedUnit) {
+              case WindSpeedUnit.mph:
+                displayWindGust = _kphToMph(forecast.windGustKph!);
+                break;
+              case WindSpeedUnit.ms:
+                displayWindGust = _kphToMs(forecast.windGustKph!);
+                break;
+              case WindSpeedUnit.kph:
+              default:
+                displayWindGust = forecast.windGustKph!;
+                break;
+            }
           }
 
           return Card(
@@ -74,7 +78,7 @@ class WindGustDetailScreen extends StatelessWidget {
                       const Icon(Icons.wind_power, color: Colors.grey),
                       const SizedBox(width: 8),
                       Text(
-                        '${displayWindGust.round()} $windSpeedSymbol',
+                        displayWindGust != null ? '${displayWindGust.round()} $windSpeedSymbol' : 'N/A',
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
