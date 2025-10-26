@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:AuroraWeather/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -200,6 +201,10 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
           },
           child: Scaffold(
             appBar: AppBar(
+              systemOverlayStyle: SystemUiOverlayStyle(
+                statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+                statusBarBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+              ),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
