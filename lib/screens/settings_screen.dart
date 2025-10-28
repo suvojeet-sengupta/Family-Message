@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:math'; // Import for min function
 import '../services/settings_service.dart';
 import '../services/weather_provider.dart';
 import './weather_units_screen.dart';
 import './about_screen.dart';
+import './saved_locations_screen.dart'; // Import the new screen
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -70,14 +72,9 @@ class SettingsScreen extends StatelessWidget {
                   child: Center(child: Text('No saved locations.')),
                 )
               else
-                ReorderableListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: weatherProvider.savedCities.length,
-                  onReorder: (oldIndex, newIndex) {
-                    weatherProvider.reorderSavedCities(oldIndex, newIndex);
-                  },
-                  itemBuilder: (context, index) {
+                ...List.generate(
+                  min(weatherProvider.savedCities.length, 3),
+                  (index) {
                     final city = weatherProvider.savedCities[index];
                     return ListTile(
                       key: ValueKey(city),
@@ -85,10 +82,19 @@ class SettingsScreen extends StatelessWidget {
                       title: Text(city),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _showDeleteConfirmation(context, city, weatherProvider),
+                        onPressed: () => weatherProvider.removeCity(city),
                       ),
                     );
                   },
+                ),
+              if (weatherProvider.savedCities.length > 3)
+                Column(
+                  children: [
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    _buildNavigationTile(context, 'View All', 'See all saved locations', Icons.arrow_forward, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SavedLocationsScreen()));
+                    }),
+                  ],
                 ),
             ],
           ),
@@ -169,33 +175,6 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  void _showDeleteConfirmation(BuildContext context, String city, WeatherProvider weatherProvider) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Delete City?'),
-          content: Text('Are you sure you want to delete $city?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Delete'),
-              onPressed: () {
-                weatherProvider.removeCity(city);
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 
