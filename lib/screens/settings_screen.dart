@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/settings_service.dart';
 import '../services/weather_provider.dart';
 import './weather_units_screen.dart';
@@ -29,6 +30,10 @@ class SettingsScreen extends StatelessWidget {
               const Divider(height: 1, indent: 16, endIndent: 16),
               _buildNavigationTile(context, 'About', 'App info and credits', Icons.info_outline, () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutScreen()));
+              }),
+              const Divider(height: 1, indent: 16, endIndent: 16),
+              _buildNavigationTile(context, 'Privacy Policy', 'View our privacy policy', Icons.privacy_tip_outlined, () {
+                _launchURL('https://suvojeet-sengupta.github.io/Aurora-weather-PrivacyPolicy/');
               }),
             ],
           ),
@@ -192,5 +197,11 @@ class SettingsScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _launchURL(String url) async {
+    if (!await launchUrl(Uri.parse(url))) {
+      throw 'Could not launch $url';
+    }
   }
 }
