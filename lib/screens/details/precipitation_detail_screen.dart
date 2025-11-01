@@ -23,14 +23,12 @@ class _PrecipitationDetailScreenState extends State<PrecipitationDetailScreen> {
     _currentPrecipitation = widget.precipitation;
     _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       setState(() {
-        // Simulate more realistic precipitation changes with a trend
-        double change = (Random().nextDouble() * 0.1 + 0.1) * _precipitationTrend; // Change between 0.1 and 0.2
+        // Simulate precise 0.01mm changes, alternating direction
+        double change = 0.01 * _precipitationTrend;
         _currentPrecipitation = (_currentPrecipitation + change).clamp(0.0, 50.0);
 
-        // Occasionally reverse the trend
-        if (Random().nextDouble() < 0.2) { // 20% chance to reverse trend
-          _precipitationTrend *= -1;
-        }
+        // Alternate trend every update
+        _precipitationTrend *= -1;
 
         // Ensure precipitation doesn't go below 0 or above 50 (max for scale)
         if (_currentPrecipitation <= 0.0) {
