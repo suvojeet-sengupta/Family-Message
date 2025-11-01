@@ -1,20 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
+import 'dart:async';
 
-class SunriseSunsetDetailScreen extends StatelessWidget {
+class SunriseSunsetDetailScreen extends StatefulWidget {
   final String date;
   final String sunrise;
   final String sunset;
 
   const SunriseSunsetDetailScreen({super.key, required this.date, required this.sunrise, required this.sunset});
 
+  @override
+  State<SunriseSunsetDetailScreen> createState() => _SunriseSunsetDetailScreenState();
+}
+
+class _SunriseSunsetDetailScreenState extends State<SunriseSunsetDetailScreen> {
+  double _sunPercentage = 0.0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateSunPosition();
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _updateSunPosition();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateSunPosition() {
+    final now = DateTime.now();
+    final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("${widget.date} ${widget.sunrise}");
+    final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("${widget.date} ${widget.sunset}");
+
+    setState(() {
+      if (now.isAfter(sunriseTime) && now.isBefore(sunsetTime)) {
+        _sunPercentage = now.difference(sunriseTime).inMinutes / sunsetTime.difference(sunriseTime).inMinutes;
+      } else if (now.isAfter(sunsetTime)) {
+        _sunPercentage = 1.0;
+      } else {
+        _sunPercentage = 0.0;
+      }
+    });
+  }
+
   String _formatTime(String time) {
-    if (time.isEmpty || date.isEmpty) {
+    if (time.isEmpty || widget.date.isEmpty) {
       return 'N/A';
     }
     try {
-      final dateTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $time");
+      final dateTime = DateFormat("yyyy-MM-dd h:mm a").parse("${widget.date} $time");
       return DateFormat('h:mm a').format(dateTime);
     } catch (e) {
       return time;
@@ -22,12 +62,12 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
   }
 
   String _calculateDaylight(String sunrise, String sunset) {
-    if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {
+    if (sunrise.isEmpty || sunset.isEmpty || widget.date.isEmpty) {
       return 'N/A';
     }
     try {
-      final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunrise");
-      final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunset");
+      final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("${widget.date} $sunrise");
+      final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("${widget.date} $sunset");
       final duration = sunsetTime.difference(sunriseTime);
       final hours = duration.inHours;
       final minutes = duration.inMinutes % 60;
@@ -38,12 +78,12 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
   }
 
   String _calculateSolarNoon(String sunrise, String sunset) {
-    if (sunrise.isEmpty || sunset.isEmpty || date.isEmpty) {
+    if (sunrise.isEmpty || sunset.isEmpty || widget.date.isEmpty) {
       return 'N/A';
     }
     try {
-      final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunrise");
-      final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunset");
+      final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("${widget.date} $sunrise");
+      final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("${widget.date} $sunset");
       final noonMillis = (sunriseTime.millisecondsSinceEpoch + sunsetTime.millisecondsSinceEpoch) ~/ 2;
       final noonTime = DateTime.fromMillisecondsSinceEpoch(noonMillis);
       return DateFormat('h:mm a').format(noonTime);
@@ -54,17 +94,6 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final sunriseTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunrise");
-    final sunsetTime = DateFormat("yyyy-MM-dd h:mm a").parse("$date $sunset");
-
-    double sunPercentage = 0.0;
-    if (now.isAfter(sunriseTime) && now.isBefore(sunsetTime)) {
-      sunPercentage = now.difference(sunriseTime).inMinutes / sunsetTime.difference(sunriseTime).inMinutes;
-    } else if (now.isAfter(sunsetTime)) {
-      sunPercentage = 1.0;
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sunrise & Sunset'),
@@ -96,7 +125,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Daylight: ${_calculateDaylight(sunrise, sunset)}',
+                        'Daylight: ${_calculateDaylight(widget.sunrise, widget.sunset)}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -107,7 +136,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                         height: 150,
                         child: CustomPaint(
                           painter: SunPathPainter(
-                            sunPercentage: sunPercentage,
+                            sunPercentage: _sunPercentage,
                             pathColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                             sunColor: Colors.amber,
                           ),
@@ -118,8 +147,8 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildTimeInfo(context, Icons.wb_sunny, 'Sunrise', _formatTime(sunrise)),
-                          _buildTimeInfo(context, Icons.brightness_3, 'Sunset', _formatTime(sunset)),
+                          _buildTimeInfo(context, Icons.wb_sunny, 'Sunrise', _formatTime(widget.sunrise)),
+                          _buildTimeInfo(context, Icons.brightness_3, 'Sunset', _formatTime(widget.sunset)),
                         ],
                       ),
                     ],
@@ -138,7 +167,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
   }
 
   Widget _buildSolarNoonCard(BuildContext context) {
-    final solarNoon = _calculateSolarNoon(sunrise, sunset);
+    final solarNoon = _calculateSolarNoon(widget.sunrise, widget.sunset);
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -166,7 +195,7 @@ class SunriseSunsetDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              'Solar noon is the moment when the Sun passes a location\'s meridian and reaches its highest position in the sky for that day.',
+              'Solar noon is the moment when the Sun passes a location's meridian and reaches its highest position in the sky for that day.',
               style: TextStyle(fontSize: 16),
             ),
           ],
