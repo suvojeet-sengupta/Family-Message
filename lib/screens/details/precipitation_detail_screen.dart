@@ -15,6 +15,7 @@ class PrecipitationDetailScreen extends StatefulWidget {
 class _PrecipitationDetailScreenState extends State<PrecipitationDetailScreen> {
   late double _currentPrecipitation;
   Timer? _timer;
+  int _precipitationTrend = 1; // 1 for increasing, -1 for decreasing
 
   @override
   void initState() {
@@ -22,8 +23,21 @@ class _PrecipitationDetailScreenState extends State<PrecipitationDetailScreen> {
     _currentPrecipitation = widget.precipitation;
     _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       setState(() {
-        // Simulate real-time precipitation changes
-        _currentPrecipitation = (widget.precipitation + (Random().nextDouble() * 5 - 2.5)).clamp(0.0, 50.0);
+        // Simulate more realistic precipitation changes with a trend
+        double change = (Random().nextDouble() * 1.0 + 0.5) * _precipitationTrend; // Small change with trend
+        _currentPrecipitation = (_currentPrecipitation + change).clamp(0.0, 50.0);
+
+        // Occasionally reverse the trend
+        if (Random().nextDouble() < 0.2) { // 20% chance to reverse trend
+          _precipitationTrend *= -1;
+        }
+
+        // Ensure precipitation doesn't go below 0 or above 50 (max for scale)
+        if (_currentPrecipitation <= 0.0) {
+          _precipitationTrend = 1; // Must increase if at 0
+        } else if (_currentPrecipitation >= 50.0) {
+          _precipitationTrend = -1; // Must decrease if at max
+        }
       });
     });
   }
