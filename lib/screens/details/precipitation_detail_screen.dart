@@ -21,10 +21,10 @@ class _PrecipitationDetailScreenState extends State<PrecipitationDetailScreen> {
   void initState() {
     super.initState();
     _currentPrecipitation = widget.precipitation;
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       setState(() {
         // Simulate more realistic precipitation changes with a trend
-        double change = (Random().nextDouble() * 1.0 + 0.5) * _precipitationTrend; // Small change with trend
+        double change = (Random().nextDouble() * 0.1 + 0.1) * _precipitationTrend; // Change between 0.1 and 0.2
         _currentPrecipitation = (_currentPrecipitation + change).clamp(0.0, 50.0);
 
         // Occasionally reverse the trend
