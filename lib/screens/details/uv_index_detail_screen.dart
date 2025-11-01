@@ -133,31 +133,9 @@ class _UvIndexDetailScreenState extends State<UvIndexDetailScreen> with SingleTi
           children: [
             Text('Current UV Index', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
-            Center(
-              child: SizedBox(
-                width: 150,
-                height: 150,
-                child: AnimatedBuilder(
-                  animation: _uvIndexAnimation,
-                  builder: (context, child) {
-                    return Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          value: (_uvIndexAnimation.value / 11).clamp(0.0, 1.0), // Max UV Index is typically 11+
-                          strokeWidth: 10,
-                          backgroundColor: uvColor.withOpacity(0.3),
-                          valueColor: AlwaysStoppedAnimation<Color>(uvColor),
-                        ),
-                        Text(
-                          _uvIndexAnimation.value.toStringAsFixed(1),
-                          style: Theme.of(context).textTheme.displayLarge?.copyWith(color: uvColor),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
+            Text(
+              uvIndex.toStringAsFixed(1),
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(color: uvColor),
             ),
             const SizedBox(height: 16),
             Center(
