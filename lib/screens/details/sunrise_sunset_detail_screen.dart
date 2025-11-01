@@ -194,9 +194,8 @@ class _SunriseSunsetDetailScreenState extends State<SunriseSunsetDetailScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Solar noon is the moment when the Sun passes a location's meridian and reaches its highest position in the sky for that day.',
-              style: TextStyle(fontSize: 16),
+                          const Text(
+                            "Solar noon is the moment when the Sun passes a location's meridian and reaches its highest position in the sky for that day.",              style: TextStyle(fontSize: 16),
             ),
           ],
         ),
