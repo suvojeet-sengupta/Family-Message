@@ -2,10 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/weather_model.dart';
 
-class UvIndexDetailScreen extends StatelessWidget {
+class UvIndexDetailScreen extends StatefulWidget {
   final Weather weather;
 
   const UvIndexDetailScreen({super.key, required this.weather});
+
+  @override
+  State<UvIndexDetailScreen> createState() => _UvIndexDetailScreenState();
+}
+
+class _UvIndexDetailScreenState extends State<UvIndexDetailScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _uvIndexAnimation;
+  double _currentUvIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUvIndex = widget.weather.uvIndex;
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _uvIndexAnimation = Tween<double>(begin: 0, end: _currentUvIndex).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant UvIndexDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.weather.uvIndex != widget.weather.uvIndex) {
+      _currentUvIndex = widget.weather.uvIndex;
+      _uvIndexAnimation = Tween<double>(begin: oldWidget.weather.uvIndex, end: _currentUvIndex).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+      );
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   String _getUvIndexDescription(double uvIndex) {
     if (uvIndex <= 2) {
@@ -39,7 +81,7 @@ class UvIndexDetailScreen extends StatelessWidget {
     if (uvIndex <= 2) {
       return Colors.green;
     } else if (uvIndex <= 5) {
-      return Colors.yellow;
+      return Colors.yellow.shade700; // Darker yellow for better contrast
     } else if (uvIndex <= 7) {
       return Colors.orange;
     } else if (uvIndex <= 10) {
@@ -51,6 +93,9 @@ class UvIndexDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color uvColor = _getUvIndexColor(widget.weather.uvIndex);
+    final Color cardBackgroundColor = uvColor.withOpacity(0.2);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('UV Index'),
@@ -60,7 +105,7 @@ class UvIndexDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCurrentUvIndex(context),
+            _buildCurrentUvIndex(context, uvColor, cardBackgroundColor),
             const SizedBox(height: 24),
             _buildHourlyUvIndex(context),
             const SizedBox(height: 24),
@@ -71,10 +116,13 @@ class UvIndexDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrentUvIndex(BuildContext context) {
-    final uvIndex = weather.uvIndex;
-    return Card(
-      shape: RoundedRectangleBorder(
+  Widget _buildCurrentUvIndex(BuildContext context, Color uvColor, Color cardBackgroundColor) {
+    final uvIndex = widget.weather.uvIndex;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color: cardBackgroundColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
@@ -84,15 +132,39 @@ class UvIndexDetailScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Current UV Index', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(
-              uvIndex.toStringAsFixed(1),
-              style: Theme.of(context).textTheme.displayLarge,
+            const SizedBox(height: 16),
+            Center(
+              child: SizedBox(
+                width: 150,
+                height: 150,
+                child: AnimatedBuilder(
+                  animation: _uvIndexAnimation,
+                  builder: (context, child) {
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          value: (_uvIndexAnimation.value / 11).clamp(0.0, 1.0), // Max UV Index is typically 11+
+                          strokeWidth: 10,
+                          backgroundColor: uvColor.withOpacity(0.3),
+                          valueColor: AlwaysStoppedAnimation<Color>(uvColor),
+                        ),
+                        Text(
+                          _uvIndexAnimation.value.toStringAsFixed(1),
+                          style: Theme.of(context).textTheme.displayLarge?.copyWith(color: uvColor),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              _getUvIndexDescription(uvIndex),
-              style: TextStyle(fontSize: 24, color: _getUvIndexColor(uvIndex), fontWeight: FontWeight.bold),
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                _getUvIndexDescription(uvIndex),
+                style: TextStyle(fontSize: 24, color: uvColor, fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 16),
             const Divider(),
@@ -117,9 +189,9 @@ class UvIndexDetailScreen extends StatelessWidget {
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: weather.hourlyForecast.length,
+            itemCount: widget.weather.hourlyForecast.length,
             itemBuilder: (context, index) {
-              final hourly = weather.hourlyForecast[index];
+              final hourly = widget.weather.hourlyForecast[index];
               return Card(
                 margin: const EdgeInsets.only(right: 16),
                 child: Padding(
@@ -153,9 +225,9 @@ class UvIndexDetailScreen extends StatelessWidget {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: weather.dailyForecast.length,
+          itemCount: widget.weather.dailyForecast.length,
           itemBuilder: (context, index) {
-            final daily = weather.dailyForecast[index];
+            final daily = widget.weather.dailyForecast[index];
             return Card(
               margin: const EdgeInsets.only(bottom: 16),
               child: Padding(
